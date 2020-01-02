@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+numpy = "*"
+mappy = "*"
+pyfaidx = "*"
+h5py = "*"
+nadavca = {editable = true,git = "https://github.com/fmfi-compbio/nadavca"}
+pyaml = "*"
+
+[requires]
+python_version = "3.7.5"
