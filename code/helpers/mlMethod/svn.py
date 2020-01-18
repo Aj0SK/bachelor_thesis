@@ -33,13 +33,46 @@ for i in range(len(X)):
 X = np.array(newX)
 y = np.array(newY)
 
-print(len(X))
 X = X[:10000]
 y = y[:10000]
 
+y = [0 if intToClass[i] == "mtDNA" else 1 for i in y]
+
 from sklearn import svm
 from sklearn.model_selection import cross_val_score
+from matplotlib import pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.utils import shuffle
 
-svc = svm.SVC(C=1, kernel='rbf')
+X, y = shuffle(X, y, random_state=0)
+
+print(len(classes))
+print(classes)
+
+X = (X.T[:] - np.mean(X, axis=1, dtype='float64')).T
+X[:] -= X.mean(axis=0, dtype = 'float64')
+X[:] /= X.std(axis=0, dtype = 'float64')
+
+svc = svm.SVC(C=1.0, kernel='rbf', gamma='auto')
 scores = cross_val_score(svc, X, y, cv=5)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+plt.plot(X[0])
+plt.show()
+
+'''
+pca = PCA(n_components = 3)
+prinCom = pca.fit_transform(X)
+
+x_axis = prinCom[:, 1]
+y_axis = prinCom[:, 2]
+
+t = np.zeros((X.shape[0], 3))
+t[y[:]==0] = (1, 0, 0)
+t[y[:]==1] = (0, 1, 0)
+
+plt.scatter(x_axis, y_axis, c=t, marker = 'o')
+plt.xlabel("second_component")
+plt.ylabel("third_component")
+plt.show()
+'''

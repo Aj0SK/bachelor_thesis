@@ -8,6 +8,9 @@ name = "mlMethid"
 [packages]
 numpy = "*"
 sklearn = "*"
+matplotlib = "*"
+keras = "*"
+tensorflow = "*"
 
 [requires]
 python_version = "3.7.5"
