@@ -36,7 +36,7 @@ process of base-calling is quite slow and resource-intensive.
 \subsection{Idea}
 
 MinION has one special ability that helps us in certain scenarios. It can reject
-DNA string that is currently passing throughout the pore. It effectively reverses
+DNA string that is currently passing through the pore. It effectively reverses
 the string’s direction and throws it away. Selective sequencing is the idea that
 based on the incoming signal, we can tell if we are interested in sequencing current
 DNA string and can decide if we want to continue or reject this string. This happens
@@ -54,13 +54,16 @@ costly process in terms of performance.
 
 Let's say we are trying to find an exact type of virus in human blood. We can
 reject all human DNA samples because we are not interested in processing human
-DNA. In order to find out if the currently passing string is from human DNA, we
-have to have some human signal beforehand. This is of course in some sense limiting
-factor as we need a sample signal from the species that we want to filter. We could
-also filter in a positive way. So we could say, that we are only interested in sequencing
-DNA that produces a signal in some sense similar to our chosen sample.
+DNA. We could also filter in a positive way. So we could say, that we are only
+interested in sequencing DNA that produces a signal in some sense similar to our
+chosen sample. This all means saving a lot of time and computing power in certain
+cases, for example during the diagnosis process.
 
-This all means saving a lot of time and computing power in certain cases, for example
-during diagnosis process.
+What are some drawbacks of selective sequencing? In order to find out if the currently
+passing string is from human DNA, we have to have some human signal beforehand.
+This is of course in some sense limiting factor as we need a sample signal from
+the species that we want to filter. The other problem is that in the case of misclassifying
+some signal as not interesting, we lost information about the corresponding
+read.
 
 \section{Current state of selective sequencing}

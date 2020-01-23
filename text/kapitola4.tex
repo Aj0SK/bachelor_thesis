@@ -58,7 +58,7 @@ proved to be negligible.
 \paragraph{Convolutional layers}
 This part consists of several repeating parts. There are 3 layers used in
 this part of the model: convolutional layer, activation layer, and pooling layer.
-After every convolutional layer there is activation layer. Convolutional layer uses
+After every convolutional layer, there is an activation layer. Convolutional layer uses
 the window of size $3x3$ as it is good to have the window of odd dimensions.
 
 \paragraph{Flatenning layer}
@@ -96,8 +96,8 @@ This makes the idea of cutting the signal into fixed-size windows very convenien
 as the signal of the one whole read can be really long. This also brings the question
 of what is the ideal size of the window.
 
-Using non-overlapping windows brings us advantage that we don't have to take care
-of leaking some part of training information into testing. Also, as we cut input
+Using non-overlapping windows brings us the advantage that we don't have to bother
+with leaking some part of training information into testing. Also, as we cut input
 signals into some fixed-size, non-overlapping windows, we got rid of mean and
 standard deviation in all windows.
 
@@ -145,10 +145,10 @@ problems of this model.
 \medskip
 
 In scenario C, CNNs didn't work well at all. They didn't obtain any ability to predict
-class even after adding some more hidden layers.
+the class even after adding more hidden layers and making the network more complex.
 
 \medskip
 
-First guess was to try a window of size 120. This proved to be quite a good estimate.
-For CNN we favored if the size of the window was square. The sizes of good window
+First estimate was to try a window of size 120. This proved to be quite a good estimate.
+For CNN we favored if the size of the window was square. The size of the good window
 proved to be around $14\cdot 14$.
