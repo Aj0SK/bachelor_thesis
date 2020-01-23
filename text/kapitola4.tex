@@ -1,5 +1,154 @@
-\chapter{Results}
+\chapter{Testing}
 
-\label{kap:Results} % id kapitoly pre prikaz ref
+\label{kap:testing} % id kapitoly pre prikaz ref
 
-In this chapter we are going to show and discuss results of our proposed solution.
+In this chapter, we will try to show how we are going to test our proposed method.
+This includes finding some baseline. The method that is different from our proposed
+algorithm and that reasonably solves the same problem using other techniques.
+
+\section{Machine learning baseline}
+
+As there are numerous patterns in the signal coming from DNA and a whole sequencing
+process is not that well defined, we chose to apply machine learning methods to
+tackle this problem. We decided to use methods from the area of supervised learning
+as we can produce a lot of labeled data with ease. We now create different scenarios
+that we will use for training and testing and formulate them as a classification task.
+
+\subsection{Test scenarios}
+
+We will be training and testing this model in the following scenarios:
+
+\paragraph{Scenario A} In this scenario we want to distinguish between mitochondrial
+and nuclear DNA of one organism. Mitochondrial DNA is a special type of DNA and
+contains special patterns. It has also some obvious patterns as a higher ratio of
+certain nucleotides.
+
+\paragraph{Scenario B} In this scenario we want to correctly classify from which
+contig or chromosome of our organism the input signal comes. We expect that this
+will be harder based on the fact that chromosomes can share some not that small parts.
+
+\paragraph{Scenario C} In this scenario we want to classify DNA sequence of two
+different organisms.
+
+As we already mentioned, all these scenarios are classification problems so we have
+to formulate them in this way. In all 3 scenarios, we will have the input signal as a
+vector of floating-point numbers. In each case, we want to predict output as coming
+from one of the classes. In scenarios A and C we have 2 classes. In scenario C we
+will have 6 categories.
+
+\subsection{Methods}
+
+Our tested methods were from the area of supervised learning.
+
+\subsubsection{Convolutional Neural Networks}
+
+As there are hints that CNN are well-performing against problems that can be
+represented by an image, we got an idea that they could be useful in our scenario.
+This was motivated by a realization that experts can extract some information from
+the pure image of the signal.
+
+The structure of our tested CNN was typically very similar and consisted of these
+layers:
+
+\paragraph{Input layer}
+We decided to make our input layer also convolutional. We had an idea to reverse
+every second line to have subsequent signals as close as possible. This was later
+proved to be negligible.
+
+\paragraph{Convolutional layers}
+This part consists of several repeating parts. There are 3 layers used in
+this part of the model: convolutional layer, activation layer, and pooling layer.
+After every convolutional layer there is activation layer. Convolutional layer uses
+the window of size $3x3$ as it is good to have the window of odd dimensions.
+
+\paragraph{Flatenning layer}
+This layer flattens multidimensional input into one dimensional and is only technicality.
+
+\paragraph{Fully connected layer}
+
+In our model, this part of the network consisted of only 2 layers.
+
+Overall, our model consisted of about 15 layers and about 3 dropout layers that
+helped us prevent overfitting.
+
+\subsubsection{Support Vector Machines}
+
+Another model that we used were SVM. We tried this model as SVM are consider good
+classifiers. The kernels that we tried are RBF and Linear kernel.
+
+\subsection{Datasets}
+
+Our data comes from two organisms, one is Saprochaete ingens. This is an organism
+on which DNA we will train our models for scenario A and scenario B. Second organism,
+for use in Problem C is organism Saprochaete fungicola.
+
+In order to prepare our datasets, we had to resolve some problems. One of the
+problems that arose was that the number of samples from non-mitochondrial DNA
+outnumbers samples from mitochondrial DNA. This would cause some bad hypothesis
+as predicting always majority element to get very high accuracy. This forced us
+to tweak the dataset in a way, that every class is in every problem equally represented.
+
+Both of the methods we wanted to use need or work well for a fixed size input.
+As the signal from the DNA can have very different length and the same length is
+very uncommon, we need a way to resize this signal to some fixed size. It’s also
+good for us to predict the class of signal from only a smaller portion of the signal.
+This makes the idea of cutting the signal into fixed-size windows very convenient
+as the signal of the one whole read can be really long. This also brings the question
+of what is the ideal size of the window.
+
+Using non-overlapping windows brings us advantage that we don't have to take care
+of leaking some part of training information into testing. Also, as we cut input
+signals into some fixed-size, non-overlapping windows, we got rid of mean and
+standard deviation in all windows.
+
+\subsection{Results of our models}
+
+We bring results of our testing in the table \ref{tab:mlResults}. 
+
+\begin{table}
+\caption[Accuracy of our model during testing]{Accuracy of our model during testing}
+%id tabulky
+\label{tab:mlResults}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+Scenario & Method & Testing accuracy (in \%)\\
+\hline
+A & CNN & 90 (baseline 50)\\
+A & SVM & 54 (baseline 50)\\
+B & CNN & 30 (baseline 16)\\
+B & SVM & 18 (baseline 16)\\
+C & CNN & 55 (baseline 50)\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+As we expected, our methods were most successful in classifying scenario A, determining
+nuclear-DNA vs mitochondrial-DNA. All the support vector machines were a disappointment.
+They were very slow during the process of learning so they couldn't train on a lot of
+data. Even after considerable time, they were very close to random classification.
+What we learned after reading documentation is that a lot of popular libraries
+implementing SVM work only on CPU and are not GPU accelerated which can cause
+problems for bigger data sets. Even the linear kernel showed worse performance than the RBF kernel.
+
+\medskip
+
+Scenario B seems to be considerably more difficult as scenario A as CNN could obtain
+only 30\% accuracy. As the number of classes in our dataset (Saprochaete ingens)
+is 6. 30\% is some improvement over $(100/6)=16\%$.
+
+From the overall process of training, we gained confidence, that CNN could
+be used to help with these problems after some time invested in looking for
+problems of this model.
+
+\medskip
+
+In scenario C, CNNs didn't work well at all. They didn't obtain any ability to predict
+class even after adding some more hidden layers.
+
+\medskip
+
+First guess was to try a window of size 120. This proved to be quite a good estimate.
+For CNN we favored if the size of the window was square. The sizes of good window
+proved to be around $14\cdot 14$.
