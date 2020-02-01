@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "hypothesis"
+
+[requires]
+python_version = "3.7.5"
+
+[packages]
+numpy = "*"
+pyfaidx = "*"
+nadavca = {editable = true,git = "https://github.com/fmfi-compbio/nadavca"}
+pyaml = "*"
+jupyter = "*"
+matplotlib = "*"
