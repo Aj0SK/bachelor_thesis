@@ -2,9 +2,9 @@
 # using them
 
 # len of levelStrings
-kernelLen = 10
+defaultKernelLen = 10
 # len of vertical cut 
-winSize = 15 * kernelLen
+defaultWinSize = 15 * defaultKernelLen
 # number of horizontal cuts
 defaultNumberOfLevels = 12
 # minimal and maximal normalized signal we want to process
@@ -27,21 +27,25 @@ def stringToSignal(ref_str, mod):
     signal = [x for x in signal for i in range(repeatSignal)]
     return signal
 
+def normalizeWindow(w):
+    w -= np.median(w)
+    w /= np.std(w, dtype="float64") + 0.0000000001
+    w[w<minSignal] = minSignal
+    w[w>maxSignal] = maxSignal
+    return
+
 # cuts signal vertically into windows, normalizes windows and then cuts them
 # horizontally into levels
-def getLevels(signal, numLevels = defaultNumberOfLevels):
+def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels):
     results = []
     
     # cut into windows and for every windows do the normalization and horiz. cutting
-    for winBeg in range(0, signal.shape[0]-winSize, winSize):
+    for winBeg in range(0, signal.shape[0]-winSize):
         winEnd = winBeg + winSize
 
         # normalize window
         currWindow = copy.deepcopy(signal[winBeg:winEnd])
-        currWindow -= np.median(currWindow)
-        currWindow /= np.std(currWindow, dtype="float64") + 0.0000000001
-        currWindow[currWindow<minSignal] = minSignal
-        currWindow[currWindow>maxSignal] = maxSignal
+        normalizeWindow(currWindow)
 
         levelSize = (maxSignal-minSignal)/numLevels + 0.0000000001
 
