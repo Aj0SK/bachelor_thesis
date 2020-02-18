@@ -2,7 +2,7 @@ sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_seq
 kmerModelFilePath = "../../data/kmer_model.hdf5"
 
 import h5py
-from signalHelper import getLevels, stringToSignal, normalizeWindow
+from signalHelper import getLevels, stringToSignal, normalizeWindow, getSignalFromRead, getSeqfromRead
 from nadavca.dtw import KmerModel
 import numpy as np
 import math
@@ -33,31 +33,18 @@ class Table_Iterator:
         return self.table[self.tableindex][4][self.localindex-1], self.table[self.tableindex][1], self.table[self.tableindex][1]
 
 ################################################################################
-def getRead(filename):
-    readFile = h5py.File(filename, 'r')
-    readName = str(list(readFile['Raw/Reads'])[0])
-    rawData = readFile['Raw/Reads/' + readName + "/" + "Signal"][()]
-    return rawData
-
-def getSignal(filename):
-    sequenceFile = h5py.File(filename, 'r')
-    seq = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Fastq'][()]
-    basecallEventTable = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Events'][()]
-    return seq, basecallEventTable
-
-################################################################################
 # load signal and basecalled sequence
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 # read fastq from file
-fastq, basecallTable = getSignal(sampleRead)
+fastq, basecallTable = getSeqfromRead(sampleRead)
 # read second line and decode it into string from bytes
 fastqSeq = fastq.splitlines()[1].decode()
 # create artificial signal
 fabricatedSignal = np.array(stringToSignal(fastqSeq, mod), float)
 
 # load original signal from read
-originalSignal = getRead(sampleRead)
+originalSignal = getSignalFromRead(sampleRead)
 originalSignal = np.array(originalSignal, dtype = float)
 
 ################################################################################
@@ -82,7 +69,7 @@ normalizeWindow(fabricatedSignal)
 # modify signal
 from scipy.signal import medfilt
 
-betterSignal = np.array(getRead(sampleRead), dtype = float)[fr:to]
+betterSignal = np.array(getSignalFromRead(sampleRead), dtype = float)[fr:to]
 normalizeWindow(betterSignal)
 
 betterSignal = medfilt(betterSignal, kernel_size = 9)
@@ -94,19 +81,23 @@ f = np.linspace(0, fabricatedSignal.shape[0], fabricatedSignal.shape[0])
 e = np.linspace(0, betterSignal.shape[0], betterSignal.shape[0])
 
 fig, axs = plt.subplots(3)
-fig.suptitle('Original, fabricated and edited signal')
+fig.suptitle('Original, edited original and fabricated')
 axs[0].plot(o, originalSignal, label='data 1', color = 'r')
-axs[2].plot(f, fabricatedSignal, label='data 2', color = 'g')
-axs[1].plot(e, betterSignal, label='data 3', color = 'b')
+axs[1].plot(e, betterSignal, label='data 2', color = 'g')
+axs[2].plot(f, fabricatedSignal, label='data 3', color = 'b')
+
+axs[0].hlines(y=[-2+i*(4/12) for i in range(12)], xmin=0, xmax=len(o), linewidth=1, color='gray')
+axs[1].hlines(y=[-2+i*(4/12) for i in range(12)], xmin=0, xmax=len(e), linewidth=1, color='gray')
+axs[2].hlines(y=[-2+i*(4/12) for i in range(12)], xmin=0, xmax=len(f), linewidth=1, color='gray')
 plt.show()
 
 levelO = getLevels(originalSignal)
-levelE = getLevels(fabricatedSignal)
-levelF = getLevels(betterSignal)
+levelF = getLevels(fabricatedSignal)
+levelE = getLevels(betterSignal)
 
 print(levelO)
-print(levelE)
 print(levelF)
+print(levelE)
 
 print(signalFrTo)
 # signal to list of level strings

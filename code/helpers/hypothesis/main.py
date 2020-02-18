@@ -17,7 +17,7 @@ import numpy as np
 from pyfaidx import Fasta
 from nadavca.dtw import KmerModel
 
-from signalHelper import stringToSignal, getLevels
+from signalHelper import stringToSignal, getLevels, getSignalFromRead
 
 ################################################################################
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
@@ -33,17 +33,7 @@ for contig in Fasta(refFilePath):
 
 print("Hashtable ready!")
 ########################################
-### hashTable
-
-import h5py
-import glob
-
-# return signal as list from single read
-def getSignalFromRead(filename):
-    readFile = h5py.File(filename, 'r')
-    readName = str(list(readFile['Raw/Reads'])[0])
-    rawData = readFile['Raw/Reads/' + readName + "/" + "Signal"][()]
-    return rawData
+### hashTable helper
 
 # for a whole read in form of levelStrings return total number of hits in *hTable*
 def countMatch(hTable, signalStrings):
@@ -54,6 +44,8 @@ def countMatch(hTable, signalStrings):
     return counter
 
 ########################################
+
+import glob
 
 # load filenames of all positive and negative reads
 posFast5 = glob.glob(readsPosFilePath + '/*.fast5', recursive=True)

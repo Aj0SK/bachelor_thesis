@@ -4,7 +4,7 @@
 # len of levelStrings
 defaultKernelLen = 10
 # len of vertical cut
-defaultWinSize = 15 * defaultKernelLen
+defaultWinSize = 20 * defaultKernelLen
 # number of horizontal cuts
 defaultNumberOfLevels = 12
 # minimal and maximal normalized signal we want to process
@@ -20,6 +20,21 @@ from itertools import groupby
 import nadavca
 import matplotlib.pyplot as plt
 from scipy.signal import medfilt
+import h5py
+
+# return basecalling info from read
+def getSeqfromRead(filename):
+    sequenceFile = h5py.File(filename, 'r')
+    seq = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Fastq'][()]
+    basecallEventTable = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Events'][()]
+    return seq, basecallEventTable
+
+# return signal as list from single read
+def getSignalFromRead(filename):
+    readFile = h5py.File(filename, 'r')
+    readName = str(list(readFile['Raw/Reads'])[0])
+    rawData = readFile['Raw/Reads/' + readName + "/" + "Signal"][()]
+    return rawData
 
 # Convert string in *ref_str* into signal(list of floats) using kmer_model loaded in *mod*
 def stringToSignal(ref_str, mod):
@@ -33,7 +48,6 @@ def normalizeWindow(w):
     w /= np.std(w, dtype="float64") + 0.0000000001
     w[w<minSignal] = minSignal
     w[w>maxSignal] = maxSignal
-    w = medfilt(w, kernel_size = 9)
     return
 
 # cuts signal vertically into windows, normalizes windows and then cuts them
