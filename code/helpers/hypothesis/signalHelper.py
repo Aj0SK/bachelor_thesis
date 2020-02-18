@@ -3,7 +3,7 @@
 
 # len of levelStrings
 defaultKernelLen = 10
-# len of vertical cut 
+# len of vertical cut
 defaultWinSize = 15 * defaultKernelLen
 # number of horizontal cuts
 defaultNumberOfLevels = 12
@@ -19,6 +19,7 @@ import numpy as np
 from itertools import groupby
 import nadavca
 import matplotlib.pyplot as plt
+from scipy.signal import medfilt
 
 # Convert string in *ref_str* into signal(list of floats) using kmer_model loaded in *mod*
 def stringToSignal(ref_str, mod):
@@ -32,6 +33,7 @@ def normalizeWindow(w):
     w /= np.std(w, dtype="float64") + 0.0000000001
     w[w<minSignal] = minSignal
     w[w>maxSignal] = maxSignal
+    w = medfilt(w, kernel_size = 9)
     return
 
 # cuts signal vertically into windows, normalizes windows and then cuts them
@@ -40,7 +42,7 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
     results = []
     
     # cut into windows and for every windows do the normalization and horiz. cutting
-    for winBeg in range(0, signal.shape[0]-winSize):
+    for winBeg in range(0, signal.shape[0]-winSize, winSize):
         winEnd = winBeg + winSize
 
         # normalize window
