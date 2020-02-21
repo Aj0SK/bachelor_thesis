@@ -8,9 +8,9 @@ defaultWinSize = 20 * defaultKernelLen
 # number of horizontal cuts
 defaultNumberOfLevels = 12
 # minimal and maximal normalized signal we want to process
-minSignal, maxSignal = -2.0, 2.0
+defaultMinSignal, defaultMaxSignal = -2.0, 2.0
 # how long does one nucleotid passes through pore
-repeatSignal = 8
+defaultRepeatSignal = 8
 # how many times we want to plot graph of normalized signal
 showGraph = 0
 
@@ -37,13 +37,13 @@ def getSignalFromRead(filename):
     return rawData
 
 # Convert string in *ref_str* into signal(list of floats) using kmer_model loaded in *mod*
-def stringToSignal(ref_str, mod):
+def stringToSignal(ref_str, mod, repeatSignal = defaultRepeatSignal):
     num_ref = [nadavca.alphabet.inv_alphabet[base] for base in ref_str]
     signal = mod.get_expected_signal(num_ref, [0]*4, [0]*4)
     signal = [x for x in signal for i in range(repeatSignal)]
     return signal
 
-def normalizeWindow(w):
+def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal):
     w -= np.median(w)
     w /= np.std(w, dtype="float64") + 0.0000000001
     w[w<minSignal] = minSignal
@@ -52,7 +52,7 @@ def normalizeWindow(w):
 
 # cuts signal vertically into windows, normalizes windows and then cuts them
 # horizontally into levels
-def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels):
+def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal):
     results = []
     
     # cut into windows and for every windows do the normalization and horiz. cutting
@@ -61,7 +61,7 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
 
         # normalize window
         currWindow = copy.deepcopy(signal[winBeg:winEnd])
-        normalizeWindow(currWindow)
+        normalizeWindow(currWindow, minSignal, maxSignal)
 
         levelSize = (maxSignal-minSignal)/numLevels + 0.0000000001
 
