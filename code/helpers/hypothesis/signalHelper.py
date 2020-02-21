@@ -56,7 +56,7 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
     results = []
     
     # cut into windows and for every windows do the normalization and horiz. cutting
-    for winBeg in range(0, signal.shape[0]-winSize, winSize):
+    for winBeg in range(0, signal.shape[0]-winSize, 1):
         winEnd = winBeg + winSize
 
         # normalize window
@@ -86,3 +86,24 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
         '''
         results.append(outString[:kernelLen])
     return results
+
+class Table_Iterator:
+    def __init__(self, basecallEventTable):
+        self.table = basecallEventTable
+        self.tableindex = 0
+        self.localindex = 0
+        self.totalindex = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self.localindex == 5:
+            if self.tableindex + 1 != len(self.table):
+                self.tableindex += 1
+                self.localindex = 5-int(self.table[self.tableindex][5])
+            else:
+                raise StopIteration
+        self.totalindex += 1
+        self.localindex += 1
+        return self.table[self.tableindex][4][self.localindex-1], self.table[self.tableindex][1], self.table[self.tableindex][1]

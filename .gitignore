@@ -1,4 +1,6 @@
 code/data
+venv/
+__pycache__
 
 text/main-en.*
 !text/main-en.tex
