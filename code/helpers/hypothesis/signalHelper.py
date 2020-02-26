@@ -2,9 +2,9 @@
 # using them
 
 # len of levelStrings
-defaultKernelLen = 10
+defaultKernelLen = 7
 # len of vertical cut
-defaultWinSize = 20 * defaultKernelLen
+defaultWinSize = 15 * defaultKernelLen
 # number of horizontal cuts
 defaultNumberOfLevels = 12
 # minimal and maximal normalized signal we want to process
@@ -50,6 +50,18 @@ def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSigna
     w[w>maxSignal] = maxSignal
     return
 
+def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, numLevels = defaultNumberOfLevels):
+    outString = ""
+    
+    levelSize = (maxSignal-minSignal)/numLevels + 0.0000000001
+    
+    for i in w:
+        myLevel = int((i-minSignal)/levelSize)
+        outString += chr(ord('a')+myLevel)
+    
+    outString = "".join([k for k, g in groupby(outString)])
+    return outString
+
 # cuts signal vertically into windows, normalizes windows and then cuts them
 # horizontally into levels
 def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal):
@@ -63,18 +75,9 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
         currWindow = copy.deepcopy(signal[winBeg:winEnd])
         normalizeWindow(currWindow, minSignal, maxSignal)
 
-        levelSize = (maxSignal-minSignal)/numLevels + 0.0000000001
-
         # cut into horizontal levels
-        outString = ""
-        for i in currWindow:
-            myLevel = int((i-minSignal)/levelSize)
-            outString += chr(ord('a')+myLevel)
+        outString = getLevelString(currWindow, minSignal, maxSignal, numLevels)
 
-        outString = "".join([k for k, g in groupby(outString)])
-        if len(outString) < kernelLen:
-            print("* ", end = " ")
-            continue
         # in case we want to graph our normalized signal
         '''
         global showGraph
@@ -84,6 +87,9 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
             plt.show()
             showGraph -= 1
         '''
+        if len(outString) < kernelLen:
+            print("* ", end = " ")
+            continue
         results.append(outString[:kernelLen])
     return results
 
