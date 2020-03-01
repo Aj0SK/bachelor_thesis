@@ -6,7 +6,7 @@
 # differences.
 
 # here we want to chose some part of signal that is not close to beg or end of read
-fromSignal, toSignal = 11000, 13000
+fromSignal, toSignal = 19000, 21000
 fromSignalFake, toSignalFake = 15000, 17000
 refFilePath = "../../data/sapIngB1.fa"
 sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1000_ch_43_strand.fast5"
@@ -27,7 +27,7 @@ import numpy as np
 import mappy as mp
 from pyfaidx import Fasta
 from nadavca.dtw import KmerModel
-from signalHelper import getLevels, stringToSignal, normalizeWindow, getSignalFromRead, getSeqfromRead, Table_Iterator
+from signalHelper import getLevels, getLevelString, stringToSignal, normalizeWindow, getSignalFromRead, getSeqfromRead, Table_Iterator
 
 import matplotlib
 # this allows us to see graphs through ssh
@@ -111,6 +111,24 @@ print("Total fake match rate with original signal {0}/{1}".format(counterF, len(
 #print(levelF)
 
 ################################################################################
+#
+
+counter = 0
+for w in levelO:
+    for i in range(kernelLen-1):
+        if abs(ord(w[i])-ord(w[i+1])) > 1:
+            counter += 1
+
+print("Jumps {0}/{1}".format(counter, len(levelO)*kernelLen))
+
+counter = 0
+for w in levelF:
+    for i in range(kernelLen-1):
+        if abs(ord(w[i])-ord(w[i+1])) > 1:
+            counter += 1
+
+print("Jumps {0}/{1}".format(counter, len(levelF)*kernelLen))
+################################################################################
 # Graph normalized original, processed and artificial signal
 
 #normalizeWindow(originalSignal)
@@ -141,7 +159,7 @@ f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 plt.subplots_adjust(left=0.25, bottom=0.25)
 l1, = ax1.plot(np.arange(winSize), originalSignal[:winSize], lw=2)
 l2, = ax2.plot(np.arange(winSize), artifSignal[:winSize], lw=2)
-ax1.margins(x=0)
+#ax1.margins(x=0)
 
 ax1.set_ylim([minSignal-0.1, maxSignal+0.1])
 ax2.set_ylim([minSignal-0.1, maxSignal+0.1])
@@ -159,8 +177,12 @@ def update(val):
     w2 = copy.deepcopy(artifSignal[newBeg2:(newBeg2+winSize)])
     normalizeWindow(w1)
     normalizeWindow(w2)
+    #l1.set_xdata(np.arange(newBeg1, newBeg1+winSize))
+    #l2.set_xdata(np.arange(newBeg2, newBeg2+winSize))
     l1.set_ydata(w1)
     l2.set_ydata(w2)
+    print(getLevelString(w1))
+    print(getLevelString(w2))
     fig.canvas.draw_idle()
 
 sOrig.on_changed(update)

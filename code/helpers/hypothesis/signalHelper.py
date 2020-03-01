@@ -46,15 +46,14 @@ def stringToSignal(ref_str, mod, repeatSignal = defaultRepeatSignal):
 def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal):
     w -= np.median(w)
     w /= np.std(w, dtype="float64") + 0.0000000001
+    #w /= np.median(np.abs(w)) + 0.0000000001
     w[w<minSignal] = minSignal
     w[w>maxSignal] = maxSignal
     return
 
 def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, numLevels = defaultNumberOfLevels):
     outString = ""
-    
     levelSize = (maxSignal-minSignal)/numLevels + 0.0000000001
-    
     for i in w:
         myLevel = int((i-minSignal)/levelSize)
         outString += chr(ord('a')+myLevel)
@@ -88,7 +87,7 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
             showGraph -= 1
         '''
         if len(outString) < kernelLen:
-            print("* ", end = " ")
+            print("*", end = " ")
             continue
         results.append(outString[:kernelLen])
     return results
