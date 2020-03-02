@@ -1,12 +1,15 @@
-\chapter{Testing}
+\chapter{Testing and results}
 
-\label{kap:testing} % id kapitoly pre prikaz ref
+\label{kap:testRes} % id kapitoly pre prikaz ref
 
-In this chapter, we will try to show how we are going to test our proposed method.
-This includes finding some baseline. The method that is different from our proposed
-algorithm and that reasonably solves the same problem using other techniques.
+In this chapter, we will describe how we are going to test our proposed method
+and discuss results of our proposed solution.
 
 \section{Machine learning baseline}
+
+Testing and evaluating performance of our work includes finding a baseline,
+which is a method different from our proposed
+algorithm and that reasonably solves the same problem using other techniques.
 
 As there are numerous patterns in the signal coming from DNA and a whole sequencing
 process is not that well defined, we chose to apply machine learning methods to
@@ -33,7 +36,7 @@ different organisms.
 As we already mentioned, all these scenarios are classification problems so we have
 to formulate them in this way. In all 3 scenarios, we will have the input signal as a
 vector of floating-point numbers. In each case, we want to predict output as coming
-from one of the classes. In scenarios A and C we have 2 classes. In scenario C we
+from one of the classes. In scenarios A and C we have 2 classes. In scenario B we
 will have 6 categories.
 
 \subsection{Methods}
@@ -41,6 +44,11 @@ will have 6 categories.
 Our tested methods were from the area of supervised learning.
 
 \subsubsection{Convolutional Neural Networks}
+
+Convolutional neural network is a specific type of artificial neural network that
+tries to find and extract patterns from input by looking at different localities
+in it while trying to identify what localities and connections between them
+are important.
 
 As there are hints that CNN are well-performing against problems that can be
 represented by an image, we got an idea that they could be useful in our scenario.
@@ -78,9 +86,9 @@ classifiers. The kernels that we tried are RBF and Linear kernel.
 
 \subsection{Datasets}
 
-Our data comes from two organisms, one is Saprochaete ingens. This is an organism
+Our data comes from two organisms, one is \emph{Saprochaete ingens}. This is an organism
 on which DNA we will train our models for scenario A and scenario B. Second organism,
-for use in Problem C is organism Saprochaete fungicola.
+for use in Problem C is organism \emph{Saprochaete fungicola}.
 
 In order to prepare our datasets, we had to resolve some problems. One of the
 problems that arose was that the number of samples from non-mitochondrial DNA
@@ -98,12 +106,12 @@ of what is the ideal size of the window.
 
 Using non-overlapping windows brings us the advantage that we don't have to bother
 with leaking some part of training information into testing. Also, as we cut input
-signals into some fixed-size, non-overlapping windows, we got rid of mean and
-standard deviation in all windows.
+signals into some fixed-size, non-overlapping windows, we normalize signal by subtracting
+mean and dividing by standard deviation in all windows.
 
 \subsection{Results of our models}
 
-We bring results of our testing in the table \ref{tab:mlResults}. 
+We show results of our testing in the table \ref{tab:mlResults}.
 
 \begin{table}
 \caption[Accuracy of our model during testing]{Accuracy of our model during testing}
@@ -114,11 +122,11 @@ We bring results of our testing in the table \ref{tab:mlResults}.
 \hline
 Scenario & Method & Testing accuracy (in \%)\\
 \hline
-A & CNN & 90 (baseline 50)\\
-A & SVM & 54 (baseline 50)\\
-B & CNN & 30 (baseline 16)\\
-B & SVM & 18 (baseline 16)\\
-C & CNN & 55 (baseline 50)\\
+A & CNN & 90\\
+A & SVM & 54\\
+B & CNN & 30\\
+B & SVM & 18\\
+C & CNN & 55\\
 \hline
 \end{tabular}
 \end{center}
