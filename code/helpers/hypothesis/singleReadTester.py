@@ -14,7 +14,7 @@ sampleFakeRead = "../../data/albacore-output-neg/magnu_20181218_FAH93149_MN26672
 
 kmerModelFilePath = "../../data/kmer_model.hdf5"
 # number of levels we use
-numLevels = 6
+numLevels = 5
 minSignal, maxSignal = -2.0, 2.0
 repeatSignal = 9
 kernelLen = 7
@@ -164,6 +164,9 @@ l2, = ax2.plot(np.arange(winSize), artifSignal[:winSize], lw=2)
 ax1.set_ylim([minSignal-0.1, maxSignal+0.1])
 ax2.set_ylim([minSignal-0.1, maxSignal+0.1])
 
+ax1.hlines(y=[minSignal+i*((maxSignal-minSignal)/numLevels) for i in range(numLevels+1)], xmin=0, xmax=winSize, linewidth=1, color='gray')
+ax2.hlines(y=[minSignal+i*((maxSignal-minSignal)/numLevels) for i in range(numLevels+1)], xmin=0, xmax=winSize, linewidth=1, color='gray')
+
 axcolor = 'lightgoldenrodyellow'
 axorig = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
 axartif = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
@@ -177,12 +180,14 @@ def update(val):
     w2 = copy.deepcopy(artifSignal[newBeg2:(newBeg2+winSize)])
     normalizeWindow(w1)
     normalizeWindow(w2)
+    w1 = medfilt(w1, kernel_size = 5)
+    w2 = medfilt(w2, kernel_size = 5)
     #l1.set_xdata(np.arange(newBeg1, newBeg1+winSize))
     #l2.set_xdata(np.arange(newBeg2, newBeg2+winSize))
     l1.set_ydata(w1)
     l2.set_ydata(w2)
-    print(getLevelString(w1))
-    print(getLevelString(w2))
+    print(getLevelString(w1, numLevels = numLevels))
+    print(getLevelString(w2, numLevels = numLevels))
     fig.canvas.draw_idle()
 
 sOrig.on_changed(update)

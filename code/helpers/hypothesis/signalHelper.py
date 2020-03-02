@@ -74,6 +74,8 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
         currWindow = copy.deepcopy(signal[winBeg:winEnd])
         normalizeWindow(currWindow, minSignal, maxSignal)
 
+        currWindow = medfilt(currWindow, kernel_size = 5)
+
         # cut into horizontal levels
         outString = getLevelString(currWindow, minSignal, maxSignal, numLevels)
 
