@@ -6,7 +6,7 @@ defaultKernelLen = 7
 # len of vertical cut
 defaultWinSize = 15 * defaultKernelLen
 # number of horizontal cuts
-defaultNumberOfLevels = 12
+defaultNumberOfLevels = 5
 # minimal and maximal normalized signal we want to process
 defaultMinSignal, defaultMaxSignal = -2.0, 2.0
 # how long does one nucleotid passes through pore
@@ -21,6 +21,9 @@ import nadavca
 import matplotlib.pyplot as plt
 from scipy.signal import medfilt
 import h5py
+
+#from pykalman import KalmanFilter
+#kf = KalmanFilter(initial_state_mean=0, n_dim_obs=1)
 
 # return basecalling info from read
 def getSeqfromRead(filename):
@@ -43,12 +46,15 @@ def stringToSignal(ref_str, mod, repeatSignal = defaultRepeatSignal):
     signal = [x for x in signal for i in range(repeatSignal)]
     return signal
 
-def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal):
+def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, subtract = 0):
     w -= np.median(w)
     w /= np.std(w, dtype="float64") + 0.0000000001
     #w /= np.median(np.abs(w)) + 0.0000000001
+    w -= subtract
     w[w<minSignal] = minSignal
     w[w>maxSignal] = maxSignal
+    #w = medfilt(w, kernel_size = 7)
+    #w = kf.smooth(w)[0].flatten()
     return
 
 def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, numLevels = defaultNumberOfLevels):
@@ -63,18 +69,43 @@ def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal
 
 # cuts signal vertically into windows, normalizes windows and then cuts them
 # horizontally into levels
-def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal):
+def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 1):
     results = []
     
     # cut into windows and for every windows do the normalization and horiz. cutting
-    for winBeg in range(0, signal.shape[0]-winSize, 1):
+    for winBeg in range(0, signal.shape[0]-winSize, shift):
         winEnd = winBeg + winSize
 
         # normalize window
         currWindow = copy.deepcopy(signal[winBeg:winEnd])
         normalizeWindow(currWindow, minSignal, maxSignal)
 
-        currWindow = medfilt(currWindow, kernel_size = 5)
+        # cut into horizontal levels
+        outString = getLevelString(currWindow, minSignal, maxSignal, numLevels)
+
+        # in case we want to graph our normalized signal
+        '''
+        global showGraph
+        if showGraph is not 0:
+            print(outString)
+            plt.plot(currWindow)
+            plt.show()
+            showGraph -= 1
+        '''
+        if len(outString) < kernelLen:
+            print("*", end = " ")
+            continue
+        results.append(outString[:kernelLen])
+    return results
+
+def getGlobalLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 1):
+    results = []
+    
+    # cut into windows and for every windows do the normalization and horiz. cutting
+    for winBeg in range(0, signal.shape[0]-winSize, shift):
+        winEnd = winBeg + winSize
+
+        currWindow = copy.deepcopy(signal[winBeg:winEnd])
 
         # cut into horizontal levels
         outString = getLevelString(currWindow, minSignal, maxSignal, numLevels)
@@ -114,3 +145,40 @@ class Table_Iterator:
         self.totalindex += 1
         self.localindex += 1
         return self.table[self.tableindex][4][self.localindex-1], self.table[self.tableindex][1], self.table[self.tableindex][1]
+
+def seqSignalCor(fromSignal, toSignal, basecallTable):
+    signalFrTo = ""
+    for i in Table_Iterator(basecallTable):
+        if i[1] >= fromSignal and i[1] <= toSignal:
+            signalFrTo += str(chr(i[0]))
+    return signalFrTo
+
+def stringAllignment(str1, str2):
+    n, m = len(str1)+1, len(str2)+1
+    tab = [[0]*m for _ in range(n)]
+    
+    for i in range(1, n):
+        for j in range(1, m):
+            if str1[i-1] == str2[j-1]:
+                tab[i][j] = tab[i-1][j-1] + 1
+            tab[i][j] = max(tab[i][j], tab[i][j-1])
+            tab[i][j] = max(tab[i][j], tab[i-1][j])
+    
+    
+    out1, out2 = "", ""
+    i, j = n-1, m-1
+    while (i != 0 or j != 0):
+        if i>0 and tab[i][j] == tab[i-1][j]:
+            out1 += str1[i-1]
+            out2 += '-'
+            i -= 1
+        elif j>0 and tab[i][j] == tab[i][j-1]:
+            out1 += '-'
+            out2 += str2[j-1]
+            j -= 1
+        else:
+            out1 += str1[i-1]
+            out2 += str2[j-1]
+            i -= 1
+            j -= 1
+    return (out1[::-1] , out2[::-1])
