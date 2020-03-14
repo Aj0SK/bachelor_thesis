@@ -6,8 +6,6 @@
 # differences.
 
 # here we want to chose some part of signal that is not close to beg or end of read
-fromSignal, toSignal = 19000, 21000
-fromSignalFake, toSignalFake = 20000, 22000
 refFilePath = "../../data/sapIngB1.fa"
 sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1000_ch_43_strand.fast5"
 sampleFakeRead = "../../data/albacore-output-neg/magnu_20181218_FAH93149_MN26672_sequencing_run_sapFun_DNase_flush_88184_read_1001_ch_42_strand.fast5"
@@ -27,7 +25,7 @@ import numpy as np
 import mappy as mp
 from pyfaidx import Fasta
 from nadavca.dtw import KmerModel
-from signalHelper import getGlobalLevels, stringToSignal, getSignalFromRead, getSeqfromRead, stringAllignment
+from signalHelper import getLevels, stringToSignal, getSignalFromRead, getSeqfromRead, stringAllignment
 
 import matplotlib
 # this allows us to see graphs through ssh
@@ -38,10 +36,10 @@ plt.close('all')
 def globalNormalize(signal):
     newSignal = copy.deepcopy(signal)
     for i in range(len(signal)):
-        winBeg = max(0, i-winSize)
-        winEnd = min(len(signal), i+winSize)
+        winBeg = max(0, i-winSize//2)
+        winEnd = min(len(signal), i+winSize//2)
         newSignal[i] -= np.median(signal[winBeg:winEnd])
-        newSignal[i] /= np.std(signal[winBeg:winEnd]-np.median(signal[winBeg:winEnd]), dtype="float64")
+        newSignal[i] /= np.std(signal[winBeg:winEnd]-np.median(signal[winBeg:winEnd]), dtype="float64") + 0.000000001
         newSignal[i] = min(newSignal[i], maxSignal)
         newSignal[i] = max(newSignal[i], minSignal)
     return newSignal
@@ -59,9 +57,7 @@ assert sequenceIndex, "failed to load/build reference index"
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 # read fastq from file
-fastq, basecallTable = getSeqfromRead(sampleRead)
-# read second line and decode it into string from bytes
-fastqSeq = fastq.splitlines()[1].decode()
+fastqSeq, basecallTable = getSeqfromRead(sampleRead)
 
 # load original signal from read
 originalSignal = getSignalFromRead(sampleRead)
@@ -70,11 +66,11 @@ originalSignal = np.array(originalSignal, dtype = float)
 hits = list(sequenceIndex.map(fastqSeq))
 assert len(hits) == 1, "Too many hits"
 signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
-print("Of total len {0} matched is [{1} {2}]".format(len(fastqSeq), hits[0].q_st, hits[0].q_en))
+print("Of total len {0}, matched is [{1} {2}]".format(len(fastqSeq), hits[0].q_st, hits[0].q_en))
 
 artifSignal = np.array(stringToSignal(signalFrTo, mod, repeatSignal = repeatSignal), float)
 
-# load original signal from read
+# load fake signal from read
 fakeSignal = getSignalFromRead(sampleFakeRead)
 fakeSignal = np.array(fakeSignal, dtype = float)
 
@@ -86,11 +82,32 @@ artifSignal = globalNormalize(artifSignal)
 originalSignal = globalNormalize(originalSignal)
 fakeSignal = globalNormalize(fakeSignal)
 
-artifString = "".join(getGlobalLevels(artifSignal, kernelLen = kernelLen, winSize = winSize, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal, shift=winSize))
-originalString = "".join(getGlobalLevels(originalSignal, kernelLen = kernelLen, winSize = winSize, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal, shift=winSize))
-fakeString = "".join(getGlobalLevels(fakeSignal, kernelLen = kernelLen, winSize = winSize, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal, shift=winSize))
+artifString = "".join(getLevels(artifSignal,
+                                kernelLen = kernelLen,
+                                winSize = winSize,
+                                numLevels = numLevels,
+                                minSignal = minSignal,
+                                maxSignal = maxSignal,
+                                shift = winSize, normalize = False))
+originalString = "".join(getLevels(originalSignal,
+                                   kernelLen = kernelLen,
+                                   winSize = winSize,
+                                   numLevels = numLevels,
+                                   minSignal = minSignal,
+                                   maxSignal = maxSignal,
+                                   shift = winSize, normalize = False))
+fakeString = "".join(getLevels(fakeSignal,
+                               kernelLen = kernelLen,
+                               winSize = winSize,
+                               numLevels = numLevels,
+                               minSignal = minSignal,
+                               maxSignal = maxSignal,
+                               shift = winSize, normalize = False))
 
 allig1, allig2, = stringAllignment(originalString, artifString)
 allig3, allig4, = stringAllignment(fakeString, artifString)
 
 print("\n{0} vs {1}".format(len(allig1), len(allig3)))
+
+print(allig1[:500])
+print(allig2[:500])

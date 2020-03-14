@@ -6,15 +6,16 @@
 # differences.
 
 # here we want to chose some part of signal that is not close to beg or end of read
-fromSignal, toSignal = 19000, 21000
-fromSignalFake, toSignalFake = 15000, 17000
+fromSignal, toSignal = 20000, 24000
+fromSignalFake, toSignalFake = 15000, 19000
 refFilePath = "../../data/sapIngB1.fa"
-sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1000_ch_43_strand.fast5"
+sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1007_ch_424_strand.fast5"
+#sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1000_ch_43_strand.fast5"
 sampleFakeRead = "../../data/albacore-output-neg/magnu_20181218_FAH93149_MN26672_sequencing_run_sapFun_DNase_flush_88184_read_1001_ch_42_strand.fast5"
 
 kmerModelFilePath = "../../data/kmer_model.hdf5"
 # number of levels we use
-numLevels = 6
+numLevels = 4
 minSignal, maxSignal = -2.0, 2.0
 repeatSignal = 8
 kernelLen = 7
@@ -48,9 +49,8 @@ assert sequenceIndex, "failed to load/build reference index"
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 # read fastq from file
-fastq, basecallTable = getSeqfromRead(sampleRead)
+fastqSeq, basecallTable = getSeqfromRead(sampleRead)
 # read second line and decode it into string from bytes
-fastqSeq = fastq.splitlines()[1].decode()
 
 # load original signal from read
 originalSignal = getSignalFromRead(sampleRead)
@@ -71,6 +71,11 @@ signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
 # create artificial signal
 artifSignal = np.array(stringToSignal(signalFrTo, mod, repeatSignal = repeatSignal), float)
 originalSignal = originalSignal[fromSignal:toSignal]
+
+# load some fake signal
+fakeSignal = getSignalFromRead(sampleFakeRead)
+fakeSignal = np.array(fakeSignal, dtype = float)
+fakeSignal = fakeSignal[fromSignalFake:toSignalFake]
 
 ################################################################################
 # modify original signal
@@ -94,10 +99,6 @@ levelF = getLevels(fakeSignal, kernelLen = kernelLen, numLevels = numLevels, min
 counterF = len([i for i in levelA if i in levelF])
 print("Total fake match rate with original signal {0}/{1}".format(counterF, len(levelA)))
 
-#print(levelO)
-#print(levelE)
-#print(levelF)
-
 ################################################################################
 #
 
@@ -120,6 +121,7 @@ print("Jumps {0}/{1}".format(counter, len(levelF)*kernelLen))
 ################################################################################
 #
 
+'''
 levelStringStarts = {}
 for winBeg in range(0, originalSignal.shape[0]-winSize, 100):
         winEnd = winBeg + winSize
@@ -165,7 +167,8 @@ for winBeg in range(0, artifSignal.shape[0]-winSize, 1):
             signalFrTo2 = seqSignalCor(winBeg, winEnd, basecallTable2)
             print(signalFrTo1)
             print(signalFrTo2)
-        
+
+'''
         
 
 ################################################################################
@@ -173,7 +176,6 @@ for winBeg in range(0, artifSignal.shape[0]-winSize, 1):
 
 #normalizeWindow(originalSignal)
 #normalizeWindow(artifSignal)
-#normalizeWindow(procSignal)
 #normalizeWindow(fakeSignal)
 
 o = np.linspace(0, originalSignal.shape[0], originalSignal.shape[0])
@@ -211,10 +213,6 @@ axartif = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
 sOrig = Slider(axorig, 'Orig', 0, toSignal-fromSignal-winSize, valinit=0, valstep=1)
 sArtif = Slider(axartif, 'Artif', 0, artifSignal.shape[0]-winSize, valinit=0, valstep=1)
 
-from pykalman import KalmanFilter
-
-kf = KalmanFilter(initial_state_mean=0, n_dim_obs=1)
-
 def update(val):
     newBeg1, newBeg2 = int(sOrig.val), int(sArtif.val)
     w1 = copy.deepcopy(originalSignal[newBeg1:(newBeg1+winSize)])
@@ -223,9 +221,8 @@ def update(val):
     w4 = copy.deepcopy(w1)
     normalizeWindow(w1)
     normalizeWindow(w2)
-    normalizeWindow(w3, subtract = 0.4)
-    normalizeWindow(w4, subtract = -0.4)
-    #w1 = kf.smooth(w1)[0].flatten()
+    normalizeWindow(w3, shift = 0.4)
+    normalizeWindow(w4, shift = -0.4)
     l1.set_ydata(w1)
     l2.set_ydata(w2)
     levelS1 = getLevelString(w1, numLevels = numLevels)

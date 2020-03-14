@@ -25,6 +25,15 @@ import h5py
 #from pykalman import KalmanFilter
 #kf = KalmanFilter(initial_state_mean=0, n_dim_obs=1)
 
+import os
+import glob
+
+# get reads from folder
+def getReadsInFolder(path, minSize = 1000000):
+    fileNames = glob.glob(path + '/*.fast5', recursive=True)
+    fileNames = [i for i in fileNames if os.path.getsize(i) > minSize]
+    return fileNames
+
 # return basecalling info from read
 def getSeqfromRead(filename):
     sequenceFile = h5py.File(filename, 'r')
@@ -46,11 +55,12 @@ def stringToSignal(ref_str, mod, repeatSignal = defaultRepeatSignal):
     signal = [x for x in signal for i in range(repeatSignal)]
     return signal
 
-def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, subtract = 0):
+def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 0):
     w -= np.median(w)
     w /= np.std(w, dtype="float64") + 0.0000000001
+    #w += np.random.normal(0, 0.20 , w.shape[0])
     #w /= np.median(np.abs(w)) + 0.0000000001
-    w -= subtract
+    w += shift
     w[w<minSignal] = minSignal
     w[w>maxSignal] = maxSignal
     #w = medfilt(w, kernel_size = 7)
@@ -69,7 +79,7 @@ def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal
 
 # cuts signal vertically into windows, normalizes windows and then cuts them
 # horizontally into levels
-def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 1):
+def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 1, normalize = True):
     results = []
     
     # cut into windows and for every windows do the normalization and horiz. cutting
@@ -93,7 +103,7 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
             showGraph -= 1
         '''
         if len(outString) < kernelLen:
-            print("*", end = " ")
+            #print("*", end = " ")
             continue
         results.append(outString[:kernelLen])
     return results
@@ -105,20 +115,9 @@ def getGlobalLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSi
     for winBeg in range(0, signal.shape[0]-winSize, shift):
         winEnd = winBeg + winSize
 
-        currWindow = copy.deepcopy(signal[winBeg:winEnd])
-
         # cut into horizontal levels
-        outString = getLevelString(currWindow, minSignal, maxSignal, numLevels)
+        outString = getLevelString(signal[winBeg:winEnd], minSignal, maxSignal, numLevels)
 
-        # in case we want to graph our normalized signal
-        '''
-        global showGraph
-        if showGraph is not 0:
-            print(outString)
-            plt.plot(currWindow)
-            plt.show()
-            showGraph -= 1
-        '''
         if len(outString) < kernelLen:
             print("*", end = " ")
             continue
@@ -153,6 +152,7 @@ def seqSignalCor(fromSignal, toSignal, basecallTable):
             signalFrTo += str(chr(i[0]))
     return signalFrTo
 
+# allign two strings in O(n*m)
 def stringAllignment(str1, str2):
     n, m = len(str1)+1, len(str2)+1
     tab = [[0]*m for _ in range(n)]
