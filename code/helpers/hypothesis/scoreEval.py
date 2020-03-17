@@ -12,6 +12,10 @@ readsNegFilePath = "../../data/neg-basecalled"
 
 maxFakeReads = 6
 
+# what part of signal we take from read
+fromSignal, toSignal = 11000, 60000
+fromSignalFake, toSignalFake = 11000, 60000
+
 # number of levels we use
 numLevels = 7
 minSignal, maxSignal = -2.0, 2.0
@@ -49,7 +53,6 @@ negReads = getReadsInFolder(readsNegFilePath)
 
 ################################################################################
 def examineRead(sampleRead):
-    fromSignal, toSignal = 11000, 60000
     fastqSeq, basecallTable = getSeqfromRead(sampleRead)
     originalSignal = np.array(getSignalFromRead(sampleRead), dtype = float)
     originalSignal = originalSignal[fromSignal:toSignal]
@@ -57,20 +60,22 @@ def examineRead(sampleRead):
     signalFrTo = seqSignalCor(fromSignal, toSignal, basecallTable)
     hits = [i for i in sequenceIndex.map(signalFrTo) if i.q_en - i.q_st > 90*len(signalFrTo)//100]
     if len(hits) != 1:
-        print("Too many hits")
+        print("Too many or too few hits, skipping read.")
         return
-    print("Mapped from {0} to {1}".format(hits[0].q_st, hits[0].q_en))
+    else:
+        print("Mapped from {0} to {1} from {2}".format(hits[0].q_st, hits[0].q_en, len(signalFrTo)))
+
     signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
     artifSignal = np.array(stringToSignal(signalFrTo, mod, repeatSignal = repeatSignal), float)
 
     levelO = getLevels(originalSignal, kernelLen = kernelLen, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal)
-    levelO = set(levelO)
     levelA = getLevels(artifSignal, kernelLen = kernelLen, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal)
+    #levelA = set(levelA)
 
     # count have many strings are shared by artifSignal and originalSignal
-    counterO = len([i for i in levelA if i in levelO])
+    counterO = len([i for i in levelO if i in levelA])
 
-    print("Artificial match rate with original signal {0}/{1}".format(counterO, len(levelO)))
+    print("Artificial match rate with original signal {0}/{1} = {2}".format(counterO, len(levelO), counterO/len(levelO)))
 
     # load original signal from read
     
@@ -79,13 +84,16 @@ def examineRead(sampleRead):
         fakeCounter += 1
         if fakeCounter == maxFakeReads:
             break
-        fromSignalFake, toSignalFake = 11000, 60000
         fakeSignal = getSignalFromRead(j)
         fakeSignal = np.array(fakeSignal, dtype = float)
+        if len(fakeSignal) < toSignalFake-fromSignalFake:
+            print("Skipping read " + j)
+            fakeCounter -= 1
+            continue
         fakeSignal = fakeSignal[fromSignalFake:toSignalFake]
         levelF = getLevels(fakeSignal, kernelLen = kernelLen, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal)
-        counterF = len([i for i in levelA if i in levelF])
-        print("Total fake match rate with original signal {0}/{1}".format(counterF, len(levelF)))
+        counterF = len([i for i in levelF if i in levelA])
+        print("Total fake match rate with original signal {0}/{1} = {2}".format(counterF, len(levelF), counterF/len(levelF)))
 
     return
 

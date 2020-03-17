@@ -28,7 +28,7 @@ import h5py
 import os
 import glob
 
-# get reads from folder
+# get reads from folder with size at least minSize(to ensure longer reads)
 def getReadsInFolder(path, minSize = 1000000):
     fileNames = glob.glob(path + '/*.fast5', recursive=True)
     fileNames = [i for i in fileNames if os.path.getsize(i) > minSize]
@@ -55,11 +55,11 @@ def stringToSignal(ref_str, mod, repeatSignal = defaultRepeatSignal):
     signal = [x for x in signal for i in range(repeatSignal)]
     return signal
 
-def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 0):
+def normalizeWindow(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 0, noise = False):
     w -= np.median(w)
     w /= np.std(w, dtype="float64") + 0.0000000001
-    #w += np.random.normal(0, 0.20 , w.shape[0])
     #w /= np.median(np.abs(w)) + 0.0000000001
+    #if noise == True: w += np.random.normal(0, 0.20 , w.shape[0])
     w += shift
     w[w<minSignal] = minSignal
     w[w>maxSignal] = maxSignal
@@ -145,6 +145,7 @@ class Table_Iterator:
         self.localindex += 1
         return self.table[self.tableindex][4][self.localindex-1], self.table[self.tableindex][1], self.table[self.tableindex][1]
 
+# return nucleotide sequence that corresponds to signal from fromSignal to toSignal
 def seqSignalCor(fromSignal, toSignal, basecallTable):
     signalFrTo = ""
     for i in Table_Iterator(basecallTable):

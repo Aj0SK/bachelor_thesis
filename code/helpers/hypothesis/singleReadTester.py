@@ -5,13 +5,22 @@
 # corresponding reference sequence we can try to create fake signal and see the
 # differences.
 
+import argparse
+
+parser = argparse.ArgumentParser(description='Options usable in this module.')
+parser.add_argument("-p", "--sampleRead", help="location of positive sample read", type=str, default=None)
+parser.add_argument("-n", "--sampleFakeRead", help="location of positive sample read", type=str, default = None)
+args = parser.parse_args()
+
 # here we want to chose some part of signal that is not close to beg or end of read
-fromSignal, toSignal = 20000, 24000
-fromSignalFake, toSignalFake = 15000, 19000
 refFilePath = "../../data/sapIngB1.fa"
-sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1007_ch_424_strand.fast5"
-#sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1000_ch_43_strand.fast5"
-sampleFakeRead = "../../data/albacore-output-neg/magnu_20181218_FAH93149_MN26672_sequencing_run_sapFun_DNase_flush_88184_read_1001_ch_42_strand.fast5"
+sampleRead = args.sampleRead
+sampleFakeRead = args.sampleFakeRead
+
+# here we want to chose some part of signal that is not close to beg or end of read
+fromSignal, toSignal = 20000, 22000
+fromSignalFake, toSignalFake = 15000, 17000
+refFilePath = "../../data/sapIngB1.fa"
 
 kmerModelFilePath = "../../data/kmer_model.hdf5"
 # number of levels we use
@@ -61,11 +70,13 @@ originalSignal = np.array(originalSignal, dtype = float)
 # it in reference
 signalFrTo = seqSignalCor(fromSignal, toSignal, basecallTable)
 
-#print(signalFrTo)
+hits = [i for i in sequenceIndex.map(signalFrTo) if i.q_en - i.q_st > 95*len(signalFrTo)//100]
+if len(hits) != 1:
+    print("Too many or too few hits, skipping read.")
+    exit(0)
+else:
+    print("Mapped from {0} to {1} from {2}".format(hits[0].q_st, hits[0].q_en, len(signalFrTo)))
 
-# try to find string in reference
-hits = list(sequenceIndex.map(signalFrTo))
-assert len(hits) == 1, "Too many hits"
 signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
 
 # create artificial signal
@@ -78,26 +89,24 @@ fakeSignal = np.array(fakeSignal, dtype = float)
 fakeSignal = fakeSignal[fromSignalFake:toSignalFake]
 
 ################################################################################
-# modify original signal
-from scipy.signal import medfilt
+# get levels
 
 levelO = getLevels(originalSignal, kernelLen = kernelLen, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal)
-levelO = set(levelO)
 
 levelA = getLevels(artifSignal, kernelLen = kernelLen, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal)
 
 # count have many strings are shared by fabricatedSignal and original/processedSignal
-counterO = len([i for i in levelA if i in levelO])
-
-print("Artificial match rate with original signal {0}/{1}".format(counterO, len(levelA)))
+counterO = len([i for i in levelO if i in levelA])
+print("Artificial match rate with original signal {0}/{1}".format(counterO, len(levelO)))
 
 # load original signal from read
 fakeSignal = getSignalFromRead(sampleFakeRead)
 fakeSignal = np.array(fakeSignal, dtype = float)
 fakeSignal = fakeSignal[fromSignalFake:toSignalFake]
 levelF = getLevels(fakeSignal, kernelLen = kernelLen, numLevels = numLevels, minSignal = minSignal, maxSignal = maxSignal)
-counterF = len([i for i in levelA if i in levelF])
-print("Total fake match rate with original signal {0}/{1}".format(counterF, len(levelA)))
+
+counterF = len([i for i in levelF if i in levelA])
+print("Total fake match rate with original signal {0}/{1}".format(counterF, len(levelF)))
 
 ################################################################################
 #
@@ -215,32 +224,31 @@ sArtif = Slider(axartif, 'Artif', 0, artifSignal.shape[0]-winSize, valinit=0, va
 
 def update(val):
     newBeg1, newBeg2 = int(sOrig.val), int(sArtif.val)
-    w1 = copy.deepcopy(originalSignal[newBeg1:(newBeg1+winSize)])
-    w2 = copy.deepcopy(artifSignal[newBeg2:(newBeg2+winSize)])
-    w3 = copy.deepcopy(w1)
-    w4 = copy.deepcopy(w1)
-    normalizeWindow(w1)
-    normalizeWindow(w2)
-    normalizeWindow(w3, shift = 0.4)
-    normalizeWindow(w4, shift = -0.4)
-    l1.set_ydata(w1)
-    l2.set_ydata(w2)
-    levelS1 = getLevelString(w1, numLevels = numLevels)
-    levelS2 = getLevelString(w2, numLevels = numLevels)
-    levelS3 = getLevelString(w3, numLevels = numLevels)
-    levelS4 = getLevelString(w4, numLevels = numLevels)
-    #if len(levelS1) >= kernelLen:
-    #    levelS1 = levelS1[:kernelLen]
-    #if len(levelS2) >= kernelLen:
-    #    levelS2 = levelS2[:kernelLen]
-    #
-    print(levelS1)
-    print(levelS2)
-    print(levelS3)
-    print(levelS4)
-    print("1. distance is {0}".format(edlib.align(levelS1, levelS2)["editDistance"]))
-    print("2. distance is {0}".format(edlib.align(levelS3, levelS2)["editDistance"]))
-    print("3. distance is {0}".format(edlib.align(levelS4, levelS2)["editDistance"]))
+    origW = copy.deepcopy(originalSignal[newBeg1:(newBeg1+winSize)])
+    artifW = copy.deepcopy(artifSignal[newBeg2:(newBeg2+winSize)])
+    shiftOrigUp = copy.deepcopy(origW)
+    shiftOrigDw = copy.deepcopy(origW)
+    normalizeWindow(origW)
+    normalizeWindow(artifW)
+    normalizeWindow(shiftOrigUp, shift = 0.4)
+    normalizeWindow(shiftOrigDw, shift = -0.4)
+    l1.set_ydata(origW)
+    l2.set_ydata(artifW)
+    levelS1 = getLevelString(origW, numLevels = numLevels)
+    levelS2 = getLevelString(artifW, numLevels = numLevels)
+    levelS3 = getLevelString(shiftOrigUp, numLevels = numLevels)
+    levelS4 = getLevelString(shiftOrigDw, numLevels = numLevels)
+    # orig
+    print("O:" + levelS1)
+    # artif
+    print("A:" + levelS2)
+    # shift up
+    print("U:" + levelS3)
+    # shift down
+    print("D:" + levelS4)
+    print("Distance of artif from orig is {0}".format(edlib.align(levelS1, levelS2)["editDistance"]))
+    print("Distance of shiftedUp from orig is {0}".format(edlib.align(levelS3, levelS2)["editDistance"]))
+    print("Distance of shiftedDw from orig is {0}".format(edlib.align(levelS4, levelS2)["editDistance"]))
     fig.canvas.draw_idle()
 
 sOrig.on_changed(update)
