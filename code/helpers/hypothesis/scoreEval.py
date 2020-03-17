@@ -32,11 +32,11 @@ from pyfaidx import Fasta
 from nadavca.dtw import KmerModel
 from signalHelper import getLevels, getLevelString, stringToSignal, normalizeWindow, getSignalFromRead, getSeqfromRead, Table_Iterator, seqSignalCor, getReadsInFolder
 
-import matplotlib
+#import matplotlib
 # this allows us to see graphs through ssh
-matplotlib.use('tkagg')
-import matplotlib.pyplot as plt
-plt.close('all')
+#matplotlib.use('tkagg')
+#import matplotlib.pyplot as plt
+#plt.close('all')
 
 ################################################################################
 # load reference sequence and create index for fast mapping
