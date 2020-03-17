@@ -70,13 +70,9 @@ fastqSeq, basecallTable = getSeqfromRead(sampleRead)
 originalSignal = getSignalFromRead(sampleRead)
 originalSignal = np.array(originalSignal, dtype = float)
 
-hits = [i for i in sequenceIndex.map(fastqSeq) if i.q_en - i.q_st > 40*len(fastqSeq)//100]
-print(hits[0].q_st)
-print(hits[0].q_en)
-print(len(fastqSeq))
+hits = [i for i in sequenceIndex.map(fastqSeq) if i.q_en - i.q_st > 20*len(fastqSeq)//100]
 if len(hits) != 1:
-    print(len(hits))
-    print("Bad number of hits")
+    print("Bad number of hits: {0}".format(len(hits)))
     exit(0)
 signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
 print("Of total len {0}, matched is [{1} {2}]".format(len(fastqSeq), hits[0].q_st, hits[0].q_en))
@@ -87,9 +83,9 @@ artifSignal = np.array(stringToSignal(signalFrTo, mod, repeatSignal = repeatSign
 fakeSignal = getSignalFromRead(sampleFakeRead)
 fakeSignal = np.array(fakeSignal, dtype = float)
 
-artifSignal = artifSignal[:15000]
-originalSignal = originalSignal[:15000]
-fakeSignal = fakeSignal[:15000]
+artifSignal = artifSignal[:20000]
+originalSignal = originalSignal[:20000]
+fakeSignal = fakeSignal[:20000]
 
 artifSignal = globalNormalize(artifSignal)
 originalSignal = globalNormalize(originalSignal)
