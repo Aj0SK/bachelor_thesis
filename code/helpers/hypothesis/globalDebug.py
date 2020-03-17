@@ -5,10 +5,17 @@
 # corresponding reference sequence we can try to create fake signal and see the
 # differences.
 
+import argparse
+
+parser = argparse.ArgumentParser(description='Options usable in this module.')
+parser.add_argument("-p", "--sampleRead", help="location of positive sample read", type=str, default=None)
+parser.add_argument("-n", "--sampleFakeRead", help="location of positive sample read", type=str, default = None)
+args = parser.parse_args()
+
 # here we want to chose some part of signal that is not close to beg or end of read
 refFilePath = "../../data/sapIngB1.fa"
-sampleRead = "../../data/albacore-output-pos/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1000_ch_43_strand.fast5"
-sampleFakeRead = "../../data/albacore-output-neg/magnu_20181218_FAH93149_MN26672_sequencing_run_sapFun_DNase_flush_88184_read_1001_ch_42_strand.fast5"
+sampleRead = args.sampleRead
+sampleFakeRead = args.sampleFakeRead
 
 kmerModelFilePath = "../../data/kmer_model.hdf5"
 # number of levels we use
@@ -63,8 +70,14 @@ fastqSeq, basecallTable = getSeqfromRead(sampleRead)
 originalSignal = getSignalFromRead(sampleRead)
 originalSignal = np.array(originalSignal, dtype = float)
 
-hits = list(sequenceIndex.map(fastqSeq))
-assert len(hits) == 1, "Too many hits"
+hits = [i for i in sequenceIndex.map(fastqSeq) if i.q_en - i.q_st > 40*len(fastqSeq)//100]
+print(hits[0].q_st)
+print(hits[0].q_en)
+print(len(fastqSeq))
+if len(hits) != 1:
+    print(len(hits))
+    print("Bad number of hits")
+    exit(0)
 signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
 print("Of total len {0}, matched is [{1} {2}]".format(len(fastqSeq), hits[0].q_st, hits[0].q_en))
 
@@ -74,9 +87,9 @@ artifSignal = np.array(stringToSignal(signalFrTo, mod, repeatSignal = repeatSign
 fakeSignal = getSignalFromRead(sampleFakeRead)
 fakeSignal = np.array(fakeSignal, dtype = float)
 
-#artifSignal = artifSignal[:15000]
-#originalSignal = originalSignal[:15000]
-#fakeSignal = fakeSignal[:15000]
+artifSignal = artifSignal[:15000]
+originalSignal = originalSignal[:15000]
+fakeSignal = fakeSignal[:15000]
 
 artifSignal = globalNormalize(artifSignal)
 originalSignal = globalNormalize(originalSignal)
