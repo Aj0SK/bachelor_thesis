@@ -77,6 +77,25 @@ def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal
     outString = "".join([k for k, g in groupby(outString)])
     return outString
 
+'''
+def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, numLevels = defaultNumberOfLevels, borderArea=defaultBorderArea):
+    outString = ""
+    levelSize = (maxSignal-minSignal)/numLevels
+    borders = [i for i in np.arange(minSignal+levelSize, maxSignal, levelSize)]
+    for i in w:
+        for j in range(len(borders)):
+            if abs(borders[j]-i) < borderArea:
+                outString += chr(ord('a')+numLevels+j)
+                break
+        else:
+            myLevel = int((i-minSignal)/levelSize)
+            outString += chr(ord('a')+myLevel)
+            continue
+
+    outString = "".join([k for k, g in groupby(outString)])
+    return outString
+'''
+
 # cuts signal vertically into windows, normalizes windows and then cuts them
 # horizontally into levels
 def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 1, normalize = True):

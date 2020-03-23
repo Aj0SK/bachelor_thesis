@@ -65,6 +65,9 @@ def examineRead(sampleRead):
     else:
         print("Mapped from {0} to {1} from {2}".format(hits[0].q_st, hits[0].q_en, len(signalFrTo)))
 
+    if hits[0].strand == -1:
+        print("Reverse strand!")
+        return
     signalFrTo = str(ref[hits[0].ctg][hits[0].r_st:hits[0].r_en])
     artifSignal = np.array(stringToSignal(signalFrTo, mod, repeatSignal = repeatSignal), float)
 
