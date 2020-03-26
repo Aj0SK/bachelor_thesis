@@ -41,6 +41,14 @@ def getSeqfromRead(filename):
     basecallEventTable = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Events'][()]
     return seq, basecallEventTable
 
+# return nucleotide sequence that corresponds to signal from fromSignal to toSignal
+def seqSignalCor(fromSignal, toSignal, basecallTable):
+    signalFrTo = ""
+    for i in Table_Iterator(basecallTable):
+        if i[1] >= fromSignal and i[1] <= toSignal:
+            signalFrTo += str(chr(i[0]))
+    return signalFrTo
+
 # return signal as list from single read
 def getSignalFromRead(filename):
     readFile = h5py.File(filename, 'r')
@@ -106,8 +114,11 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
         winEnd = winBeg + winSize
 
         # normalize window
-        currWindow = copy.deepcopy(signal[winBeg:winEnd])
-        normalizeWindow(currWindow, minSignal, maxSignal)
+        if normalize:
+            currWindow = copy.deepcopy(signal[winBeg:winEnd])
+            normalizeWindow(currWindow, minSignal, maxSignal)
+        else:
+            currWindow = signal[winBeg:winEnd]
 
         # cut into horizontal levels
         outString = getLevelString(currWindow, minSignal, maxSignal, numLevels)
@@ -123,22 +134,6 @@ def getLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, nu
         '''
         if len(outString) < kernelLen:
             #print("*", end = " ")
-            continue
-        results.append(outString[:kernelLen])
-    return results
-
-def getGlobalLevels(signal, kernelLen = defaultKernelLen, winSize = defaultWinSize, numLevels = defaultNumberOfLevels, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, shift = 1):
-    results = []
-    
-    # cut into windows and for every windows do the normalization and horiz. cutting
-    for winBeg in range(0, signal.shape[0]-winSize, shift):
-        winEnd = winBeg + winSize
-
-        # cut into horizontal levels
-        outString = getLevelString(signal[winBeg:winEnd], minSignal, maxSignal, numLevels)
-
-        if len(outString) < kernelLen:
-            print("*", end = " ")
             continue
         results.append(outString[:kernelLen])
     return results
@@ -163,14 +158,6 @@ class Table_Iterator:
         self.totalindex += 1
         self.localindex += 1
         return self.table[self.tableindex][4][self.localindex-1], self.table[self.tableindex][1], self.table[self.tableindex][1]
-
-# return nucleotide sequence that corresponds to signal from fromSignal to toSignal
-def seqSignalCor(fromSignal, toSignal, basecallTable):
-    signalFrTo = ""
-    for i in Table_Iterator(basecallTable):
-        if i[1] >= fromSignal and i[1] <= toSignal:
-            signalFrTo += str(chr(i[0]))
-    return signalFrTo
 
 # allign two strings in O(n*m)
 def stringAllignment(str1, str2):
@@ -202,3 +189,71 @@ def stringAllignment(str1, str2):
             i -= 1
             j -= 1
     return (out1[::-1] , out2[::-1])
+
+
+################################################################################
+
+def computeNorm(signal,start,end):
+    med = np.mean(signal[start:end])
+    std = np.std(signal[start:end]-med)
+    return med,std
+
+def computeString(signal,start,end,shift,scale,levels,overflow=0):
+    min = -2*scale + shift
+    max = 2*scale + shift
+    step = (max-min) / levels
+
+    lev = [min]
+    for i in range(1,levels+1):
+        lev.append(lev[i-1] + step)
+
+    lev[0] = -10000
+    lev[levels] = 10000
+    
+    outString = ""
+    lastlevel = -1
+    for s in signal:
+        if (lastlevel < 0) or (s < lev[lastlevel-1]-overflow*step) or (s > lev[lastlevel]+overflow*step):
+            level = 1
+            while (s > lev[level]):
+                level+=1
+            outString += chr(ord('a')+level-1)
+            lastlevel = level            
+    return outString
+
+
+def smoothSignal(signal,window_len):
+    newsignal = []
+    sum = window_len * signal[0]
+    for i in range(0,len(signal)):
+        if (i<window_len):
+            sum -= signal[0]
+        else:
+            sum -= signal[i-window_len]
+        sum += signal[i]
+        newsignal.append(sum/window_len)
+
+    return newsignal;
+
+def buildDictionary(string,k):
+    dict = {}
+    for i in range(0,len(string)-k+1):
+        kmer = string[i:i+k]
+        if kmer not in dict:
+            dict[kmer] = 0
+        dict[kmer] += 1
+
+    return dict;
+
+def overlappingKmers(string1,string2,k):
+    dict1 = buildDictionary(string1,k)
+    dict2 = buildDictionary(string2,k)
+    intersect = 0
+    for kmer in dict1:
+        if kmer in dict2:
+            intersect += 1
+    return intersect
+            
+    
+
+##################################
