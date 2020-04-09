@@ -1,95 +1,45 @@
+import plotly.express as px
+
 import sys
 import numpy as np
 import mappy as mp
 from nadavca.dtw import KmerModel
 from pyfaidx import Fasta
+import random
 from signalHelper import getSeqfromRead, seqSignalCor, getSignalFromRead, stringToSignal, getReadsInFolder
+from signalHelper import computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
 
-def computeNorm(signal,start,end):
-    med = np.mean(signal[start:end])
-    std = np.std(signal[start:end]-med)
-    return med,std
-
-def computeString(signal,start,end,shift,scale,levels,overflow=0):
-    min = -2*scale + shift
-    max = 2*scale + shift
-    step = (max-min) / levels
-
-    lev = [min]
-    for i in range(1,levels+1):
-        lev.append(lev[i-1] + step)
-
-    lev[0] = -10000
-    lev[levels] = 10000
-    
-    outString = ""
-    lastlevel = -1
-    for s in signal:
-        if (lastlevel < 0) or (s < lev[lastlevel-1]-overflow*step) or (s > lev[lastlevel]+overflow*step):
-            level = 1
-            while (s > lev[level]):
-                level+=1
-            outString += chr(ord('a')+level-1)
-            lastlevel = level            
-    return outString
-
-
-def smoothSignal(signal,window_len):
-    newsignal = []
-    sum = window_len * signal[0]
-    for i in range(0,len(signal)):
-        if (i<window_len):
-            sum -= signal[0]
-        else:
-            sum -= signal[i-window_len]
-        sum += signal[i]
-        newsignal.append(sum/window_len)
-
-    return newsignal;
-
-def buildDictionary(string,k):
-    dict = {}
-    for i in range(0,len(string)-k+1):
-        kmer = string[i:i+k]
-        if kmer not in dict:
-            dict[kmer] = 0
-        dict[kmer] += 1
-
-    return dict;
-
-def overlappingKmers(string1,string2,k):
-    dict1 = buildDictionary(string1,k)
-    dict2 = buildDictionary(string2,k)
-    intersect = 0
-    for kmer in dict1:
-        if kmer in dict2:
-            intersect += 1
-    return intersect
-            
-    
+import matplotlib.pyplot as plt
 
 ##################################
 
 refFile = "../../data/sapIngB1.fa"
 readsPosFilePath = "../../data/pos-basecalled"
+readsNegFilePath = "../../data/neg-basecalled"
 kmerModelFilePath = "../../data/kmer_model.hdf5"
 
-maxTests = 150
+maxTests = 500
 
-levels = 5
-repeatSignal = 8
+levels = 9
+repeatSignal = 10
+
+kmerLen = 19
 
 signalFrom = 6000#int(sys.argv[3])
-signalTo = 10000#int(sys.argv[4])
+signalTo = 14000#int(sys.argv[4])
 
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 posReads = getReadsInFolder(readsPosFilePath, minSize = 0)
+negReads = getReadsInFolder(readsNegFilePath, minSize = 1000000)
 
-totalG = [0]*9
-totalF = [0]*9
-badClas = [0]*9
+totalG = 0
+totalF = 0
+G, F = [], []
+badClas = 0
 
-print(len(posReads))
+successfulReads = 0
+
+rat = []
 
 for readFile in posReads[:min(len(posReads), maxTests)]:
     print(readFile)
@@ -111,6 +61,7 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
         print("Too many or too few hits, skipping read.")
         continue
     hit = hits[0]
+    successfulReads += 1
 
     if (hit.strand == 1):
         refSeq=str(Fasta(refFile)[hit.ctg][hit.r_st:hit.r_en])
@@ -123,10 +74,14 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
                     float)
     fakeSignal = np.array(stringToSignal(fakeSeq, mod, repeatSignal = repeatSignal),
                     float)
+    #fakeSignal = []
+    #while len(fakeSignal) <= signalTo:
+    #    fakeSignal = np.array(getSignalFromRead(negReads[random.randint(0, len(negReads)-1)]), dtype=float)
+    #fakeSignal = fakeSignal[signalFrom:signalTo]
     
-    print(readSeq)
-    print(refSeq)
-    print(fakeSeq)
+    #print(readSeq)
+    #print(refSeq)
+    #print(fakeSeq)
     # refSeq - part of the reference sequence corresponding to the read segment
 
     readSignalSm = smoothSignal(readSignal,5)
@@ -165,26 +120,34 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     print("Dlzka:",len(readString2Sm))
     print("read vs. reference")
     '''
-    for i in [3,5,7,9,11,13,15,17,19]:
-        x = overlappingKmers(readString2Sm,refString2Sm,i)
-        totalG[((i-1)//2)-1] += x
-        print(i,":",x,end="\t")
-    print("")
-
-    print("read vs. fake")
-    for i in [3,5,7,9,11,13,15,17,19]:
-        x = overlappingKmers(readString2Sm,fakeString2Sm,i)
-        totalF[((i-1)//2)-1] += x
-        print(i,":",x,end="\t")
-    print("")
+    x = overlappingKmers(readString2Sm,refString2Sm,kmerLen)
+    totalG += x
+    print(kmerLen,":",x,end="\n")
+    
+    y = overlappingKmers(readString2Sm,fakeString2Sm,kmerLen)
+    totalF += y
+    print(kmerLen,":",y,end="\n")
+    
+    G.append(x)
+    F.append(y)
     
     print(totalG)
     print(totalF)
-    for i in [3,5,7,9,11,13,15,17,19]:
-        x = overlappingKmers(readString2Sm,refString2Sm,i)
-        y = overlappingKmers(readString2Sm,fakeString2Sm,i)
-        if x<y:
-            badClas[((i-1)//2)-1] += 1
+    if x<y:
+        badClas += 1
     
-    print([totalG[i]/totalF[i] for i in range(len(totalG))])
-    print(badClas)
+    if x != 0 and ((y/x)<2.0):
+        rat.append(100.0*y/x)
+    
+    print(totalG/totalF)
+    print("{0}/{1}".format(badClas, successfulReads))
+
+print("Skipped {0} out of {1}".format(maxTests-successfulReads, maxTests))
+
+rat = np.array(rat)
+fig, axs = plt.subplots()
+
+# We can set the number of bins with the `bins` kwarg
+axs.hist(rat, bins=200)
+
+plt.show()

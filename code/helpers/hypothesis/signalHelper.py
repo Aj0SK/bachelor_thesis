@@ -257,3 +257,16 @@ def overlappingKmers(string1,string2,k):
     
 
 ##################################
+
+from random import randint
+
+def produceRandom(size, levels):
+    last = -1
+    outStr = ""
+    for i in range(size):
+        g = last
+        while g == last:
+            g = randint(0, levels-1)
+        outStr += chr(ord('a')+g)
+        last = g
+    return outStr
