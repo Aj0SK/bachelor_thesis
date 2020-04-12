@@ -1,11 +1,11 @@
-import plotly.express as px
-
 import sys
 import numpy as np
 import mappy as mp
 from nadavca.dtw import KmerModel
 from pyfaidx import Fasta
 import random
+
+sys.path.append("../")
 from signalHelper import getSeqfromRead, seqSignalCor, getSignalFromRead, stringToSignal, getReadsInFolder
 from signalHelper import computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
 
@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 
 ##################################
 
-refFile = "../../data/sapIngB1.fa"
-readsPosFilePath = "../../data/pos-basecalled"
-readsNegFilePath = "../../data/neg-basecalled"
-kmerModelFilePath = "../../data/kmer_model.hdf5"
+refFile = "../../../data/sapIngB1.fa"
+readsPosFilePath = "../../../data/pos-basecalled"
+readsNegFilePath = "../../../data/neg-basecalled"
+kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
 maxTests = 500
 
@@ -25,8 +25,8 @@ repeatSignal = 10
 
 kmerLen = 19
 
-signalFrom = 6000#int(sys.argv[3])
-signalTo = 14000#int(sys.argv[4])
+signalFrom = 5000#int(sys.argv[3])
+signalTo = 20000#int(sys.argv[4])
 
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 posReads = getReadsInFolder(readsPosFilePath, minSize = 0)
@@ -41,6 +41,10 @@ successfulReads = 0
 
 rat = []
 
+### get corresponding part of the reference using minimap2
+referenceIdx = mp.Aligner(refFile)
+assert referenceIdx, "failed to load/build reference index"
+
 for readFile in posReads[:min(len(posReads), maxTests)]:
     print(readFile)
     ### read read
@@ -51,9 +55,6 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     # readSeq - sequence cut out from read
     # readSignal - corresponding signal section
 
-    ### get corresponding part of the reference using minimap2
-    referenceIdx = mp.Aligner(refFile)
-    assert referenceIdx, "failed to load/build reference index"
     # require a single hit with at least 95% coverage of length
     hits = [aln for aln in referenceIdx.map(readSeq)
             if aln.q_en - aln.q_st > 0.95*len(readSeq)]
@@ -140,7 +141,7 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
         rat.append(100.0*y/x)
     
     print(totalG/totalF)
-    print("{0}/{1}".format(badClas, successfulReads))
+    print("Unsuccessful reads to total reads: {0}/{1}".format(badClas, successfulReads))
 
 print("Skipped {0} out of {1}".format(maxTests-successfulReads, maxTests))
 

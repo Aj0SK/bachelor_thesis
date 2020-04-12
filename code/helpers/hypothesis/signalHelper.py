@@ -39,6 +39,7 @@ def getSeqfromRead(filename):
     sequenceFile = h5py.File(filename, 'r')
     seq = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Fastq'][()]
     basecallEventTable = sequenceFile['/Analyses/Basecall_1D_000/BaseCalled_template/Events'][()]
+    seq = seq.decode('utf-8').split('\n')[1]
     return seq, basecallEventTable
 
 # return nucleotide sequence that corresponds to signal from fromSignal to toSignal

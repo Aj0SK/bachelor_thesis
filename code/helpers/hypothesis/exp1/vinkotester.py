@@ -79,7 +79,7 @@ signalTo = int(sys.argv[4])
 levels=6
 
 repeatSignal = 10
-kmerModelFilePath = "../../data/kmer_model.hdf5"
+kmerModelFilePath = "../../../data/kmer_model.hdf5"
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 
