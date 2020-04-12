@@ -8,12 +8,14 @@ research in this area.
 
 \section{DNA sequencing}
 
-One of the goals of biology is to obtain DNA sequence (sequence of A, C, G, T)
-from some biological sample. One of the devices that serve this purpose is MinION\cite{lu2016oxford}.
-MinION is a small, cheap and versatile DNA sequencer. This sequencer consists of a surface
+One of the goals of biology is ability to obtain DNA sequence of the organism. DNA sequence
+is sequence of nucleotides. There are four types of nucleotides: adenin, citozin,
+guanin and timin. From now, we will for simplicity assume that DNA sequence is
+string of A, C, G, T. The process of obtaining DNA sequence is called DNA sequencing.
+One of the devices that serve this purpose is MinION\cite{lu2016oxford}. MinION is a small, cheap and
+versatile DNA sequencer. This sequencer consists of a active surface
 filled with pores. Pore is a small hole with electric current passing through it. 
-One drawback of the MinION is that it does not produce a nucleotide sequence directly.
-Instead, as the molecule of DNA is passing through the pore of MinION, we can observe
+As the molecule of DNA is passing through the pore of MinION, we can observe
 changes in the flow of an electric current passing through the pore. This electric
 current called signal is measured over discrete time. The example of this signal
 is on the figure \ref{obr:minIonCurrent}.
@@ -37,8 +39,9 @@ is quite slow and resource-intensive.
 
 Before sequencing, it is convenient to broke down whole DNA molecule into many
 shorter parts. We then sequence shorter DNA molecules parallelly. Whole signal
-of one shorter DNA molecule is called read. MinION has one special ability that
-helps us in certain scenarios. It can reject DNA molecule that is currently passing
+of one shorter DNA molecule is called read.
+MinION has one special ability that helps us in certain scenarios. It can reject
+DNA molecule that is currently passing
 through the pore. It effectively reverses the molecule’s direction and throws it away.
 Selective sequencing is the idea that based on the incoming signal, we can tell
 if we are interested in sequencing current DNA molecule and can decide if we want
