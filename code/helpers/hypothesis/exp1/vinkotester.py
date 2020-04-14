@@ -3,6 +3,8 @@ import numpy as np
 import mappy as mp
 from nadavca.dtw import KmerModel
 from pyfaidx import Fasta
+
+sys.path.append("../")
 from signalHelper import getSeqfromRead, seqSignalCor, getSignalFromRead, stringToSignal
 
 def computeNorm(signal,start,end):

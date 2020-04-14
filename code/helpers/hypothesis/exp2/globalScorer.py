@@ -23,7 +23,7 @@ maxTests = 500
 levels = 9
 repeatSignal = 10
 
-kmerLen = 19
+kmerLen = 21
 
 signalFrom = 5000#int(sys.argv[3])
 signalTo = 20000#int(sys.argv[4])
@@ -48,7 +48,11 @@ assert referenceIdx, "failed to load/build reference index"
 for readFile in posReads[:min(len(posReads), maxTests)]:
     print(readFile)
     ### read read
-    readFastq, readEvents = getSeqfromRead(readFile)
+    try:
+        readFastq, readEvents = getSeqfromRead(readFile)
+    except:
+        print("Bad read!")
+        continue
     readSeq = seqSignalCor(signalFrom, signalTo, readEvents)
     readSignal = np.array(getSignalFromRead(readFile)[signalFrom:signalTo],
                              dtype=float)
@@ -73,12 +77,12 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
 
     refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal = repeatSignal),
                     float)
-    fakeSignal = np.array(stringToSignal(fakeSeq, mod, repeatSignal = repeatSignal),
-                    float)
-    #fakeSignal = []
-    #while len(fakeSignal) <= signalTo:
-    #    fakeSignal = np.array(getSignalFromRead(negReads[random.randint(0, len(negReads)-1)]), dtype=float)
-    #fakeSignal = fakeSignal[signalFrom:signalTo]
+    #fakeSignal = np.array(stringToSignal(fakeSeq, mod, repeatSignal = repeatSignal),
+    #                float)
+    fakeSignal = []
+    while len(fakeSignal) <= signalTo:
+        fakeSignal = np.array(getSignalFromRead(negReads[random.randint(0, len(negReads)-1)]), dtype=float)
+    fakeSignal = fakeSignal[signalFrom:signalTo]
     
     #print(readSeq)
     #print(refSeq)
@@ -117,31 +121,32 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     print("readsm-1:",readString2Sm)
     print("refsm-1 :",refString2Sm)
     print("fakesm-1:",fakeString2Sm)
-
-    print("Dlzka:",len(readString2Sm))
-    print("read vs. reference")
     '''
-    x = overlappingKmers(readString2Sm,refString2Sm,kmerLen)
-    totalG += x
-    print(kmerLen,":",x,end="\n")
     
-    y = overlappingKmers(readString2Sm,fakeString2Sm,kmerLen)
-    totalF += y
-    print(kmerLen,":",y,end="\n")
+    goodHits = overlappingKmers(readString2Sm,refString2Sm,kmerLen)
+    totalG += goodHits
+    print(goodHits, end="\n")
     
-    G.append(x)
-    F.append(y)
+    badHits = overlappingKmers(readString2Sm,fakeString2Sm,kmerLen)
+    totalF += badHits
+    print(badHits, end="\n")
+    
+    G.append(goodHits)
+    F.append(badHits)
     
     print(totalG)
     print(totalF)
-    if x<y:
+    if goodHits<badHits:
         badClas += 1
     
-    if x != 0 and ((y/x)<2.0):
-        rat.append(100.0*y/x)
+    if goodHits != 0:
+        if (badHits/goodHits) > 4.0:
+                badHits = 4*goodHits
+        rat.append(100.0*badHits/goodHits)
     
-    print(totalG/totalF)
-    print("Unsuccessful reads to total reads: {0}/{1}".format(badClas, successfulReads))
+    if totalF != 0:
+        print(totalG/totalF)
+    print("Bad classified reads to total reads: {0}/{1}".format(badClas, successfulReads))
 
 print("Skipped {0} out of {1}".format(maxTests-successfulReads, maxTests))
 
