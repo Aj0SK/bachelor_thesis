@@ -19,7 +19,10 @@ smoothParam = 5
 refWindowSize = 1000
 refWindowJump = 700
 hashTablesNum = 20
+hashWinSize = 10000000
+hashWinJump = int(0.95*hashWinSize)
 fromRead, toRead = 5000, 50000
+contigNum = 1
 
 ################################################################################
 
@@ -34,6 +37,33 @@ from nadavca.dtw import KmerModel
 sys.path.append("../")
 from signalHelper import stringToSignal, getLevels, getSignalFromRead, getSeqfromRead, produceRandom
 from signalHelper import computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
+
+def overlap(dict1, dict2):
+    intersect = 0
+    for kmer in dict1:
+        if kmer in dict2:
+            intersect += 1
+    return intersect
+
+def getDictFromSequence(signal, refWindowSize, refWindowJump):
+    dicti = {}
+    for winBeg in range(0, len(signal) - refWindowSize + 1, refWindowJump):
+        winEnd = winBeg + refWindowSize
+        currSignal = np.array(
+            copy.deepcopy(signal[winBeg:winEnd]), float)
+        currSignal = smoothSignal(currSignal, smoothParam)
+        currSignalShift, currSignalScale = computeNorm(currSignal, 0,
+                                                       refWindowSize)
+        currString = computeString(currSignal,
+                                   0,
+                                   refWindowSize,
+                                   currSignalShift,
+                                   currSignalScale,
+                                   levels,
+                                   overflow=overflow)
+        dicti.update(buildDictionary(currString, kmerLength))
+    return dicti
+
 
 ################################################################################
 
@@ -51,30 +81,23 @@ assert len(negFast5) >= negTestCases, "Not enough negative testcases!"
 
 ################################################################################
 
-hashTables = []
+hashTables = {}
 processed = []
-hashWinSize = -1
-hashWinJump = -1
 
 for contig in Fasta(refFilePath):
     processed.append(contig.name)
+    hashTables[contig.name] = []
     contigSignal = stringToSignal(str(contig), mod, repeatSignal=repeatSignal)
-    hashWinSize = len(contigSignal) // hashTablesNum
-    hashWinJump = int(0.95*hashWinSize)
     for i in range(0, len(contigSignal) - hashWinSize + 1, hashWinJump):
-        hashTables.append({})
-        for winBeg in range(i, i+hashWinSize-refWindowSize+1, refWindowJump):
-            winEnd = winBeg + refWindowSize
-            currSignal = copy.deepcopy(contigSignal[winBeg:winEnd])
-            currSignal = np.array(currSignal, float)
-            currSignal = smoothSignal(currSignal, smoothParam)
-            currSignalShift, currSignalScale = computeNorm(currSignal, 0, refWindowSize)
-            currString = computeString(currSignal, 0, refWindowSize, currSignalShift, currSignalScale, levels, overflow=overflow)
-            currDict = buildDictionary(currString, kmerLength)
-            hashTables[-1].update(currDict)
-    break # only process one contig for now
+        hashTables[contig.name].append(
+            getDictFromSequence(contigSignal[i:i+hashWinSize],
+                                refWindowSize,
+                                refWindowJump))
+    contigNum -= 1
+    if contigNum == 0:
+        break
 
-print("Hashtable ready!")
+print("Hashtable readyfor {0} nums!".format(contigNum))
 #######################################
 '''
 print("Overlap is:")
@@ -88,41 +111,20 @@ for i in range(len(hashTables)):
             print("{0} {1}: {2} with sizes {3} {4}".format(i, j, counter, len(hashTables[i]), len(hashTables[j])))
 '''
 
-
-def overlap(dict1, dict2):
-    intersect = 0
-    for kmer in dict1:
-        if kmer in dict2:
-            intersect += 1
-    return intersect
-
+#######################################
 good, bad = 0, 0
 
-def processRead(path, goodTable=-1):
+def processRead(path, contigName, goodTable=-1):
     readSignal = np.array(getSignalFromRead(path), dtype=float)
     readSignal = readSignal[fromRead:toRead]
-    readSignal = smoothSignal(readSignal, smoothParam)
-    
-    readDict = {}
-    for winBeg in range(0, len(readSignal)-refWindowSize+1, refWindowJump):
-        winEnd = winBeg + refWindowSize
-        currSignal = copy.deepcopy(readSignal[winBeg:winEnd])
-        currSignal = np.array(currSignal, float)
-        currSignalShift, currSignalScale = computeNorm(currSignal, 0,
-                                                   len(currSignal))
-        currString = computeString(currSignal,
-                               0,
-                               refWindowSize,
-                               currSignalShift,
-                               currSignalScale,
-                               levels,
-                               overflow=overflow)
 
-        readDict.update(buildDictionary(currString, kmerLength))
-    hits = [overlap(readDict, hashTable) for hashTable in hashTables]
+    readDict = getDictFromSequence(readSignal, refWindowSize, refWindowJump)
+    hits = [
+        overlap(readDict, hashTable) for hashTable in hashTables[contigName]
+    ]
     max_hits = max(hits)
     max_i = -1
-    
+
     for i in range(len(hits)):
         if i == goodTable:
             print("->", end='')
@@ -133,7 +135,7 @@ def processRead(path, goodTable=-1):
     print()
     global good, bad
     if goodTable != -1 and max_i == goodTable:
-        print("Good one!")
+        print("Good match!")
         good += 1
     if goodTable != -1 and max_i != goodTable:
         bad += 1
@@ -150,17 +152,17 @@ for filePath in posFast5[:posTestCases]:
         readSeq, basecallTable = getSeqfromRead(filePath)
     except:
         continue
-    if len(readSeq) < (toRead//repeatSignal):
+    if len(readSeq) < (toRead // repeatSignal):
         continue
     hits = [
         aln for aln in referenceIdx.map(readSeq)
-        if (aln.q_en - aln.q_st > 0.95 * len(readSeq))
-        and aln.strand == 1 and aln.ctg in processed
+        if (aln.q_en - aln.q_st > 0.95 *
+            len(readSeq)) and aln.strand == 1 and aln.ctg in processed
     ]
     if len(hits) != 1:
         continue
     table_num = (repeatSignal * hits[0].r_st) // hashWinJump
-    processRead(filePath, table_num)
+    processRead(filePath, hits[0].ctg, table_num)
 
 print("\n\nNegative:")
 
@@ -170,8 +172,10 @@ for filePath in negFast5[:negTestCases]:
         readSeq, basecallTable = getSeqfromRead(filePath)
     except:
         continue
-    if len(readSeq) < (toRead//repeatSignal):
+    if len(readSeq) < (toRead // repeatSignal):
         continue
-    processRead(filePath)
+    for conName in processed:
+        print("For contig " + conName)
+        processRead(filePath, conName)
 
-print("{0}/{1}".format(good, good+bad))
+print("{0}/{1}".format(good, good + bad))
