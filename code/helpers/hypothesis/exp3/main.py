@@ -10,14 +10,16 @@ kmerModelFilePath = "../../../data/kmer_model.hdf5"
 readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 
-posTestCases, negTestCases = 1000, 400
-levels = 14
+posTestCases, negTestCases = 1000, 10
+levels = 6
 repeatSignal = 10
-kmerLength = 25
+kmerLength = 21
+overflow = 0.3
+smoothParam = 5
 refWindowSize = 1000
 refWindowJump = 700
-hashTablesNum = 5
-fromRead, toRead = 8000, 14000
+hashTablesNum = 20
+fromRead, toRead = 5000, 50000
 
 ################################################################################
 
@@ -58,31 +60,18 @@ for contig in Fasta(refFilePath):
     processed.append(contig.name)
     contigSignal = stringToSignal(str(contig), mod, repeatSignal=repeatSignal)
     hashWinSize = len(contigSignal) // hashTablesNum
-    hashWinJump = int(1.0*hashWinSize)
+    hashWinJump = int(0.95*hashWinSize)
     for i in range(0, len(contigSignal) - hashWinSize + 1, hashWinJump):
-        print("Juchuchu1 " + str(i))
-        ''' for winBeg in range(i, i+hashLen-refWindowSize+1, refJump):
+        hashTables.append({})
+        for winBeg in range(i, i+hashWinSize-refWindowSize+1, refWindowJump):
             winEnd = winBeg + refWindowSize
             currSignal = copy.deepcopy(contigSignal[winBeg:winEnd])
             currSignal = np.array(currSignal, float)
-            currSignal = smoothSignal(currSignal, 5)
+            currSignal = smoothSignal(currSignal, smoothParam)
             currSignalShift, currSignalScale = computeNorm(currSignal, 0, refWindowSize)
-            currString = computeString(currSignal, 0, refWindowSize, currSignalShift, currSignalScale, levels, overflow=0.3)
+            currString = computeString(currSignal, 0, refWindowSize, currSignalShift, currSignalScale, levels, overflow=overflow)
             currDict = buildDictionary(currString, kmerLength)
-            hashTables[i//hashLen].update(currDict)'''
-        currSignal = copy.deepcopy(contigSignal[i:i + hashWinSize])
-        currSignal = np.array(currSignal, float)
-        currSignal = smoothSignal(currSignal, 5)
-        currSignalShift, currSignalScale = computeNorm(currSignal, 0,
-                                                       hashWinSize)
-        currString = computeString(currSignal,
-                                   0,
-                                   hashWinSize,
-                                   currSignalShift,
-                                   currSignalScale,
-                                   levels,
-                                   overflow=0.3)
-        hashTables.append(buildDictionary(currString, kmerLength))
+            hashTables[-1].update(currDict)
     break # only process one contig for now
 
 print("Hashtable ready!")
@@ -97,8 +86,8 @@ for i in range(len(hashTables)):
                 if k in hashTables[j]:
                     counter += 1
             print("{0} {1}: {2} with sizes {3} {4}".format(i, j, counter, len(hashTables[i]), len(hashTables[j])))
-
 '''
+
 
 def overlap(dict1, dict2):
     intersect = 0
@@ -107,23 +96,29 @@ def overlap(dict1, dict2):
             intersect += 1
     return intersect
 
+good, bad = 0, 0
+
 def processRead(path, goodTable=-1):
     readSignal = np.array(getSignalFromRead(path), dtype=float)
-    #if readSignal.shape[0] < toRead:
-    #    return
-    #readSignal = readSignal[fromRead:toRead]
-    readSignal = smoothSignal(readSignal, 5)
-    readSignalShift, readSignalScale = computeNorm(readSignal, 0,
-                                                   len(readSignal))
-    readString = computeString(readSignal,
+    readSignal = readSignal[fromRead:toRead]
+    readSignal = smoothSignal(readSignal, smoothParam)
+    
+    readDict = {}
+    for winBeg in range(0, len(readSignal)-refWindowSize+1, refWindowJump):
+        winEnd = winBeg + refWindowSize
+        currSignal = copy.deepcopy(readSignal[winBeg:winEnd])
+        currSignal = np.array(currSignal, float)
+        currSignalShift, currSignalScale = computeNorm(currSignal, 0,
+                                                   len(currSignal))
+        currString = computeString(currSignal,
                                0,
-                               len(readSignal),
-                               readSignalShift,
-                               readSignalScale,
+                               refWindowSize,
+                               currSignalShift,
+                               currSignalScale,
                                levels,
-                               overflow=0.3)
+                               overflow=overflow)
 
-    readDict = buildDictionary(readString, kmerLength)
+        readDict.update(buildDictionary(currString, kmerLength))
     hits = [overlap(readDict, hashTable) for hashTable in hashTables]
     max_hits = max(hits)
     max_i = -1
@@ -136,8 +131,12 @@ def processRead(path, goodTable=-1):
             max_i = i
         print(hits[i], end=' ')
     print()
-    if max_i == goodTable:
+    global good, bad
+    if goodTable != -1 and max_i == goodTable:
         print("Good one!")
+        good += 1
+    if goodTable != -1 and max_i != goodTable:
+        bad += 1
     return
 
 
@@ -147,7 +146,12 @@ print("Positive:")
 
 for filePath in posFast5[:posTestCases]:
     #print(filePath)
-    readSeq, basecallTable = getSeqfromRead(filePath)
+    try:
+        readSeq, basecallTable = getSeqfromRead(filePath)
+    except:
+        continue
+    if len(readSeq) < (toRead//repeatSignal):
+        continue
     hits = [
         aln for aln in referenceIdx.map(readSeq)
         if (aln.q_en - aln.q_st > 0.95 * len(readSeq))
@@ -156,11 +160,18 @@ for filePath in posFast5[:posTestCases]:
     if len(hits) != 1:
         continue
     table_num = (repeatSignal * hits[0].r_st) // hashWinJump
-    print("In table {0}".format(table_num))
     processRead(filePath, table_num)
 
 print("\n\nNegative:")
 
 for filePath in negFast5[:negTestCases]:
     #print(filePath)
+    try:
+        readSeq, basecallTable = getSeqfromRead(filePath)
+    except:
+        continue
+    if len(readSeq) < (toRead//repeatSignal):
+        continue
     processRead(filePath)
+
+print("{0}/{1}".format(good, good+bad))
