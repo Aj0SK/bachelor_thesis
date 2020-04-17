@@ -11,9 +11,10 @@ kmerModelFilePath = "../../data/kmer_model.hdf5"
 refFilePath = "../../data/sapIngB1.fa"
 
 repeatSignal = 10
-'''
-numLevels = 4
+
+levels = 12
 minSignal, maxSignal = -2.0, 2.0
+'''
 kernelLen = 7
 winSize = 15 * kernelLen
 '''
@@ -26,7 +27,7 @@ from pyfaidx import Fasta
 import nadavca
 from nadavca.dtw import KmerModel
 
-from signalHelper import stringToSignal, getSignalFromRead, getReadsInFolder
+from signalHelper import stringToSignal, getSignalFromRead, getReadsInFolder, stringAllignment
 from signalHelper import computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
 
 import matplotlib
@@ -34,8 +35,8 @@ import matplotlib.pyplot as plt
 
 ############s###################################################################
 
-posReadsPaths = getReadsInFolder(readsPosFilePath, minSize = 0)
-negReadsPaths = getReadsInFolder(readsNegFilePath, minSize = 0)
+posReadsPaths = getReadsInFolder(readsPosFilePath, minSize=0)
+negReadsPaths = getReadsInFolder(readsNegFilePath, minSize=0)
 
 sampleRead = posReadsPaths[0]
 sampleFakeRead = negReadsPaths[0]
@@ -51,7 +52,8 @@ sequenceIndex = mp.Aligner(refFilePath)
 assert sequenceIndex, "failed to load/build reference index"
 ################################################################################
 # nadavca
-nadavca_align = nadavca.align_signal(refFilePath, [sampleRead], bwa_executable='./bwa/bwa')
+nadavca_align = nadavca.align_signal(refFilePath, [sampleRead],
+                                     bwa_executable='./bwa/bwa')
 
 assert (len(nadavca_align) == 1), "Error! More than one alignment!"
 nadavca_align = nadavca_align[0]
@@ -63,14 +65,14 @@ fromSignal, toSignal = nadavca_align[0].signal_range
 
 # load original signal from read
 originalSignal = getSignalFromRead(sampleRead)
-originalSignal = np.array(originalSignal, dtype = float)
+originalSignal = np.array(originalSignal, dtype=float)
 
-table = nadavca_align[1][:100]
-refSeq = "".join(nadavca_align[0].reference_part)[:100]
+table = nadavca_align[1][:40]
+refSeq = "".join(nadavca_align[0].reference_part)[:40]
 
 x, y = [], []
 
-for entry in table:#entry is list of [ref_index, signal_start, signal_end]
+for entry in table:  #entry is list of [ref_index, signal_start, signal_end]
     x.append(str(refStr[entry[0]]))
     for i in range(entry[1], entry[2]):
         x.append(" ")
@@ -85,19 +87,64 @@ refSeqHelper = []
 
 for i in refSeq:
     refSeqHelper.append(i)
-    for k in range(repeatSignal-1):
+    for k in range(repeatSignal - 1):
         refSeqHelper.append("_")
 
 y = smoothSignal(y, 5)
 refSignal = smoothSignal(refSignal, 5)
 
 ySignalShift, ySignalScale = computeNorm(y, 0, len(y))
-y -= ySignalShift
-y /= ySignalScale
+#y -= ySignalShift
+#y /= ySignalScale
 
 refSignalShift, refSignalScale = computeNorm(refSignal, 0, len(refSignal))
-refSignal -= refSignalShift
-refSignal /= refSignalScale
+#refSignal -= refSignalShift
+#refSignal /= refSignalScale
+
+readString = computeString(y,
+                           0,
+                           len(y),
+                           ySignalShift,
+                           ySignalScale,
+                           levels,
+                           overflow=0.30)
+refString = computeString(refSignal,
+                          0,
+                          len(refSignal),
+                          refSignalShift,
+                          refSignalScale,
+                          levels,
+                          overflow=0.30)
+
+fakeSignal = getSignalFromRead(sampleFakeRead)[6000:6000+len(y)]
+fakeSignal = smoothSignal(fakeSignal, 5)
+fakeSignalShift, fakeSignalScale = computeNorm(fakeSignal, 0, len(fakeSignal))
+
+fakeString = computeString(fakeSignal,
+                          0,
+                          len(fakeSignal),
+                          fakeSignalShift,
+                          fakeSignalScale,
+                          levels,
+                          overflow=0.30)
+
+print("refstring vs Readstring vs fakestring")
+print(refString)
+print(readString)
+print(fakeString)
+
+print("Readstring allignment")
+a, b = stringAllignment(refString, readString)
+print(a)
+print(b)
+
+print("Fakestring allignment")
+c, d = stringAllignment(refString, fakeString)
+print(c)
+print(d)
+
+y -= ySignalShift
+y /= ySignalScale
 
 fig, axs = plt.subplots(2)
 fig.suptitle('Read vs reference')
@@ -108,5 +155,10 @@ axs[0].set_xticklabels(x)
 axs[1].plot(refSignal)
 axs[1].set_xticks(np.arange(len(refSeqHelper)))
 axs[1].set_xticklabels(refSeqHelper)
+
+for i in np.arange(minSignal, maxSignal + 0.001,
+                   (maxSignal - minSignal) / levels):
+    axs[0].axhline(y=i)
+    axs[1].axhline(y=i)
 
 plt.show()
