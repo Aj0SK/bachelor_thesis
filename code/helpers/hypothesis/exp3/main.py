@@ -18,8 +18,8 @@ overflow = 0.3
 smoothParam = 5
 refWindowSize = 1000
 refWindowJump = 700
-hashTablesNum = 20
-hashWinSize = 10000000
+hashTablesNum = 10
+hashWinSize = 500000
 hashWinJump = int(0.95*hashWinSize)
 fromRead, toRead = 5000, 50000
 contigNum = 1
@@ -46,7 +46,7 @@ def overlap(dict1, dict2):
     return intersect
 
 def getDictFromSequence(signal, refWindowSize, refWindowJump):
-    dicti = {}
+    dic = {}
     for winBeg in range(0, len(signal) - refWindowSize + 1, refWindowJump):
         winEnd = winBeg + refWindowSize
         currSignal = np.array(
@@ -61,8 +61,8 @@ def getDictFromSequence(signal, refWindowSize, refWindowJump):
                                    currSignalScale,
                                    levels,
                                    overflow=overflow)
-        dicti.update(buildDictionary(currString, kmerLength))
-    return dicti
+        dic.update(buildDictionary(currString, kmerLength))
+    return dic
 
 
 ################################################################################

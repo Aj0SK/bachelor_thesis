@@ -160,6 +160,7 @@ class Table_Iterator:
         self.localindex += 1
         return self.table[self.tableindex][4][self.localindex-1], self.table[self.tableindex][1], self.table[self.tableindex][1]
 
+################################################################################
 # allign two strings in O(n*m)
 def stringAllignment(str1, str2):
     n, m = len(str1)+1, len(str2)+1
@@ -191,6 +192,16 @@ def stringAllignment(str1, str2):
             j -= 1
     return (out1[::-1] , out2[::-1])
 
+def countDashes(alligned, consec):
+    alligned = "Z" + alligned + "Z"
+    counter = 0
+    expected = "-" * consec
+    for i in range(0, len(alligned)-(consec+2)+1, 1):
+        if alligned[i] == '-' or alligned[i+consec+1] == '-' or alligned[i+1:i+1+consec] != expected:
+            continue
+        counter += 1
+    alligned = alligned[1:-1]
+    return counter
 
 ################################################################################
 
