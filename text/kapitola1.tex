@@ -2,19 +2,65 @@
 
 \label{kap:selSeq} % id kapitoly pre prikaz ref
 
-In this chapter, we are going to describe what is selective sequencing. Then, we
+In this chapter, we are going to describe what is selective sequencing. We
 show advantages that this method brings, the main challenges and current state of
 research in this area.
 
 \section{DNA sequencing}
 
-One of the goals of biology is ability to obtain DNA sequence of the organism. DNA sequence
-is sequence of nucleotides. There are four types of nucleotides: adenin, citozin,
-guanin and timin. From now, we will for simplicity assume that DNA sequence is
-string of A, C, G, T. The process of obtaining DNA sequence is called DNA sequencing.
-One of the devices that serve this purpose is MinION\cite{lu2016oxford}. MinION is a small, cheap and
-versatile DNA sequencer. This sequencer consists of a active surface
-filled with pores. Pore is a small hole with electric current passing through it. 
+%https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
+Genetics is a branch of biology that studies genes, genetic variation and heredity.
+It tries to explain variability between animals, source of hereditary diseases and
+other important things that influence our lives. DNA is the key molecule
+that stores the biological information. It is contained in our every cell. Based
+on the information from this molecule our cells can reproduce and create copies of
+themselves. Nowadays, it is possible to look at the DNA of the organism. This is
+one of the strongest tools of genetics as it helps us tell what are the functions
+of different parts of DNA by comparing it between organisms and looking at the
+consequences of different mutations. DNA stores genetical information using sequence of
+nucleotides that are in particular order. There are four types of DNA nucleotides:
+adenine(A), cytosine(C), guanine(G) and thymine(T). Besides this, DNA consists of two long
+molecules of these nucleotides. However, these two molecules are connected together
+in a complement way. So if on one string there is a A, then on the other
+one must be definitely T. If there is a C then on the other string we can expect
+it's complement G. For the organisms it means that it can to some extent repair
+missing nucleotides based on the complement rules. From now, we will for simplicity
+assume that DNA sequence is string of A, C, G, T. The process of obtaining DNA
+sequence is called DNA sequencing. Example how we can think of DNA is on \ref{obr:acgt}.
+
+% TODO: obrazok zdroj https://www.genome.gov/genetics-glossary/acgt
+
+\begin{figure}
+\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/acgt}}
+\caption[DNA]{DNA Molecule}
+\label{obr:acgt}
+\end{figure}
+
+The DNA molecule is very long and processing it whole would be very hard. Single
+DNA molecule in one cell can reach up to 2 metres.
+%https://www.sciencefocus.com/the-human-body/how-long-is-your-dna/
+Thus, it is convenient to broke down whole DNA molecule into many shorter parts.
+This can be done chemically but it brings some problems, especially some of the
+DNA molecules could be missed so we would lost information about that part of DNA.
+Because of this, we use DNA polymerases to duplicate these shorter DNA sequences
+many times so we end up with a mixture containing our DNA molecule, broken into
+many duplicated parts. DNA polymerasis can stick to DNA molecule and rebuild complementary
+part. Once we have this mixture of shorter DNA molecules we need to sequence individual
+parts and then somehow connect them together to obtain the nucleotide string representing
+our DNA molecule.
+
+One of the devices that serve this purpose is MinION\cite{lu2016oxford}. MinION is
+a cheap and versatile DNA sequencer with size of modern smartphone showed in fig.
+\ref{obr:minIon}.
+
+\begin{figure}
+\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/minion}}
+\caption[MinION]{MinION sequencer}
+\label{obr:minIon}
+\end{figure}
+
+This sequencer
+consists of a active surface filled with pores. Pore is a small hole with electric current passing through it. 
 As the molecule of DNA is passing through the pore of MinION, we can observe
 changes in the flow of an electric current passing through the pore. This electric
 current called signal is measured over discrete time. The example of this signal
@@ -27,22 +73,18 @@ is on the figure \ref{obr:minIonCurrent}.
 \label{obr:minIonCurrent}
 \end{figure}
 
-When we obtain the signal from individual pores, we need to convert it into DNA
+When we obtain the signal from pore, we need to convert it into DNA
 sequence. As the molecule of DNA is passing through the pore, only a small
 number of nucleotides in the proximity of pore influence the output signal. So from
-the signal, using a method called base-calling, we can tell how the molecule of DNA
-looked like based on the measurements of signal throughout the time. Despite big
-improvements in the base-calling algorithms, the overall process of base-calling
-is quite slow and resource-intensive.
+the measurements of signal throughout the time, using a method called base-calling,
+we can tell how the molecule of DNA looked like. Despite big improvements in the
+base-calling algorithms, the overall process of base-calling is quite slow and
+resource-intensive.
 
 \section{Selective sequencing}
 
-Before sequencing, it is convenient to broke down whole DNA molecule into many
-shorter parts. We then sequence shorter DNA molecules parallelly. Whole signal
-of one shorter DNA molecule is called read.
-MinION has one special ability that helps us in certain scenarios. It can reject
-DNA molecule that is currently passing
-through the pore. It effectively reverses the molecule’s direction and throws it away.
+MinION has certain special ability that helps us in certain scenarios. It can reject
+DNA molecule that is currently passing through the pore. MinION reverses the molecule’s direction and throws it away.
 Selective sequencing is the idea that based on the incoming signal, we can tell
 if we are interested in sequencing current DNA molecule and can decide if we want
 to continue or reject this molecule. This happens on-the-fly so we need to make
