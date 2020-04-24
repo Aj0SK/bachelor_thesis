@@ -1,7 +1,10 @@
 code/data
+*.fa
 venv/
 __pycache__
+code/helpers/hypothesis/bwa/
 
+text/*.log
 text/main-en.*
 !text/main-en.tex
 

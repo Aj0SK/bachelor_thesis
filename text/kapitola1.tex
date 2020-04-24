@@ -8,7 +8,7 @@ research in this area.
 
 \section{DNA sequencing}
 
-%https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
+% TODO: pridat zdroj %https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
 Genetics is a branch of biology that studies genes, genetic variation and heredity.
 It tries to explain variability between animals, source of hereditary diseases and
 other important things that influence our lives. DNA is the key molecule
@@ -73,6 +73,10 @@ is on the figure \ref{obr:minIonCurrent}.
 \label{obr:minIonCurrent}
 \end{figure}
 
+MinION version we use for sequencing process around 400 nucleotids per second.
+The value of signal is measured around 4000 times per second so it's good to estimate
+that one nucleotid is in average measured about 10 times.
+
 When we obtain the signal from pore, we need to convert it into DNA
 sequence. As the molecule of DNA is passing through the pore, only a small
 number of nucleotides in the proximity of pore influence the output signal. So from
@@ -83,7 +87,7 @@ resource-intensive.
 
 \section{Selective sequencing}
 
-MinION has certain special ability that helps us in certain scenarios. It can reject
+MinION has special ability that helps us in certain scenarios. It can reject
 DNA molecule that is currently passing through the pore. MinION reverses the molecule’s direction and throws it away.
 Selective sequencing is the idea that based on the incoming signal, we can tell
 if we are interested in sequencing current DNA molecule and can decide if we want
@@ -114,3 +118,7 @@ some signal as not interesting, we lost information about the corresponding
 read.
 
 \section{Current state of selective sequencing}
+
+%https://www.nature.com/articles/nmeth.3930
+
+There was some work

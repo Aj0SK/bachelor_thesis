@@ -11,6 +11,7 @@ levels = 4
 repeatSignal = 10
 overflow = 0.3
 smoothParam = 5
+kmerLen = 19
 
 import sys
 import glob
@@ -24,6 +25,7 @@ sys.path.append("../")
 from signalHelper import getSeqfromRead, stringToSignal, getSignalFromRead, getReadsInFolder
 from signalHelper import computeNorm, computeString, smoothSignal
 from signalHelper import stringAllignment, countDashes
+from signalHelper import overlappingKmers
 
 def getGlobalString(signal):
     signal = smoothSignal(signal, smoothParam)
@@ -62,7 +64,7 @@ assert refLevelIdx, "failed to load/build reference index"
 
 print("Priprava hotovo!")
 
-posCounter, negCounter = 20, 20
+posCounter, negCounter = 0, 3
 goodPosReads, counter = 0, 0
 
 print("Positive reads!")
@@ -91,7 +93,7 @@ for readFile in posReadsFiles:
     readString = getGlobalString(readSignal)
 
     readString = "".join(helperDict[i] for i in readString)
-    readString = readString[:4000]
+    readString = readString[:2000]
     
     levelHits = list(refLevelIdx.map(readString, cs = True))
     levelHits = [i for i in levelHits if i.strand == 1]
@@ -103,7 +105,9 @@ for readFile in posReadsFiles:
     if abs((levelHits[0].r_st/len(refString))-(hits[0].r_st/len(contig)))<0.001:
         goodPosReads += 1
 
-    print("Hit len is {0}".format(levelHits[0].r_en-levelHits[0].r_st))
+    hitLen = levelHits[0].r_en-levelHits[0].r_st
+
+    print("Hit len is {0}".format(hitLen))
 
     print("Goodreads to all reads {0}/{1}".format(goodPosReads, counter))
     
@@ -116,24 +120,41 @@ for readFile in posReadsFiles:
         print("Hit je v {0}".format(i.r_st/len(refString)))
     counter += 1
     '''
-    #a, b = stringAllignment(refString[hits[0].r_st:hits[0].r_en], readString[hits[0].q_st:hits[0].q_en])
+    a, b = stringAllignment(refString[levelHits[0].r_st:levelHits[0].r_en], readString[levelHits[0].q_st:levelHits[0].q_en])
     
-    #for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
-    #    print(i, ":", countDashes(a, i)+countDashes(b, i))
+    for i in range(1, 20):
+        print(i, ":", countDashes(a, i)+countDashes(b, i))
     
-    if counter > posCounter:
+    
+    #x = overlappingKmers(refString[levelHits[0].r_st:levelHits[0].r_en],readString[levelHits[0].q_st:levelHits[0].q_en],kmerLen)
+    #print("Overlaps is {0}".format(x))
+    if counter >= posCounter:
         break
 
 print("\n\nNegative reads!\n")
+print("*"*200)
 
 for readFile in negReadsFiles[:negCounter]:
     print(readFile)
+    try:
+        readFastq, readEvents = getSeqfromRead(readFile)
+    except:
+        print("Bad read!")
+        continue
+    
+    hits = [
+        aln for aln in referenceIdx.map(readFastq)
+        if aln.strand == 1 and (aln.ctg == "contig1")
+    ]
+    
+    print("Aj pri negativnom je pocet hitov {0}".format(len(hits)))
+    
     readSignal = np.array(getSignalFromRead(readFile), float)
     readString = getGlobalString(readSignal)
     readString = "".join(helperDict[i] for i in readString)
     
     print(len(readString))
-    readString = readString[:4000]
+    readString = readString[:2000]
     
     levelHits = list(refLevelIdx.map(readString))
     
@@ -145,12 +166,17 @@ for readFile in negReadsFiles[:negCounter]:
         print("Nula hitov vo fake stringu.")
         continue
     
+    hitLen = levelHits[0].r_en-levelHits[0].r_st
+    
     for i in levelHits:
         print("Hit len je {0}".format(i.r_en-i.r_st))
         print("Hit je v {0}".format(i.r_st/len(refString)))
     
-    #a, b = stringAllignment(refString[levelHits[0].r_st:levelHits[0].r_en], readString[levelHits[0].q_st:levelHits[0].q_en])
+    a, b = stringAllignment(refString[levelHits[0].r_st:levelHits[0].r_en], readString[levelHits[0].q_st:levelHits[0].q_en])
     
-    #for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
-    #    print(i, ":", countDashes(a, i)+countDashes(b, i))
+    #x = overlappingKmers(refString[levelHits[0].r_st:levelHits[0].r_en],readString[levelHits[0].q_st:levelHits[0].q_en],kmerLen)
+    #print("Overlaps is {0}".format(x))
+    
+    for i in range(1, 20):
+        print(i, ":", countDashes(a, i)+countDashes(b, i))
 
