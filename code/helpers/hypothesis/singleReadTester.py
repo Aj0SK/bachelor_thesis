@@ -14,10 +14,6 @@ repeatSignal = 10
 
 levels = 12
 minSignal, maxSignal = -2.0, 2.0
-'''
-kernelLen = 7
-winSize = 15 * kernelLen
-'''
 
 import math
 import h5py

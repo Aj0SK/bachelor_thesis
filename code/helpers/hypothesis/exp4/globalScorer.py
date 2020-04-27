@@ -21,13 +21,13 @@ kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
 maxTests = 100
 
-levels = 12
+levels = 11
 repeatSignal = 10
 
 kmerLen = 9
 
 signalFrom = 5000#int(sys.argv[3])
-signalTo = 30000#int(sys.argv[4])
+signalTo = 12000#int(sys.argv[4])
 
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 posReads = getReadsInFolder(readsPosFilePath, minSize = 0)
@@ -113,13 +113,13 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     
     print("Readstring allignment")
     a, b = stringAllignment(refString2Sm, readString2Sm)
-    print(a)
-    print(b)
+    #print(a)
+    #print(b)
 
     print("Fakestring allignment")
     c, d = stringAllignment(refString2Sm, fakeString2Sm)
-    print(c)
-    print(d)
+    #print(c)
+    #print(d)
     
     print("Dashes in readstring allignment")
     for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:

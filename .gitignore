@@ -1,5 +1,6 @@
 code/data
 *.fa
+*.fai
 venv/
 __pycache__
 code/helpers/hypothesis/bwa/
