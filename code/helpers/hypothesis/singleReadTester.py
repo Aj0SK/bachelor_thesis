@@ -139,8 +139,17 @@ c, d = stringAllignment(refString, fakeString)
 print(c)
 print(d)
 
+y = np.array(y, float)
+refSignal = np.array(refSignal, float)
+
 y -= ySignalShift
 y /= ySignalScale
+
+y[y<minSignal] = minSignal
+y[y>maxSignal] = maxSignal
+
+refSignal[refSignal<minSignal] = minSignal
+refSignal[refSignal>maxSignal] = maxSignal
 
 fig, axs = plt.subplots(2)
 fig.suptitle('Read vs reference')
