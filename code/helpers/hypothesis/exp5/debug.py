@@ -7,12 +7,12 @@ readsPosFilePath = "goodReadsDebug.txt"
 readsNegFilePath = "../../../data/neg-basecalled"
 
 targetContig = "contig1"
-targetBeg, targetEnd = 0, 50000
+targetBeg, targetEnd = 0, 1000000#50000
 
 posTestCases, negTestCases = 40, 40
 levels = 6
 repeatSignal = 10
-kmerLength = 23
+kmerLength = 12
 overflow = 0.30
 smoothParam = 5
 refWindowSize = 1000
@@ -23,6 +23,7 @@ contigNum = 1
 ################################################################################
 
 import sys
+import random
 import glob
 import copy
 import numpy as np
@@ -57,6 +58,7 @@ def overlap(dict1, dict2):
             intersect += 1
     return intersect
 
+
 def plotAOC(src):
     src.sort()
     src.reverse()
@@ -75,31 +77,40 @@ def plotAOC(src):
     plt.show()
 
 
-def getDictFromSequence(signal, refWindowSize, refWindowJump):
+def buildDictionarySpecial(string, k):
+    dict = {}
+    for i in range(0, len(string) - k + 1):
+        kmer = string[i : i + k]
+        if kmer not in dict:
+            dict[kmer] = []
+        dict[kmer].append(i)
+    return dict
+
+
+def getDictFromSequence(signal, l = False):
     dic = {}
-    for winBeg in range(0, len(signal) - refWindowSize + 1, refWindowJump):
-        winEnd = winBeg + refWindowSize
-        currSignal = np.array(copy.deepcopy(signal[winBeg:winEnd]), float)
-        currSignal = smoothSignal(currSignal, smoothParam)
-        currSignalShift, currSignalScale = computeNorm(currSignal, 0, refWindowSize)
-        currString = computeString(
-            currSignal,
-            0,
-            refWindowSize,
-            currSignalShift,
-            currSignalScale,
-            levels,
-            overflow=overflow,
-        )
-        newDict = buildDictionary(currString, kmerLength)
-        for i in newDict:
-            dic[i] = dic.get(i, 0) + newDict[i]
-    return dic
+    currSignal = np.array(copy.deepcopy(signal), float)
+    currSignal = smoothSignal(currSignal, smoothParam)
+    currSignalShift, currSignalScale = computeNorm(currSignal, 0, len(currSignal))
+    currString = computeString(
+        currSignal,
+        0,
+        len(currSignal),
+        currSignalShift,
+        currSignalScale,
+        levels,
+        overflow=overflow,
+    )
+    if l == True:
+        return currString
+    return buildDictionarySpecial(currString, kmerLength)
+
 
 def intervalOverlap(b, e, c, d):
     if e <= c or b >= d:
         return False
     return True
+
 
 ################################################################################
 
@@ -115,12 +126,6 @@ basecalledFast5 = [data[i] for i in range(1, len(data), 2)]
 
 negFast5 = glob.glob(readsNegFilePath + "/*.fast5", recursive=True)
 
-assert len(posFast5) >= posTestCases, "Not enough positive testcases!"
-assert len(negFast5) >= negTestCases, "Not enough negative testcases!"
-
-posFast5 = posFast5[:posTestCases]
-negFast5 = negFast5[:negTestCases]
-
 ################################################################################
 
 hashTable = {}
@@ -131,37 +136,62 @@ for contig in Fasta(refFilePath):
     ref = str(contig)
     ref = ref[targetBeg:targetEnd]
     contigSignal = stringToSignal(ref, mod, repeatSignal=repeatSignal)
-    hashTable = getDictFromSequence(contigSignal, refWindowSize, refWindowJump)
+    hashTable = getDictFromSequence(contigSignal)
+    break
 
-for k in sorted(hashTable, key=hashTable.get, reverse=True)[:100]:
-    pass
-    # print("{0} {1}".format(k, hashTable[k]))
-    # del hashTable[k]
+#for k in sorted(hashTable, key=hashTable.get, reverse=True)[:100]:
+#    pass
+#    # print("{0} {1}".format(k, hashTable[k]))
+#    # del hashTable[k]
 
 
 def processRead(path, readFromRef=False):
     readSignal = np.array(getSignalFromRead(path), dtype=float)
     readSignal = readSignal[fromRead:toRead]
-
-    readDict = getDictFromSequence(readSignal, refWindowSize, refWindowJump)
-    hits = overlap(readDict, hashTable)
-
-    print("Number of hits is {0}".format(hits))
     
-    return hits
+    readString = getDictFromSequence(readSignal, l = True)
+    
+    #hits = overlap(readDict, hashTable)
+    #return hits
+
+    myHits = 0
+    jump = 2*kmerLength
+    operateRange = 10*kmerLength
+    for i in range(100):
+        beg = random.randint(0, len(readString)-operateRange+1)
+        w = readString[beg:beg+kmerLength]
+        candidates = hashTable.get(w, [])
+
+        while len(candidates) > 1:
+            j = random.randint(beg+jump, beg+operateRange-kmerLength+1)
+
+            w = readString[j:j+kmerLength]
+            newcand = []
+            for k in candidates:
+                for l in hashTable.get(w, []):
+                    if abs(k-l) < operateRange*1.30:
+                        newcand.append(k)
+                        break
+
+            candidates = newcand
+
+
+        if len(candidates) != 0:
+            myHits += 1
+            print(f"Candidates len is {len(candidates)}")
+            print(str(candidates)[:200])
+
+    print(f"My hits is {myHits}")
+    #print("Number of hits is {0}".format(hits))
+
+    return myHits
+
 
 helper = []
 print("Positive:")
 
 for i in range(len(posFast5)):
     filePath = posFast5[i]
-    # try:
-    #    readSeq, basecallTable = getSeqfromRead(filePath)
-    # except:
-    #    continue
-    # if len(readSeq) < (toRead // repeatSignal):
-    #    continue
-
     readSeq = basecalledFast5[i]
     hits = [
         aln
@@ -179,21 +209,17 @@ for i in range(len(posFast5)):
     if not (hits[0].r_st > targetBeg and hits[0].r_en < targetEnd):
         negTestCases -= 1
         continue
-
-    print(f"Len is {len(hits)}")
+    
+    print(100*"#")
     print(hits[0].r_st)
-    print(hits[0].r_en)
-
-    # print(f"{len(hits)}")
-    # if len(hits) == 0:
-    #    print("Zle je")
-    #    continue
-
     helper.append((processRead(filePath, readFromRef=True), 1))
 
 print("\n\nNegative:")
 
+exit(0)
+
 for i in range(negTestCases):
+    print(100*"#")
     filePath = negFast5[i]
     helper.append((processRead(filePath), 0))
 

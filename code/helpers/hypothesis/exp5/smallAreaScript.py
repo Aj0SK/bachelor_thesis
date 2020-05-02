@@ -13,7 +13,7 @@ readsFastq = "/projects2/nanopore-2016/saping-20181010/reads.fastq"
 maxReads = 50
 
 targetContig = 'contig1'
-targetBeg, targetEnd = 10000, 20000
+targetBeg, targetEnd = 10000, 25000
 
 import glob
 import mappy as mp
@@ -47,8 +47,6 @@ with open(readsFastq, "r") as f:
             continue
         if infoLine == True:
             infoLine = False
-            #print(line[:20])
-            #print(line[-20:])
             hits = list(referenceIdx.map(line))
             goodHits = [i for i in hits if i.ctg == targetContig and i.strand == 1 and overlap(targetBeg, targetEnd, i.r_st, i.r_en)]
             if len(goodHits) != 0:
@@ -59,6 +57,7 @@ with open(readsFastq, "r") as f:
                 matchingFileNames = [i for i in reads if i.find("read_"+read[0] + "_ch_"+ch[0]) != -1]
                 if len(matchingFileNames) == 1:
                     print(matchingFileNames[0])
+                    print(line)
                     counter += 1
 
             info = None
