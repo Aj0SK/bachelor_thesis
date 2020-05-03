@@ -22,9 +22,6 @@ import matplotlib.pyplot as plt
 from scipy.signal import medfilt
 import h5py
 
-#from pykalman import KalmanFilter
-#kf = KalmanFilter(initial_state_mean=0, n_dim_obs=1)
-
 import os
 import glob
 

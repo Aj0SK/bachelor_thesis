@@ -24,7 +24,7 @@ import nadavca
 from nadavca.dtw import KmerModel
 
 from signalHelper import stringToSignal, getSignalFromRead, getReadsInFolder, stringAllignment
-from signalHelper import computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
+from signalHelper import computeNorm, computeString, smoothSignal
 
 import matplotlib
 import matplotlib.pyplot as plt
