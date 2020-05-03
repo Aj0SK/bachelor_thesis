@@ -122,4 +122,9 @@ read.
 %https://www.nature.com/articles/nmeth.3930
 %https://www.biorxiv.org/content/10.1101/038760v1
 
-There was some work regarding selective sequencing. 
+There was some work regarding selective sequencing, most notably TODO. In their
+work they obtained reference signal and then used dynamic time warping (DTW) to
+allign signal from the read to this reference signal. DTW is a dynamic programming
+algorithm that takes two signals and allign them in a way that minimizes total
+number of insertions and deletions. One of the limitations of DTW is that it has
+time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$ is length of reference and read.

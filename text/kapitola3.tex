@@ -3,3 +3,41 @@
 \label{kap:proposedMethod} % id kapitoly pre prikaz ref
 
 In this chapter, we will present our proposed solution.
+
+\section{Obtaining reference signal}
+
+As we want to work with a signal, we need to obtain some reference signal that we
+can sample and use to later split reads between that we are interested and not
+interested in. For this purpose, we need to take the reference in the form of DNA sequence
+and turn it into a signal. For some DNA sequence we can use the nanopore data
+variant caller (nadavca) which is a tool that can take a DNA sequence as an input
+and produce a simulated signal. This simulation does not take into account that
+the signal from one nucleotid is measured several times. We already estimated
+that one nucleotid is in average measured about 10 times so we need to duplicate every
+entry in this simulated signal 10 times. We want to see how this signal compares
+to real signal so to put these two into perspective we normalize this signal by
+subtracting mean and removing standard deviation \ref{obr:simVsReal}.
+
+\begin{figure}
+\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}
+\caption[Hehe]{Simulated signal vs real signal}
+\label{obr:simVsReal}
+\end{figure}
+
+% https://github.com/lykaust15/DeepSimulator
+There are some more advanced simulators of signal such as DeepSimulator but we
+wanted to begin with the simplest possible solution.
+
+\section{Real and simulated signal comparison}
+
+Now we have a simulated reference signal. We can see that the simulated and real
+signal are not identical in \ref{obr:simVsReal}. This poses problems as we want to have these signals as
+similar as possible. The first thing that we want to consider is normalization. There
+are two possible approaches, local and global normalization. We will try both this
+approaches. One of the most wide-spread way of doing this is to subtract mean and dividing
+signal by standard deviation. The other possible solution is subtracting median value
+as the frequent outliers can deform the mean. 
+
+The another visible problem is that real signal is somehow contracted
+on some places. This is caused by the fact that the DNA molecule is not moving
+through the pore at a constant speed. 
