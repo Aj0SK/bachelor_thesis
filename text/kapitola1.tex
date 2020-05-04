@@ -23,7 +23,7 @@ adenine(A), cytosine(C), guanine(G) and thymine(T). In fact, DNA consists of two
 molecules of these nucleotides. However, these two molecules are connected together
 in a complementary way. So if on one string there is an A, then on the other
 one must be T. If there is a C then on the other string we can expect
-it's complement G. For the organisms it means that they can to some extent repair
+it's complement G. For the organisms it means that they can (to some extent) repair
 missing nucleotides based on the complement rules. From now, we will for simplicity
 assume that DNA sequence is a string of A, C, G, T. This representation is quite accurate
 and we can also recover the other complementary DNA string easily. The process of obtaining DNA
@@ -77,7 +77,10 @@ of this signal is on figure \ref{obr:minIonCurrent}.
 
 The minION version we use for the DNA sequencing process around 400 nucleotides per second.
 The value of the signal is measured around 4000 times per second so it is good to
-estimate that one nucleotide is on average measured about 10 times.
+estimate that one nucleotide is on average measured about 10 times. Additionally,
+minION has several these active pores and it can process several DNA molecules in
+parallel. The signal generated from the pass of the single DNA molecule through
+the single pore is called read.
 
 When we obtain the signal from the pore, we need to convert it into the DNA
 sequence. What is crucial for transcription of the signal into the DNA sequence is
@@ -93,9 +96,9 @@ resource-intensive.
 MinION has a special ability that helps us in certain scenarios. It can reject
 DNA molecule that is currently passing through the pore. MinION reverses the molecule’s direction and throws it away.
 Selective sequencing is the idea that based on the incoming signal, we can tell
-if we are interested in sequencing the current DNA molecule and can decide if we want
+if we are interested in sequencing the current DNA molecule. Subsequently, we can decide if we want
 to continue or reject this molecule. This happens on-the-fly so we need to make
-the decision until the end of the current read. This means we don't have time to
+the decision until the end of the current read. This often means we don't have time to
 turn our signal into a nucleotide sequence as the reads are too short. This is
 a reason why we have to work with a raw signal.
 
@@ -103,11 +106,12 @@ There are a lot of benefits of selective sequencing. In case we are not interest
 in some DNA that we know is contained in our sample, we can use this technique to
 reject unwanted DNA molecules. This saves us a lot of time and resources as obtaining
 nucleotide sequence from the signal is in some scenarios unnecessary and too
-costly process in terms of performance.
+costly process in terms of performance. With good selective sequencing, we only have
+to further process reads we are interested in.
 
 Let's say we are trying to find an exact type of virus in human blood. We can
-reject all human DNA samples because we are not interested in processing human
-DNA. We could also filter in a positive way. So we could say, that we are only
+reject all human DNA molecules because we are not interested in processing human
+DNA. We could also filter positively. So we could say, that we are only
 interested in sequencing DNA that produces a signal in some sense similar to our
 chosen sample. This all means saving a lot of time and computing power in certain
 cases, for example during the disease diagnosis process.
@@ -118,16 +122,21 @@ about the signal from human DNA beforehand.
 This is of course in some sense limiting factor as we need a sample signal from
 the species that we want to filter. The other problem is that in the case of misclassifying
 some signal as not interesting, we lost information about the corresponding
-read.
+part of the DNA molecule.
+
+The idea of doing selective sequencing during the phase of reading the DNA molecules
+(not as a part of some post-processing) is called Read Until. 
 
 \section{Current state of selective sequencing}
 
 %https://www.nature.com/articles/nmeth.3930
 %https://www.biorxiv.org/content/10.1101/038760v1
 
-There was some work regarding selective sequencing, most notably TODO. In their
-work, they obtained reference signal and then used dynamic time warping (DTW) to
-align the signal from the read to this reference signal. DTW is a dynamic programming
-algorithm that takes two signals and aligns them in a way that minimizes the total
-number of insertions and deletions. One of the limitations of DTW is that it has
-time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$ is the length of reference and read.
+There was some work regarding selective sequencing, most notably \cite{loose2016real}. In their
+work, they obtain the reference signal using simulation from reference nucleotide
+string. They use dynamic time warping (DTW) to align the signal from the read to
+this reference signal. The DTW is a dynamic programming algorithm that takes two signals and aligns them in a
+way that minimizes the total number of insertions and deletions. One of the limitations
+of DTW is that it has run time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$
+is the length of the reference signal and read respectively. This poses a problem
+for this method if we wanted to use it for a longer sequences...
