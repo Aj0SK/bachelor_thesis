@@ -4,16 +4,26 @@
 
 In this chapter, we will present our proposed solution.
 
+\section{Method overview}
+
+We want to create a fast yet accurate solution. Idea of our solution is to somehow
+discretize the simulated signal of reference sequence and then be able to decide
+during the process of sequencing if the DNA molecule currently passing through the
+pore is from this reference signal. In our current setup we are not very limited
+by the preprocessing time but we need to decide very fast once we are sequencing
+the DNA. This puts some speed limitation on our discretizing process during the
+processing of the DNA.
+
 \section{Obtaining reference signal}
 
-As we want to work with a signal, we need to obtain some reference signal that we
+We already stated that we need to obtain some reference signal that we
 can sample and use to later split reads between that we are interested and not
 interested in. For this purpose, we need to take the reference in the form of DNA sequence
-and turn it into a signal. For some DNA sequence we can use the nanopore data
+and turn it into a signal. We will use the nanopore data
 variant caller (nadavca) which is a tool that can take a DNA sequence as an input
 and produce a simulated signal. This simulation does not take into account that
 the signal from one nucleotid is measured several times. We already estimated
-that one nucleotid is in average measured about 10 times so we need to duplicate every
+that one nucleotid is in average measured about 10 times so we will duplicate every
 entry in this simulated signal 10 times. We want to see how this signal compares
 to real signal so to put these two into perspective we normalize this signal by
 subtracting mean and removing standard deviation \ref{obr:simVsReal}.
@@ -41,3 +51,22 @@ as the frequent outliers can deform the mean.
 The another visible problem is that real signal is somehow contracted
 on some places. This is caused by the fact that the DNA molecule is not moving
 through the pore at a constant speed. 
+
+\section{Core idea}
+
+It's good for us to represent signal visually as a graph. To certain extent we
+can see that two signals are similar. However, we need to do this fast and on a very
+long signals. The main goal is to be able to find the signal in the reference
+signal if it is present. This is only possible if we somehow represent the signal
+in a more compact form in some searchable way. What we will do is that we will
+represent the signal as a string. What we will do is that we split the signal vertically
+into several windows in a such manner that everything between minimal and maximal
+signal is in some window. These windows are for now of constant length and does not
+overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
+vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$. Besides this, we have some
+values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i \leq max_a$. We say that signal $a_i$ is in $j$-th
+window if it holds that:
+
+\begin{center}
+$min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
+\end{center}
