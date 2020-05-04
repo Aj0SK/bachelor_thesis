@@ -63,10 +63,34 @@ represent the signal as a string. What we will do is that we split the signal ve
 into several windows in a such manner that everything between minimal and maximal
 signal is in some window. These windows are for now of constant length and does not
 overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
-vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$. Besides this, we have some
-values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i \leq max_a$. We say that signal $a_i$ is in $j$-th
+vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
+Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i \leq max_a$. We say that signal $a_i$ is in $j$-th
 window if it holds that:
 
 \begin{center}
 $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
 \end{center}
+
+% TODO
+
+Example of this method on some signal for $w=6$ is on TODO. This method has several good
+properties that we use. First and obvious property is that the same signal has the
+same level string each time for the unchanged $w$. Besides this, small changes and
+oscillations in the signal will eventually stay at the same level most of the time.
+Another good factor is that with the change of the parameter $w$ we can change how specific
+and informative our method is. With the $w=2$ we can not say a lot about the two signals
+that have level string equal. With bigger $w$ we can miss the two same signals
+if there is a little of noise present. We also mentioned the different length of
+real and simulated signal. To offset even this negative phenomenon, we will contract
+subsequent occurrences of the same level. So level string "aabccaa" becomes "abca".
+
+So now we can transform the reference DNA sequence to signal using our simulation
+process, choose the windows size - $w$, create the levelstring of the reference.
+Now, when the real signal from the read arrives, we will perform the same process
+as with the simulated reference signal. Now we have one reference level string and
+one which we want to find in it. We see that this can be better formulated as an
+algorithmic problem. However, there is very small probability that the level string
+of the longer read would match exactly to some area in the reference level string.
+Instead of looking for the exact match in the reference we will cut the reference
+level string into ovelaping subsequences of length $k$ and put them into hashtable.
+Data structure that allows insertion and search in amotized time $O(1)$.
