@@ -9,23 +9,24 @@ research in this area.
 \section{DNA sequencing}
 
 % TODO: pridat zdroj %https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
-Genetics is a branch of biology that studies genes, genetic variation and heredity.
-It tries to explain variability between animals, source of hereditary diseases and
+Genetics is a branch of biology that studies genes, genetic variation, and heredity.
+It tries to explain the variability between animals, the source of hereditary diseases, and
 other important things that influence our lives. DNA is the key molecule
-that stores the biological information. It is contained in our every cell. Based
+that stores biological information. It is contained almost in every living cell. Based
 on the information from this molecule our cells can reproduce and create copies of
 themselves. Nowadays, it is possible to look at the DNA of the organism. This is
 one of the strongest tools of genetics as it helps us tell what are the functions
 of different parts of DNA by comparing it between organisms and looking at the
-consequences of different mutations. DNA stores genetical information using sequence of
-nucleotides that are in particular order. There are four types of DNA nucleotides:
-adenine(A), cytosine(C), guanine(G) and thymine(T). Besides this, DNA consists of two long
+consequences of different mutations. DNA stores genetic information using a sequence of
+nucleotides. Their particular order defies the stored information. There are four types of DNA nucleotides:
+adenine(A), cytosine(C), guanine(G) and thymine(T). In fact, DNA consists of two long
 molecules of these nucleotides. However, these two molecules are connected together
-in a complement way. So if on one string there is a A, then on the other
-one must be definitely T. If there is a C then on the other string we can expect
-it's complement G. For the organisms it means that it can to some extent repair
+in a complementary way. So if on one string there is an A, then on the other
+one must be T. If there is a C then on the other string we can expect
+it's complement G. For the organisms it means that they can to some extent repair
 missing nucleotides based on the complement rules. From now, we will for simplicity
-assume that DNA sequence is string of A, C, G, T. The process of obtaining DNA
+assume that DNA sequence is a string of A, C, G, T. This representation is quite accurate
+and we can also recover the other complementary DNA string easily. The process of obtaining DNA
 sequence is called DNA sequencing. Example how we can think of DNA is on \ref{obr:acgt}.
 
 % TODO: obrazok zdroj https://www.genome.gov/genetics-glossary/acgt
@@ -37,20 +38,20 @@ sequence is called DNA sequencing. Example how we can think of DNA is on \ref{ob
 \end{figure}
 
 The DNA molecule is very long and processing it whole would be very hard. Single
-DNA molecule in one cell can reach up to 2 metres.
+DNA molecule in one cell can reach up to 2 meters when untangled.
 %https://www.sciencefocus.com/the-human-body/how-long-is-your-dna/
-Thus, it is convenient to broke down whole DNA molecule into many shorter parts.
+Thus, it is convenient to broke down the whole DNA molecule into many shorter parts.
 This can be done chemically but it brings some problems, especially some of the
-DNA molecules could be missed so we would lost information about that part of DNA.
-Because of this, we use DNA polymerases to duplicate these shorter DNA sequences
+DNA molecules could be missed during sequencing so we would lose information about
+that part of DNA. Because of this, we use DNA polymerases to duplicate these shorter DNA sequences
 many times so we end up with a mixture containing our DNA molecule, broken into
-many duplicated parts. DNA polymerasis can stick to DNA molecule and rebuild complementary
+many duplicated parts. DNA polymerases can stick to DNA molecule and rebuild the complementary
 part. Once we have this mixture of shorter DNA molecules we need to sequence individual
 parts and then somehow connect them together to obtain the nucleotide string representing
 our DNA molecule.
 
 One of the devices that serve this purpose is MinION\cite{lu2016oxford}. MinION is
-a cheap and versatile DNA sequencer with size of modern smartphone showed in fig.
+a cheap and versatile DNA sequencer with the size of the modern smartphone showed in fig.
 \ref{obr:minIon}.
 
 \begin{figure}
@@ -59,12 +60,13 @@ a cheap and versatile DNA sequencer with size of modern smartphone showed in fig
 \label{obr:minIon}
 \end{figure}
 
-This sequencer
-consists of a active surface filled with pores. Pore is a small hole with electric current passing through it. 
-As the molecule of DNA is passing through the pore of MinION, we can observe
-changes in the flow of an electric current passing through the pore. This electric
-current called signal is measured over discrete time. The example of this signal
-is on the figure \ref{obr:minIonCurrent}.
+This sequencer consists of an active surface filled with pores. A pore is a small
+hole with an electric current passing through it. The DNA molecule, negatively charged
+will start to pass through the pores when the positive charge is generated on the
+other side of the surface. As the molecule of DNA is passing through the pore of
+MinION, we can observe changes in the flow of an electric current passing through the pore.
+This electric current called signal is measured over the discrete-time. The example
+of this signal is on figure \ref{obr:minIonCurrent}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/signal}}
@@ -73,12 +75,13 @@ is on the figure \ref{obr:minIonCurrent}.
 \label{obr:minIonCurrent}
 \end{figure}
 
-MinION version we use for sequencing process around 400 nucleotids per second.
-The value of signal is measured around 4000 times per second so it's good to estimate
-that one nucleotid is in average measured about 10 times.
+The minION version we use for the DNA sequencing process around 400 nucleotides per second.
+The value of the signal is measured around 4000 times per second so it is good to
+estimate that one nucleotide is on average measured about 10 times.
 
-When we obtain the signal from pore, we need to convert it into DNA
-sequence. As the molecule of DNA is passing through the pore, only a small
+When we obtain the signal from the pore, we need to convert it into the DNA
+sequence. What is crucial for transcription of the signal into the DNA sequence is
+that as the molecule of DNA is passing through the pore, only a small
 number of nucleotides in the proximity of pore influence the output signal. So from
 the measurements of signal throughout the time, using a method called base-calling,
 we can tell how the molecule of DNA looked like. Despite big improvements in the
@@ -87,10 +90,10 @@ resource-intensive.
 
 \section{Selective sequencing}
 
-MinION has special ability that helps us in certain scenarios. It can reject
+MinION has a special ability that helps us in certain scenarios. It can reject
 DNA molecule that is currently passing through the pore. MinION reverses the molecule’s direction and throws it away.
 Selective sequencing is the idea that based on the incoming signal, we can tell
-if we are interested in sequencing current DNA molecule and can decide if we want
+if we are interested in sequencing the current DNA molecule and can decide if we want
 to continue or reject this molecule. This happens on-the-fly so we need to make
 the decision until the end of the current read. This means we don't have time to
 turn our signal into a nucleotide sequence as the reads are too short. This is
@@ -98,7 +101,7 @@ a reason why we have to work with a raw signal.
 
 There are a lot of benefits of selective sequencing. In case we are not interested
 in some DNA that we know is contained in our sample, we can use this technique to
-reject unwanted DNA molecule. This saves us a lot of time and resources as obtaining
+reject unwanted DNA molecules. This saves us a lot of time and resources as obtaining
 nucleotide sequence from the signal is in some scenarios unnecessary and too
 costly process in terms of performance.
 
@@ -109,9 +112,9 @@ interested in sequencing DNA that produces a signal in some sense similar to our
 chosen sample. This all means saving a lot of time and computing power in certain
 cases, for example during the disease diagnosis process.
 
-Naturally, there are some drawbacks of selective sequencing. In order to find out
+Naturally, there are some drawbacks to selective sequencing. In order to find out
 if the currently passing molecule is from human DNA, we have to have some information
-about signal from human DNA beforehand.
+about the signal from human DNA beforehand.
 This is of course in some sense limiting factor as we need a sample signal from
 the species that we want to filter. The other problem is that in the case of misclassifying
 some signal as not interesting, we lost information about the corresponding
@@ -123,8 +126,8 @@ read.
 %https://www.biorxiv.org/content/10.1101/038760v1
 
 There was some work regarding selective sequencing, most notably TODO. In their
-work they obtained reference signal and then used dynamic time warping (DTW) to
-allign signal from the read to this reference signal. DTW is a dynamic programming
-algorithm that takes two signals and allign them in a way that minimizes total
+work, they obtained reference signal and then used dynamic time warping (DTW) to
+align the signal from the read to this reference signal. DTW is a dynamic programming
+algorithm that takes two signals and aligns them in a way that minimizes the total
 number of insertions and deletions. One of the limitations of DTW is that it has
-time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$ is length of reference and read.
+time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$ is the length of reference and read.
