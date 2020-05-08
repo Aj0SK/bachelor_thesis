@@ -8,7 +8,7 @@ In this chapter, we will present our proposed solution.
 
 We want to create a fast yet accurate solution. Idea of our solution is to somehow
 discretize the simulated signal of reference sequence and then be able to decide
-during the process of sequencing if the DNA molecule currently passing through the
+during the process of sequencing if the DNA molecule currently passin   g through the
 pore is from this reference signal. In our current setup we are not very limited
 by the preprocessing time but we need to decide very fast once we are sequencing
 the DNA. This puts some speed limitation on our discretizing process during the
@@ -64,14 +64,14 @@ into several windows in a such manner that everything between minimal and maxima
 signal is in some window. These windows are for now of constant length and does not
 overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
 vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
-Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i \leq max_a$. We say that signal $a_i$ is in $j$-th
+Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i < max_a$. We say that signal $a_i$ is in $j$-th
 window if it holds that:
 
 \begin{center}
 $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
 \end{center}
 
-% TODO
+% TODO obrazok
 
 Example of this method on some signal for $w=6$ is on TODO. This method has several good
 properties that we use. First and obvious property is that the same signal has the
@@ -84,13 +84,21 @@ if there is a little of noise present. We also mentioned the different length of
 real and simulated signal. To offset even this negative phenomenon, we will contract
 subsequent occurrences of the same level. So level string "aabccaa" becomes "abca".
 
-So now we can transform the reference DNA sequence to signal using our simulation
+So now, we can transform the reference DNA sequence to signal using our simulation
 process, choose the windows size - $w$, create the levelstring of the reference.
-Now, when the real signal from the read arrives, we will perform the same process
+Then, when the real signal from the read arrives, we will perform the same process
 as with the simulated reference signal. Now we have one reference level string and
 one which we want to find in it. We see that this can be better formulated as an
 algorithmic problem. However, there is very small probability that the level string
 of the longer read would match exactly to some area in the reference level string.
 Instead of looking for the exact match in the reference we will cut the reference
 level string into ovelaping subsequences of length $k$ and put them into hashtable.
-Data structure that allows insertion and search in amotized time $O(1)$.
+Hash table is a data structure that allows insertion and search of an element in
+amotized time complexity $O(1)$. When we have this hashtable ready after the
+preprocessing we can start with the actual read processing. For every read, we will
+build the level string from the raw signal. Then, we will cut it into the ovelaping
+subsequences of the same length $k$ and see how many of them can be found in our
+prepared hashtable. We call all the subsequences that are present in the hashtable
+hits. Our initial assumption is that the number of hits will be considerably higher
+in the read belonging to the reference. 
+
