@@ -9,13 +9,9 @@ readsNegFilePath = "../../../data/neg-basecalled"
 targetBeg, targetEnd = 0, 10000000
 
 posTestCases, negTestCases = 40, 40
-levels = 12
 repeatSignal = 10
-kmerLength = 12
 overflow = 0.30
 smoothParam = 5
-refWindowSize = 1000
-refWindowJump = 700
 fromRead, toRead = 5000, 20000
 kmerNum = 10000
 ################################################################################
@@ -42,7 +38,6 @@ from signalHelper import (
     computeNorm,
     computeString,
     smoothSignal,
-    buildDictionary,
     overlappingKmers,
 )
 
@@ -65,6 +60,13 @@ def getLevelStr(signal, l):
     )
     return currString
 
+def buildDictionary(dict, string, k):
+    for i in range(0, len(string) - k + 1):
+        kmer = string[i : i + k]
+        if kmer not in dict:
+            dict[kmer] = 0
+        dict[kmer] += 1
+    return
 
 ################################################################################
 
@@ -78,90 +80,97 @@ negReads = getReadsInFolder(readsNegFilePath)
 
 ################################################################################
 
-storeContig = {}
+for levels in range(4, 15):
+    storeContig = {}
 
-for contig in Fasta(refFilePath):
-    ref = str(contig)[:targetEnd]
-    contigSignal = stringToSignal(ref, mod, repeatSignal=repeatSignal)
-    levelStr = getLevelStr(contigSignal, levels)
-    storeContig[contig.name] = levelStr
+    for contig in Fasta(refFilePath):
+        ref = str(contig)[:targetEnd]
+        contigSignal = stringToSignal(ref, mod, repeatSignal=repeatSignal)
+        levelStr = getLevelStr(contigSignal, levels)
+        storeContig[contig.name] = levelStr
 
-print("Refstrings ready!")
+    print("Refstrings ready!")
 
-hk = list(range(5, 29))
+    hk = list(range(5, 35))
 
-for k in hk:
+    for k in hk:
 
-    hashTables = []
+        hashTable = {}
 
-    for contig in storeContig.values():
-        hashTables.append(buildDictionary(contig, k))
-
-    total, counter, totalNum = 0
-
-    for readFile in posReads:
-        if counter == posTestCases or totalNum == kmerNum:
-            break
-        try:
-            readFastq, _ = getSeqfromRead(readFile)
-        except:
-            continue
-
-        hits = [
-            aln
-            for aln in referenceIdx.map(readFastq)
-            if aln.q_en - aln.q_st > 0.95 * len(readFastq) and aln.strand == 1
-        ]
-
-        if len(hits) != 1:
-            continue
-            
-            #print("Bingo!")
-
-        readSignal = getSignalFromRead(readFile)[fromRead:toRead]
-        readString = getLevelStr(readSignal, levels)
-            
-        counter += 1
-            
-        for i in range(len(readString)):
-            if kmerNum == totalNum:
-                break
-            kmer = readString[i : i + k]
-            totalNum += 1
-            for j in hashTables:
-                total += j.get(kmer, 0)
-        #print("Counter +1!")
-        #print(f"Add {len(readString)}")
-    
-    print(f"+ k {k} l {levels} -> {total} / {totalNum}")
-    totalNum, total, counter = 0, 0, 0
-    for readFile in negReads:
-        if counter == negTestCases or totalNum == kmerNum:
-            break
-        try:
-            readFastq, _ = getSeqfromRead(readFile)
-        except:
-            continue
-
-        hits = [
-            aln
-            for aln in referenceIdx.map(readFastq)
-            if aln.q_en - aln.q_st > 0.10 * len(readFastq) and aln.strand == 1
-        ]
-
-        if len(hits) != 0:
-            continue
+        for contig in storeContig.values():
+            buildDictionary(hashTable, contig, k)
         
-        readSignal = getSignalFromRead(readFile)[fromRead:toRead]
-        readString = getLevelStr(readSignal, levels)
+        toDel = []
+        for key, count in hashTable.items():
+            if count >= 10000:
+                toDel.append(key)
+        
+        for key in toDel:
+            del hashTable[key]
+        
+        total, counter, totalNum = 0, 0, 0
+
+        for readFile in posReads:
+            if counter == posTestCases or totalNum == kmerNum:
+                break
+            try:
+                readFastq, _ = getSeqfromRead(readFile)
+            except:
+                continue
+
+            hits = [
+                aln
+                for aln in referenceIdx.map(readFastq)
+                if aln.q_en - aln.q_st > 0.95 * len(readFastq) and aln.strand == 1
+            ]
+
+            if len(hits) != 1:
+                continue
+                
+                #print("Bingo!")
+
+            readSignal = getSignalFromRead(readFile)[fromRead:toRead]
+            readString = getLevelStr(readSignal, levels)
+                
+            counter += 1
+                
+            for i in range(len(readString)):
+                if kmerNum == totalNum:
+                    break
+                kmer = readString[i : i + k]
+                totalNum += 1
+                total += hashTable.get(kmer, 0)
+            #print("Counter +1!")
+            #print(f"Add {len(readString)}")
+        
+        print(f"+ k {k} l {levels} -> {total} / {totalNum}")
+        totalNum, total, counter = 0, 0, 0
+        for readFile in negReads:
+            if counter == negTestCases or totalNum == kmerNum:
+                break
+            try:
+                readFastq, _ = getSeqfromRead(readFile)
+            except:
+                continue
+
+            hits = [
+                aln
+                for aln in referenceIdx.map(readFastq)
+                if aln.q_en - aln.q_st > 0.10 * len(readFastq) and aln.strand == 1
+            ]
+
+            if len(hits) != 0:
+                continue
             
-        counter += 1
-            
-        for i in range(len(readString)):
-            if kmerNum == totalNum:
-                break;
-            kmer = readString[i : i + k]
-            totalNum += 1
-            for j in hashTables:
-                total += j.get(kmer, 0)
-    print(f"- k {k} l {levels} -> {total} / {totalNum}")
+            readSignal = getSignalFromRead(readFile)[fromRead:toRead]
+            readString = getLevelStr(readSignal, levels)
+                
+            counter += 1
+                
+            for i in range(len(readString)):
+                if kmerNum == totalNum:
+                    break;
+                kmer = readString[i : i + k]
+                totalNum += 1
+                total += hashTable.get(kmer, 0)
+        print(f"- k {k} l {levels} -> {total} / {totalNum}")
