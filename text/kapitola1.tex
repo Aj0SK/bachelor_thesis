@@ -14,7 +14,7 @@ research in this area.
 Genetics is a branch of biology that studies genes, genetic variation, and heredity.
 It tries to explain the variability between animals, the source of hereditary diseases, and
 other important things that influence our lives. DNA is the key molecule
-that stores biological information. It is contained almost in every living cell. Based
+that stores biological information. It is contained in almost every living cell. Based
 on the information from this molecule our cells can reproduce and create copies of
 themselves. Nowadays, it is possible to look at the DNA of the organism. This is
 one of the strongest tools of genetics as it helps us tell what are the functions
@@ -22,14 +22,15 @@ of different parts of DNA by comparing it between organisms and looking at the
 consequences of different mutations. DNA stores genetic information using a sequence of
 nucleotides. Their particular order defies the stored information. There are four types of DNA nucleotides:
 adenine(A), cytosine(C), guanine(G) and thymine(T). In fact, DNA consists of two long
-molecules of these nucleotides. However, these two molecules are connected together
+strings of these nucleotides. However, these two strings are connected together
 in a complementary way. So if on one string there is an A, then on the other
 one must be T. If there is a C then on the other string we can expect
 it's complement G. For the organisms it means that they can (to some extent) repair
 missing nucleotides based on the complement rules. From now, we will for simplicity
-assume that DNA sequence is a string of A, C, G, T. This representation is quite accurate
-and we can also recover the other complementary DNA string easily. The process of obtaining DNA
-sequence is called DNA sequencing. Example how we can think of DNA is on \ref{obr:acgt}.
+assume that DNA sequence is a sequence of characters A, C, G, T. This representation
+can be easily represented in the computer and also stores enough information as we
+can recover the other complementary DNA string easily. The process of obtaining DNA
+sequence is called \textit{DNA sequencing}. Example how we can think of DNA is on \ref{obr:acgt}.
 
 % TODO: obrazok zdroj https://www.genome.gov/genetics-glossary/acgt
 
@@ -64,13 +65,13 @@ a cheap and versatile DNA sequencer with the size of the modern smartphone showe
 \label{obr:minIon}
 \end{figure}
 
-This sequencer consists of an active surface filled with pores. A pore is a small
+This sequencer consists of an active surface filled with \textit{pores}. A pore is a small
 hole with an electric current passing through it. The DNA molecule, negatively charged
 will start to pass through the pores when the positive charge is generated on the
 other side of the surface. As the molecule of DNA is passing through the pore of
 MinION, we can observe changes in the flow of an electric current passing through the pore.
-This electric current called signal is measured over the discrete-time. The example
-of this signal is on figure \ref{obr:minIonCurrent}.
+This electric current is measured over the discrete-time and it is called \textit{signal}
+or \textit{raw signal}. The example of this signal is on figure \ref{obr:minIonCurrent}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/signal}}
@@ -79,14 +80,19 @@ of this signal is on figure \ref{obr:minIonCurrent}.
 \label{obr:minIonCurrent}
 \end{figure}
 
-The minION version we use for the DNA sequencing process around 400 nucleotides per second.
+The MinION version we use for the DNA sequencing process around 400 nucleotides per second.
 The value of the signal is measured around 4000 times per second so it is good to
 estimate that one nucleotide is on average measured about 10 times. Additionally,
-minION has several these active pores and it can process several DNA molecules in
+MinION has several these active pores and it can process several DNA molecules in
 parallel. The signal generated from the pass of the single DNA molecule through
-the single pore is called read.
+the single pore is called \textit{read}. One of the advantages of the MinION sequencer is
+that is produces quite long reads. The length of the read is stated in kilo-bases
+where base corresponds to nucleotide. The mean length of the read in some
+applications ranges from 13kb to 20kb.
 
-When we obtain the signal from the pore, we need to convert it into the DNA
+% TODO: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5793790/
+
+When we obtain the signal from the pore, we need to finally convert it into the DNA
 sequence. What is crucial for transcription of the signal into the DNA sequence is
 that as the molecule of DNA is passing through the pore, only a small
 number of nucleotides in the proximity of pore influence the output signal. So from
@@ -99,12 +105,12 @@ resource-intensive.
 
 MinION has a special ability that helps us in certain scenarios. It can reject
 DNA molecule that is currently passing through the pore. MinION reverses the molecule’s direction and throws it away.
-Selective sequencing is the idea that based on the incoming signal, we can tell
+\textit{Selective sequencing} is the idea that based on the incoming signal, we can tell
 if we are interested in sequencing the current DNA molecule. Subsequently, we can decide if we want
 to continue or reject this molecule. This happens on-the-fly so we need to make
 the decision until the end of the current read. This often means we don't have time to
-turn our signal into a nucleotide sequence as the reads are too short. This is
-a reason why we have to work with a raw signal.
+turn our signal into a nucleotide sequence as the reads are too short for this.
+That is the reason why we have to work with a raw signal.
 
 There are a lot of benefits of selective sequencing. In case we are not interested
 in some DNA that we know is contained in our sample, we can use this technique to
