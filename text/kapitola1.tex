@@ -1,4 +1,4 @@
-\chapter{Selective sequencing}
+\chapter{Selective DNA sequencing}
 
 \label{kap:selSeq} % id kapitoly pre prikaz ref
 
@@ -6,7 +6,9 @@ In this chapter, we are going to describe what is selective sequencing. We
 show advantages that this method brings, the main challenges and current state of
 research in this area.
 
-\section{DNA sequencing}
+\section{DNA nanopore sequencing}
+
+\subsection{DNA}
 
 % TODO: pridat zdroj %https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
 Genetics is a branch of biology that studies genes, genetic variation, and heredity.
@@ -36,6 +38,8 @@ sequence is called DNA sequencing. Example how we can think of DNA is on \ref{ob
 \caption[DNA]{DNA Molecule}
 \label{obr:acgt}
 \end{figure}
+
+\subsection{DNA sequencing}
 
 The DNA molecule is very long and processing it whole would be very hard. Single
 DNA molecule in one cell can reach up to 2 meters when untangled.
@@ -91,7 +95,7 @@ we can tell how the molecule of DNA looked like. Despite big improvements in the
 base-calling algorithms, the overall process of base-calling is quite slow and
 resource-intensive.
 
-\section{Selective sequencing}
+\subsection{Selective sequencing}
 
 MinION has a special ability that helps us in certain scenarios. It can reject
 DNA molecule that is currently passing through the pore. MinION reverses the molecule’s direction and throws it away.
@@ -140,3 +144,9 @@ way that minimizes the total number of insertions and deletions. One of the limi
 of DTW is that it has run time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$
 is the length of the reference signal and read respectively. This poses a problem
 for this method if we wanted to use it for a longer sequences...
+
+Recently, there is an effort to improve the speed of base-calling at the expense
+of a small decrease in error rate. This work gives promising results and could lead
+to a base-calling at the speed of the sequencing on the classic desktop computer.
+
+We decided to go the other way and try to work with the raw signal.

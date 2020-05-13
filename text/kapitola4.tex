@@ -1,36 +1,6 @@
-\chapter{Method adjustments}
+\chapter{Conclusions and Future Work}
 
-\label{kap:methAdjust} % id kapitoly pre prikaz ref
+\label{kap:conclusionAndFuture} % id kapitoly pre prikaz ref
 
-In this chapter we will look at the main challenges of our method and the ways
-we can overcome them.
-
-\section{Experiment data}
-
-Our data comes from two organisms, one is Saprochaete ingens. We use this organism
-as a positive example which we will want to sequence. The second organism is
-Saprochaete fungicola. Both of these organisms are yeasts, not sharing the large
-parts of the DNA. We choose these organisms as they were already sequenced by our
-department and we have all the data from the sequencing easily available.
-
-\section{Oscillations}
-
-We already saw in TODO that one of the biggest differences between simulated and
-real signal is the noise which can be seen as small oscillations of the signal. This is
-one of the reasons that we use windows - so small oscillations within the window
-are dealt with. However, when our method is used without any modifications it
-produces much longer level string for real signal than for simulated signal.
-The problem arises when the oscillations are located on the borders of the windows.
-There are several possibilities to deal with this behavior not affecting speed too
-much. We tried several smoothing algorithms to reduce noise. From simple as the
-moving average and the moving median to some more complicated as a kalman filter.
-For now, we will stick to the faster solutions and choose one of the simpler techniques.
-
-\section{Continuity of signal}
-
-The next difference that was visible from the comparison of real signal level string
-and simulated signal level string is that the real signal is somewhat continuos instead
-of a simulated signal that more jumps.
-
-The another solution that can be combined with the previous solutions is only.
+In this chapter, we will...
 
