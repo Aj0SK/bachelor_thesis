@@ -2,7 +2,8 @@
 
 \label{kap:proposedMethod} % id kapitoly pre prikaz ref
 
-In this chapter, we will present our proposed solution.
+In this chapter, we will present our proposed algorithm that will allow us to work
+with the squiggles more easily.
 
 \section{Squiggles as Sequencing of Discrete Observations}
 
@@ -20,8 +21,8 @@ long signals. The main goal is to be able to find the signal in the reference
 signal if it is present. This is only possible if we somehow represent the signal
 in a more compact form in some searchable way. What we will do is that we will
 represent the signal as a string. What we will do is that we split the signal vertically
-into several windows in such a manner that everything between minimal and maximal
-signal is in some window. These windows are for now of constant length and do not
+into several windows in such a manner that everything between some minimal and maximal
+value is in some of the window. These windows are of constant length and do not
 overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
 vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
 Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i < max_a$. We say that signal $a_i$ is in $j$-th
@@ -33,8 +34,8 @@ $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-
 
 % TODO obrazok
 
-An example of this method on some signal for $w=6$ is on TODO. This method has several good
-properties that we use. The first and obvious property is that the same signal has the
+An example of this method on some signal for $w=6$ is on TODO. This method has
+several good properties that we use. The first and obvious property is that the same signal has the
 same level string each time for the unchanged $w$. Besides this, small changes and
 oscillations in the signal will eventually stay at the same level most of the time.
 Another good factor is that with the change of the parameter $w$ we can change how specific
@@ -86,7 +87,7 @@ subtracting mean and removing standard deviation \ref{obr:simVsReal}.
 There are some more advanced simulators of signal such as DeepSimulator but we
 wanted to begin with the simplest possible solution.
 
-\section{Real and simulated signal comparison}
+\subsection{Real and simulated signal comparison}
 
 Now we have a simulated reference signal. We can see that the simulated and real
 signal are not identical in \ref{obr:simVsReal}. This poses problems as we want to have these signals as
@@ -100,7 +101,7 @@ Another visible problem is that the real signal is somehow contracted
 in some places. This is caused by the fact that the DNA molecule is not moving
 through the pore at a constant speed. 
 
-\section{Oscillations}
+\subsection{Oscillations}
 
 We already saw in TODO that one of the biggest differences between simulated and
 real signal is the noise which can be seen as small oscillations of the signal. This is
@@ -113,10 +114,19 @@ much. We tried several smoothing algorithms to reduce noise. From simple as the
 moving average and the moving median to some more complicated as a kalman filter.
 For now, we will stick to the faster solutions and choose one of the simpler techniques.
 
-\section{Signal continuity}
+\subsection{Signal continuity}
 
 The next difference that was visible from the comparison of real signal level string
 and the simulated signal level string is that the real signal is more continuous instead
 of a simulated signal that jumps. Again, we can use the moving average. Instead of
 the moving median, it has a nice advantage that it causes signal not to jump from
 one level to another but rather move continuously.
+
+
+\section{Identification of Reads Based on Shared k-mers}
+
+We would want to now see how our discretization works and how similar are two level
+strings of reference and the real signal that corresponds to this reference and also
+some random read level string with our reference level string.
+
+\section{Experimental evaluation}
