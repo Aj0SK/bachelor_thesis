@@ -1,27 +1,7 @@
-\chapter{Method adjustments}
+\chapter{Towards Building a Squiggle Index}
 
 \label{kap:methAdjust} % id kapitoly pre prikaz ref
 
 In this chapter we will look at the main challenges of our method and the ways
 we can overcome them.
 
-\section{Oscillations}
-
-We already saw in TODO that one of the biggest differences between simulated and
-real signal is the noise which can be seen as small oscillations of the signal. This is
-one of the reasons that we use windows - so small oscillations within the window
-are dealt with. However, when our method is used without any modifications it
-produces much longer level string for real signal than for simulated signal.
-The problem arises when the oscillations are located on the borders of the windows.
-There are several possibilities to deal with this behavior not affecting speed too
-much. We tried several smoothing algorithms to reduce noise. From simple as the
-moving average and the moving median to some more complicated as a kalman filter.
-For now, we will stick to the faster solutions and choose one of the simpler techniques.
-
-\section{Signal continuity}
-
-The next difference that was visible from the comparison of real signal level string
-and the simulated signal level string is that the real signal is more continuous instead
-of a simulated signal that jumps. Again, we can use the moving average. Instead of
-the moving median, it has a nice advantage that it causes signal not to jump from
-one level to another but rather move continuously.

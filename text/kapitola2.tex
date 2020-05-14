@@ -4,7 +4,7 @@
 
 In this chapter, we will present our proposed solution.
 
-\section{Method overview}
+\section{Squiggles as Sequencing of Discrete Observations}
 
 We want to create a fast yet accurate solution. The idea of our solution is to somehow
 discretize the simulated signal of the reference sequence and then be able to decide
@@ -13,46 +13,6 @@ pore is from this reference signal. In our current setup, we are not very limite
 by the preprocessing time but we need to decide very fast once we are sequencing
 the DNA. This puts some speed limitations on our discretizing process during the
 processing of the DNA.
-
-\section{Obtaining reference signal}
-
-We already stated that we need to obtain some reference signal that we
-can sample and use to later split reads between that we are interested in and not
-interested in. For this purpose, we need to take the reference in the form of a DNA sequence
-and turn it into a signal. We will use the nanopore data
-variant caller (nadavca) which is a tool that can take a DNA sequence as an input
-and produce a simulated signal. This simulation does not take into account that
-the signal from one nucleotide is measured several times. We already estimated
-that one nucleotide is on average measured about 10 times so we will duplicate every
-entry in this simulated signal 10 times. We want to see how this signal compares
-to real signal so to put these two into perspective we normalize this signal by
-subtracting mean and removing standard deviation \ref{obr:simVsReal}.
-
-\begin{figure}
-\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}
-\caption[Hehe]{Simulated signal vs real signal}
-\label{obr:simVsReal}
-\end{figure}
-
-% https://github.com/lykaust15/DeepSimulator
-There are some more advanced simulators of signal such as DeepSimulator but we
-wanted to begin with the simplest possible solution.
-
-\section{Real and simulated signal comparison}
-
-Now we have a simulated reference signal. We can see that the simulated and real
-signal are not identical in \ref{obr:simVsReal}. This poses problems as we want to have these signals as
-similar as possible. The first thing that we want to consider is normalization. There
-are two possible approaches, local and global normalization. We will try both these
-approaches. One of the most wide-spread ways of doing this is to subtract mean and dividing
-signal by standard deviation. The other possible solution is subtracting median value
-as the frequent outliers can deform the mean. 
-
-Another visible problem is that the real signal is somehow contracted
-in some places. This is caused by the fact that the DNA molecule is not moving
-through the pore at a constant speed. 
-
-\section{Core idea}
 
 It's good for us to represent the signal visually as a graph. To a certain extent, we
 can see that the two signals are similar. However, we need to do this fast and on very
@@ -101,3 +61,62 @@ subsequences of the same length $k$ and see how many of them can be found in our
 prepared hashtable. We call all the subsequences that are present in the hashtable
 hits. Our initial assumption is that the number of hits will be considerably higher
 for the read belonging to the reference.
+
+\section{Simulating Squiggles from Reference}
+
+We already stated that we need to obtain some reference signal that we
+can sample and use to later split reads between that we are interested in and not
+interested in. For this purpose, we need to take the reference in the form of a DNA sequence
+and turn it into a signal. We will use the nanopore data
+variant caller (nadavca) which is a tool that can take a DNA sequence as an input
+and produce a simulated signal. This simulation does not take into account that
+the signal from one nucleotide is measured several times. We already estimated
+that one nucleotide is on average measured about 10 times so we will duplicate every
+entry in this simulated signal 10 times. We want to see how this signal compares
+to real signal so to put these two into perspective we normalize this signal by
+subtracting mean and removing standard deviation \ref{obr:simVsReal}.
+
+\begin{figure}
+\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}
+\caption[Hehe]{Simulated signal vs real signal}
+\label{obr:simVsReal}
+\end{figure}
+
+% https://github.com/lykaust15/DeepSimulator
+There are some more advanced simulators of signal such as DeepSimulator but we
+wanted to begin with the simplest possible solution.
+
+\section{Real and simulated signal comparison}
+
+Now we have a simulated reference signal. We can see that the simulated and real
+signal are not identical in \ref{obr:simVsReal}. This poses problems as we want to have these signals as
+similar as possible. The first thing that we want to consider is normalization. There
+are two possible approaches, local and global normalization. We will try both these
+approaches. One of the most wide-spread ways of doing this is to subtract mean and dividing
+signal by standard deviation. The other possible solution is subtracting median value
+as the frequent outliers can deform the mean. 
+
+Another visible problem is that the real signal is somehow contracted
+in some places. This is caused by the fact that the DNA molecule is not moving
+through the pore at a constant speed. 
+
+\section{Oscillations}
+
+We already saw in TODO that one of the biggest differences between simulated and
+real signal is the noise which can be seen as small oscillations of the signal. This is
+one of the reasons that we use windows - so small oscillations within the window
+are dealt with. However, when our method is used without any modifications it
+produces much longer level string for real signal than for simulated signal.
+The problem arises when the oscillations are located on the borders of the windows.
+There are several possibilities to deal with this behavior not affecting speed too
+much. We tried several smoothing algorithms to reduce noise. From simple as the
+moving average and the moving median to some more complicated as a kalman filter.
+For now, we will stick to the faster solutions and choose one of the simpler techniques.
+
+\section{Signal continuity}
+
+The next difference that was visible from the comparison of real signal level string
+and the simulated signal level string is that the real signal is more continuous instead
+of a simulated signal that jumps. Again, we can use the moving average. Instead of
+the moving median, it has a nice advantage that it causes signal not to jump from
+one level to another but rather move continuously.
