@@ -2,22 +2,26 @@
 
 \label{kap:proposedMethod} % id kapitoly pre prikaz ref
 
-In this chapter, we will present our proposed algorithm that will allow us to work
+In this chapter, we will present our proposed method that will allow us to work
 with the squiggles more easily.
 
 \section{Squiggles as Sequencing of Discrete Observations}
 
-We want to create a fast yet accurate solution. The idea of our solution is to somehow
-discretize the simulated signal of the reference sequence and then be able to decide
-during the process of sequencing if the DNA molecule currently passing through the
-pore is from this reference signal. In our current setup, we are not very limited
-by the preprocessing time but we need to decide very fast once we are sequencing
-the DNA. This puts some speed limitations on our discretizing process during the
-processing of the DNA.
+The idea of our solution is to somehow discretize the simulated signal of the
+reference sequence and then be able to decide during the process of sequencing
+if the DNA molecule currently passing through the pore is from this reference signal.
+In our current setup, we are not very limited by the preprocessing time but we
+need to decide very fast once we are sequencing the DNA. This puts some speed
+limitations on our discretizing process during the processing of the DNA.
 
-It's good for us to represent the signal visually as a graph. To a certain extent, we
+We want to create a fast yet accurate solution. We want to come with some better
+representation of the squiggles that represents signal well and also provides some
+advantages such as easy searching of the signal in this representation. It is good
+for people to represent the signal visually as a graph. To a certain extent, we
 can see that the two signals are similar. However, we need to do this fast and on very
-long signals. The main goal is to be able to find the signal in the reference
+long signals. 
+
+The main goal is to be able to find the signal in the reference
 signal if it is present. This is only possible if we somehow represent the signal
 in a more compact form in some searchable way. What we will do is that we will
 represent the signal as a string. What we will do is that we split the signal vertically
@@ -25,8 +29,8 @@ into several windows in such a manner that everything between some minimal and m
 value is in some of the window. These windows are of constant length and do not
 overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
 vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
-Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i < max_a$. We say that signal $a_i$ is in $j$-th
-window if it holds that:
+Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i < max_a$.
+We say that signal $a_i$ is in $j$-th window if it holds that:
 
 \begin{center}
 $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
@@ -34,7 +38,9 @@ $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-
 
 % TODO obrazok
 
-An example of this method on some signal for $w=6$ is on TODO. This method has
+If the signals $a_0, a_1 \cdots a_n$ are in the windows $w_0, w_1 \cdots w_i$
+we call $l=w_1w_2\cdots w_n$ the level string of the signal $s$. An example of
+this method on some signal for $w=6$ is on TODO. This method has
 several good properties that we use. The first and obvious property is that the same signal has the
 same level string each time for the unchanged $w$. Besides this, small changes and
 oscillations in the signal will eventually stay at the same level most of the time.
@@ -65,17 +71,18 @@ for the read belonging to the reference.
 
 \section{Simulating Squiggles from Reference}
 
-We already stated that we need to obtain some reference signal that we
-can sample and use to later split reads between that we are interested in and not
+We already stated that we need to obtain some reference squiggle that we
+can sample and use to later split squiggle between that we are interested and not
 interested in. For this purpose, we need to take the reference in the form of a DNA sequence
-and turn it into a signal. We will use the nanopore data
-variant caller (nadavca) which is a tool that can take a DNA sequence as an input
-and produce a simulated signal. This simulation does not take into account that
-the signal from one nucleotide is measured several times. We already estimated
-that one nucleotide is on average measured about 10 times so we will duplicate every
-entry in this simulated signal 10 times. We want to see how this signal compares
-to real signal so to put these two into perspective we normalize this signal by
-subtracting mean and removing standard deviation \ref{obr:simVsReal}.
+and turn it into a signal. We will use the nanopore data variant caller (nadavca)
+which is a tool that can take a DNA sequence as an input and produce a simulated signal.
+
+This simulation does not take into account that the signal from one nucleotide is
+measured several times. We already estimated that one nucleotide is on average
+measured about 10 times so we will duplicate every entry in this simulated signal
+10 times. We want to see how this signal compares to real signal so to put these
+two into perspective we normalize this signal by subtracting mean and removing
+standard deviation \ref{obr:simVsReal}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}

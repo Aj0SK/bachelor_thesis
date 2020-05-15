@@ -4,7 +4,7 @@
 
 In this chapter, we are going to explain what is selective sequencing. We
 show advantages that this method brings and then look at the main challenges and
-current state of research in this area.
+the current state of research in this area.
 
 \section{DNA nanopore sequencing}
 
@@ -14,7 +14,7 @@ current state of research in this area.
 Genetics is a branch of biology that studies genes, genetic variation, and heredity.
 It tries to explain the variability between animals, the source of hereditary diseases, and
 other important things that influence our lives. DNA is the key molecule
-that stores biological information in the living organisms. It is contained in
+that stores biological information in living organisms. It is contained in
 almost every living cell. Based on the information from this molecule our cells can reproduce and create copies of
 themselves. Nowadays, it is possible to look at the DNA of the organism. This is
 one of the strongest tools of genetics as it helps us tell what are the functions
@@ -22,15 +22,14 @@ of different parts of DNA by comparing it between organisms and looking at the
 consequences of different mutations. DNA stores genetic information in the form of a sequence of
 nucleotides. Their particular order defies the stored information. There are four types of DNA nucleotides:
 adenine(A), cytosine(C), guanine(G) and thymine(T). In fact, DNA consists of two long
-strings of these nucleotides. However, these two strings are connected together
-in a complementary way. So if on one string there is an A, then on the other
+strings of these nucleotides. However, these two strings are connected in a complementary way. So if on one string there is an A, then on the other
 one must be T. If there is a C then on the other string we can expect
 it's complement G. For the organisms it means that they can (to some extent) repair
 missing nucleotides based on the complement rules. From now, we will for simplicity
 assume that DNA sequence is a sequence of characters A, C, G, T. This simple representation
 is very good as it can be easily represented in the computer. It also stores enough
 information so we can recover the other complementary DNA string easily. The process of obtaining DNA
-sequence is called \textit{DNA sequencing}. Example how we can think of DNA is on \ref{obr:acgt}.
+sequence is called \textit{DNA sequencing}.  An example of how we can think of DNA is on \ref{obr:acgt}.
 
 % TODO: obrazok zdroj https://www.genome.gov/genetics-glossary/acgt
 
@@ -50,7 +49,7 @@ This can be done chemically but it brings some problems, especially some of the
 DNA molecules could be missed during sequencing so we would lose information about
 that part of DNA. Because of this, we use DNA polymerases to duplicate these shorter DNA sequences
 many times so we end up with a mixture containing our DNA molecule, broken into
-many duplicated parts. DNA polymerases can stick to DNA molecule and rebuild the complementary
+many duplicated parts. DNA polymerases can stick to the DNA molecule and rebuild the complementary
 part. Once we have this mixture of shorter DNA molecules we need to sequence individual
 parts and then somehow connect them together to obtain the nucleotide string representing
 our original DNA molecule.
@@ -66,7 +65,7 @@ a cheap and versatile DNA sequencer with the size of the modern smartphone showe
 \end{figure}
 
 This sequencer consists of an active surface filled with \textit{nanopores}. A nanopore
-is a small hole with an electric current passing through it. The DNA molecule, negatively charged
+is a small hole with an electric current passing through it. Negatively charged DNA molecule
 will start to pass through the pores when the positive charge is generated on the
 other side of the surface. As the molecule of DNA is passing through the pore of
 MinION, we can observe changes in the flow of an electric current passing through the pore.
@@ -96,18 +95,18 @@ When we obtain the signal from the pore, we need to finally convert it into the 
 sequence. What is crucial for transcription of the signal into the DNA sequence is
 that as the molecule of DNA is passing through the pore, only a small
 number of nucleotides in the proximity of pore influence the current output signal.
-The sequence of $k$ nucleotides is called \textit{k-mer}. Output signal of MinION
+The sequence of $k$ nucleotides is called \textit{k-mer}. An output signal of MinION
 is not dependent only on nucleotide currently in the pore but rather by current
-3-mer that is present in the proximity of the pore. There are several studies
-how much is signal influenced by more distant nucleotides. Hovewer, the version
+3-mer that is present in the proximity of the pore. There are several studies on
+how much is signal influenced by more distant nucleotides. However, the version
 of MinION we are working with is said to be influenced mainly by the closest 6-mer. 
-Usually, with the MinION comes something what is called a kmer model. It is a list of all possible $k$-mers
+Usually, with the MinION comes something that is called a kmer model. It is a list of all possible $k$-mers
 for some $k$ that states the mean value of the outcome signal when that particular
 $k$-mer is present in the proximity of the pore. So from the measurements of signal
 throughout the time, using a method called base-calling, we can tell how the molecule
-of DNA looked like. The early basecalling algorithms tried to split the signal into
+of DNA looked like. The early base-calling algorithms tried to split the signal into
 \textit{events}. Event is a longer sequence of signals at the same level corresponding
-to one particular $k$-mer. From the maping of the $k$-mer to mean signal, they tried
+to one particular $k$-mer. From the mapping of the $k$-mer to mean signal, they tried
 to predict what sequence passed through this pore. Now, the more successful base-calling
 algorithms are based on recurrent neural networks. Despite big improvements in the
 base-calling algorithms, the overall process of base-calling is quite slow and resource-intensive. 
@@ -156,23 +155,23 @@ The idea of doing selective sequencing during the phase of reading the DNA molec
 %https://www.nature.com/articles/nmeth.3930
 %https://www.biorxiv.org/content/10.1101/038760v1
 
-We already mentioned the process of basecalling. Of course, it leads us to a simple
-solution. As long as we have reference sequence, we can basecall the current read
+We already mentioned the process of base-calling. Of course, it leads us to a simple
+solution. As long as we have a reference sequence, we can base-call the current read
 and try to match it in the reference sequence. If we could not match this read
 into any part of the reference we can say that this read is not from our reference
-and throw the DNA molecule away. Hovewer, we also stated that the basecalling process
+and throw the DNA molecule away. However, we also stated that the base-calling process
 is quite slow and our decision must be done on-the-fly. This often means we don't
 have time to turn our signal into a nucleotide sequence as the reads are too short for this
 and can be already sequenced when we made our decision.
 
 That is the reason why we have to work with a raw signal. There was some work
-regarding selective sequencing on raw signal, most notably \cite{loose2016real}. In their
+regarding selective sequencing on a raw signal, most notably \cite{loose2016real}. In their
 work, they obtain the reference signal using simulation from reference nucleotide
 string. They use dynamic time warping (DTW) to align the signal from the read to
 this reference signal. The DTW is a dynamic programming algorithm that takes two signals and aligns them in a
 way that minimizes the total number of insertions and deletions. One of the limitations
 of DTW is that it has run time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$
 is the length of the reference signal and read respectively. This poses a problem
-for this method if we wanted to use it for a longer sequences...
+for this method if we wanted to use it for longer sequences...
 
 We decided to try improving the results of the \cite{loose2016real}.
