@@ -6,13 +6,13 @@ targetContig = "contig1"
 targetBeg, targetEnd = 0, 1000000000#1000000#50000
 
 posTestCases, negTestCases = 40, 40
-levels = 6
+levels = 9
 repeatSignal = 10
-kmerLength = 12
+kmerLength = 14
 overflow = 0.30
 smoothParam = 5
 
-maxCount = 5000
+maxCount = 10000
 
 ################################################################################
 
@@ -21,18 +21,16 @@ import copy
 import numpy as np
 from pyfaidx import Fasta
 from nadavca.dtw import KmerModel
+import matplotlib
+import matplotlib.pyplot as plt
 
 sys.path.append("../")
-from signalHelper import stringToSignal
-
 from signalHelper import (
+    stringToSignal,
     computeNorm,
     computeString,
     smoothSignal,
 )
-
-import matplotlib
-import matplotlib.pyplot as plt
 
 def getLevelStr(signal):
     currSignal = np.array(copy.deepcopy(signal), float)
@@ -66,14 +64,28 @@ for contig in Fasta(refFilePath):
         hashTable[kmer] = hashTable.get(kmer, 0) + 1
     break
 
-pocty = [0] * maxCount
+pocty = [0] * (maxCount+1)
+totalNum = 0
 
 for k, v in hashTable.items():
+    totalNum += v
     if v >= maxCount:
         print(f"Really high count: {v} -> {k}")
         continue
     pocty[v] += 1
 
-plt.scatter(range(1, maxCount+1), pocty, marker=r"+")
+plt.scatter(range(0, maxCount+1), pocty, marker=r"+")
+plt.axhline(y = 0)
+plt.show()
+
+sumUpTo = []
+suma = 0
+for i in range(1, maxCount+1):
+    suma += pocty[i] * i
+    sumUpTo.append(suma/totalNum)
+
+plt.xlabel("Početnosť kmerov")
+plt.ylabel("Agregované pokrytie referencie")
+plt.scatter(range(1, maxCount+1), sumUpTo, marker=r"+")
 plt.axhline(y = 0)
 plt.show()

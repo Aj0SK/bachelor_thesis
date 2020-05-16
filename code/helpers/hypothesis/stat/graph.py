@@ -8,7 +8,7 @@ levels = []
 
 d = {}
 
-with open("out2.txt", "r") as f:
+with open("out4.txt", "r") as f:
     for line in f.readlines():
         line = line.split()
         k = int(line[2])
@@ -37,7 +37,7 @@ for i in range(1, 100):
         data.append(x)
 
 data = np.array(data)
-data = np.log(data)
+#data = np.log(data)
 
 fig, ax = plt.subplots()
 im = ax.imshow(np.transpose(data), cmap = "hot", interpolation = "nearest")

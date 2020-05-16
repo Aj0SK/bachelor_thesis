@@ -6,14 +6,11 @@ kmerModelFilePath = "../../../data/kmer_model.hdf5"
 readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 
-targetBeg, targetEnd = 0, 10000000
-
-posTestCases, negTestCases = 40, 40
 repeatSignal = 10
 overflow = 0.30
 smoothParam = 5
-fromRead, toRead = 5000, 20000
-kmerNum = 10000
+fromRead, toRead = 10000, 20000
+kmerNum = 300000
 ################################################################################
 
 import sys
@@ -60,12 +57,12 @@ def getLevelStr(signal, l):
     )
     return currString
 
-def buildDictionary(dict, string, k):
+def buildDictionarySpecial(d, string, k):
     for i in range(0, len(string) - k + 1):
         kmer = string[i : i + k]
-        if kmer not in dict:
-            dict[kmer] = 0
-        dict[kmer] += 1
+        if kmer not in d:
+            d[kmer] = 0
+        d[kmer] += 1
     return
 
 ################################################################################
@@ -75,102 +72,80 @@ assert referenceIdx, "failed to load/build reference index"
 
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
-posReads = getReadsInFolder(readsPosFilePath)
-negReads = getReadsInFolder(readsNegFilePath)
+posReads = getReadsInFolder(readsPosFilePath, minSize = 0)
+negReads = getReadsInFolder(readsNegFilePath, minSize = 0)
 
 ################################################################################
 
-for levels in range(4, 15):
+def helper(hashTable, reads, infoString):
+    counter, total, totalNum = 0, 0, 0
+
+    for readFile in reads:
+        if totalNum == kmerNum:
+            break
+        try:
+            readFastq, _ = getSeqfromRead(readFile)
+        except:
+            continue
+
+        hits = [
+            aln
+            for aln in referenceIdx.map(readFastq)
+            if aln.q_en - aln.q_st > 0.95 * len(readFastq) and 
+            aln.strand == 1
+        ]
+
+        if infoString == "+"  and len(hits) != 1:
+            continue
+        if infoString == "-"  and len(hits) != 0:
+            continue
+
+        readSignal = getSignalFromRead(readFile)
+            
+        if len(readSignal) <= toRead:
+            continue
+            
+        counter += 1
+            
+        readSignal = readSignal[fromRead:toRead]
+        readString = getLevelStr(readSignal, levels)
+                
+        before = total
+        for i in range(len(readString)):
+            if kmerNum == totalNum:
+                break
+            kmer = readString[i : i + k]
+            totalNum += 1
+            total += hashTable.get(kmer, 0)
+        
+        print(f"Read {readFile} : \t {total-before}")
+    print(f"{infoString} k {k} l {levels} -> {total} / {totalNum}")
+
+for levels in [8]:#range(6, 15):
     storeContig = {}
 
     for contig in Fasta(refFilePath):
-        ref = str(contig)[:targetEnd]
+        print("Next!")
+        ref = str(contig)
         contigSignal = stringToSignal(ref, mod, repeatSignal=repeatSignal)
         levelStr = getLevelStr(contigSignal, levels)
         storeContig[contig.name] = levelStr
 
-    print("Refstrings ready!")
+    #print("Refstrings ready!")
 
     hk = list(range(5, 35))
 
     for k in hk:
-
         hashTable = {}
-
+        
         for contig in storeContig.values():
-            buildDictionary(hashTable, contig, k)
+            buildDictionarySpecial(hashTable, contig, k)
+        #toDel = []
+        #for key, count in hashTable.items():
+        #    if count >= 100000:
+        #        toDel.append(key)
+        #for key in toDel:
+        #    del hashTable[key]
         
-        toDel = []
-        for key, count in hashTable.items():
-            if count >= 10000:
-                toDel.append(key)
-        
-        for key in toDel:
-            del hashTable[key]
-        
-        total, counter, totalNum = 0, 0, 0
-
-        for readFile in posReads:
-            if counter == posTestCases or totalNum == kmerNum:
-                break
-            try:
-                readFastq, _ = getSeqfromRead(readFile)
-            except:
-                continue
-
-            hits = [
-                aln
-                for aln in referenceIdx.map(readFastq)
-                if aln.q_en - aln.q_st > 0.95 * len(readFastq) and aln.strand == 1
-            ]
-
-            if len(hits) != 1:
-                continue
-                
-                #print("Bingo!")
-
-            readSignal = getSignalFromRead(readFile)[fromRead:toRead]
-            readString = getLevelStr(readSignal, levels)
-                
-            counter += 1
-                
-            for i in range(len(readString)):
-                if kmerNum == totalNum:
-                    break
-                kmer = readString[i : i + k]
-                totalNum += 1
-                total += hashTable.get(kmer, 0)
-            #print("Counter +1!")
-            #print(f"Add {len(readString)}")
-        
-        print(f"+ k {k} l {levels} -> {total} / {totalNum}")
-        totalNum, total, counter = 0, 0, 0
-        for readFile in negReads:
-            if counter == negTestCases or totalNum == kmerNum:
-                break
-            try:
-                readFastq, _ = getSeqfromRead(readFile)
-            except:
-                continue
-
-            hits = [
-                aln
-                for aln in referenceIdx.map(readFastq)
-                if aln.q_en - aln.q_st > 0.10 * len(readFastq) and aln.strand == 1
-            ]
-
-            if len(hits) != 0:
-                continue
-            
-            readSignal = getSignalFromRead(readFile)[fromRead:toRead]
-            readString = getLevelStr(readSignal, levels)
-                
-            counter += 1
-                
-            for i in range(len(readString)):
-                if kmerNum == totalNum:
-                    break;
-                kmer = readString[i : i + k]
-                totalNum += 1
-                total += hashTable.get(kmer, 0)
-        print(f"- k {k} l {levels} -> {total} / {totalNum}")
+        helper(hashTable, posReads, "+")
+        helper(hashTable, negReads, "-")
