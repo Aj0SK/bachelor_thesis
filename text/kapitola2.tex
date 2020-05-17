@@ -7,28 +7,26 @@ with the squiggles more easily.
 
 \section{Squiggles as Sequencing of Discrete Observations}
 
-The idea of our solution is to somehow discretize the simulated signal of the
-reference sequence and then be able to decide during the process of sequencing
-if the DNA molecule currently passing through the pore is from this reference signal.
-In our current setup, we are not very limited by the preprocessing time but we
-need to decide very fast once we are sequencing the DNA. This puts some speed
-limitations on our discretizing process during the processing of the DNA.
+When we somehow obtain the simulated signal from the reference, we want to be able
+to decide during the process of sequencing if the DNA molecule currently passing
+through the pore is from this reference signal. This comes down to finding if the
+another signal is present in this reference signal. If both of these signals would
+be short, it would be quite possible to do even manualy. As we will see, to a
+certain extent, we can see that the two signals are similar. However, we need to
+do this fast and on very long signals as we want to create a fast yet accurate solution.
 
-We want to create a fast yet accurate solution. We want to come with some better
-representation of the squiggles that represents signal well and also provides some
-advantages such as easy searching of the signal in this representation. It is good
-for people to represent the signal visually as a graph. To a certain extent, we
-can see that the two signals are similar. However, we need to do this fast and on very
-long signals. 
-
-The main goal is to be able to find the signal in the reference
-signal if it is present. This is only possible if we somehow represent the signal
-in a more compact form in some searchable way. What we will do is that we will
-represent the signal as a string. What we will do is that we split the signal vertically
-into several windows in such a manner that everything between some minimal and maximal
-value is in some of the window. These windows are of constant length and do not
+The idea of our solution is to discretize the simulated signal of the
+reference sequence. We want to come with some better representation of the
+squiggles that represents signal well and also provides some advantages such as
+easy searching of the signal in this representation. In our current setup, we are
+not very limited by the preprocessing time but we need to decide very fast once
+we are sequencing the DNA. This puts some speed limitations on our discretizing
+process during the processing of the DNA. What we will do is that we will
+represent the signal as a string. We split the signal vertically into several
+windows in such a manner that everything between some minimal and maximal
+value is in some window. These windows are of constant length and do not
 overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
-vertical windows. Now, when we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
+vertical windows. Now, we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
 Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i < max_a$.
 We say that signal $a_i$ is in $j$-th window if it holds that:
 
@@ -38,9 +36,9 @@ $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-
 
 % TODO obrazok
 
-If the signals $a_0, a_1 \cdots a_n$ are in the windows $w_0, w_1 \cdots w_i$
-we call $l=w_1w_2\cdots w_n$ the level string of the signal $s$. An example of
-this method on some signal for $w=6$ is on TODO. This method has
+If the signals $a_0, a_1, \cdots, a_n$ are in the windows $w_0, w_1, \cdots ,w_n$
+respectively, we call $ls$ such that $ls=w_1w_2\cdots w_n$ the level string of the
+signal $s$. An example of this method on some signal for $w=6$ is on TODO. This method has
 several good properties that we use. The first and obvious property is that the same signal has the
 same level string each time for the unchanged $w$. Besides this, small changes and
 oscillations in the signal will eventually stay at the same level most of the time.
@@ -51,24 +49,6 @@ if there is a little noise present. We also mentioned the different lengths of
 the real and simulated signal. To offset even this negative phenomenon, we will contract
 subsequent occurrences of the same level. So level string "aabccaa" becomes "abca".
 
-So now, we can transform the reference DNA sequence to signal using our simulation
-process, choose the size of the window - $w$, create the level string of the reference.
-Then, when the real signal from the read arrives, we will perform the same process
-as with the simulated reference signal. Now we have one reference level string and
-one which we want to find in it. We see that this can be better formulated as an
-algorithmic problem. However, there is a very small probability that the level string
-of the longer read would match exactly to some area in the reference level string.
-Instead of looking for the exact match in the reference we will cut the reference
-level string into overlapping subsequences of length $k$ and put them into a hashtable.
-Hash table is a data structure that allows insertion and search of an element in
-amortized time complexity $O(1)$. When we have this hashtable ready after the
-preprocessing we can start with the actual read processing. For every read, we will
-build the level string from the raw signal. Then, we will cut it into the overlapping
-subsequences of the same length $k$ and see how many of them can be found in our
-prepared hashtable. We call all the subsequences that are present in the hashtable
-hits. Our initial assumption is that the number of hits will be considerably higher
-for the read belonging to the reference.
-
 \section{Simulating Squiggles from Reference}
 
 We already stated that we need to obtain some reference squiggle that we
@@ -76,9 +56,10 @@ can sample and use to later split squiggle between that we are interested and no
 interested in. For this purpose, we need to take the reference in the form of a DNA sequence
 and turn it into a signal. We will use the nanopore data variant caller (nadavca)
 which is a tool that can take a DNA sequence as an input and produce a simulated signal.
+This simulation of signal is based on the kmer model that we already mentioned. 
 
 This simulation does not take into account that the signal from one nucleotide is
-measured several times. We already estimated that one nucleotide is on average
+measured several times. We already estimated that single nucleotide is on average
 measured about 10 times so we will duplicate every entry in this simulated signal
 10 times. We want to see how this signal compares to real signal so to put these
 two into perspective we normalize this signal by subtracting mean and removing
@@ -93,8 +74,6 @@ standard deviation \ref{obr:simVsReal}.
 % https://github.com/lykaust15/DeepSimulator
 There are some more advanced simulators of signal such as DeepSimulator but we
 wanted to begin with the simplest possible solution.
-
-\subsection{Real and simulated signal comparison}
 
 Now we have a simulated reference signal. We can see that the simulated and real
 signal are not identical in \ref{obr:simVsReal}. This poses problems as we want to have these signals as
@@ -132,8 +111,26 @@ one level to another but rather move continuously.
 
 \section{Identification of Reads Based on Shared k-mers}
 
+So now, we can transform the reference DNA sequence to signal using our simulation
+process, choose the size of the window - $w$, create the level string of the reference.
+Then, when the real signal from the read arrives, we will perform the same process
+as with the simulated reference signal. Now we have one reference level string and
+one which we want to find in it. We see that this can be better formulated as an
+algorithmic problem. However, there is a very small probability that the level string
+of the longer read would match exactly to some area in the reference level string.
+Instead of looking for the exact match in the reference we will cut the reference
+level string into overlapping subsequences of length $k$ and put them into a hashtable.
+Hash table is a data structure that allows insertion and search of an element in
+amortized time complexity $O(1)$. When we have this hashtable ready after the
+preprocessing we can start with the actual read processing. For every read, we will
+build the level string from the raw signal. Then, we will cut it into the overlapping
+subsequences of the same length $k$ and see how many of them can be found in our
+prepared hashtable. We call all the subsequences that are present in the hashtable
+hits. Our initial assumption is that the number of hits will be considerably higher
+for the read belonging to the reference.
+
 We would want to now see how our discretization works and how similar are two level
-strings of reference and the real signal that corresponds to this reference and also
-some random read level string with our reference level string.
+strings of reference and the real signal that corresponds to this reference. We are
+also interested in how some random read level string with our reference level string.
 
 \section{Experimental evaluation}
