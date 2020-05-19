@@ -5,3 +5,26 @@
 In this chapter we will look at the main challenges of our method and the ways
 we can overcome them.
 
+\section{Section 1}
+
+So now, we can transform the reference DNA sequence to signal using our simulation
+process, choose the size of the window - $w$, create the level string of the reference.
+Then, when the real signal from the read arrives, we will perform the same process
+as with the simulated reference signal. Now we have one reference level string and
+one which we want to find in it. We see that this can be better formulated as an
+algorithmic problem. However, there is a very small probability that the level string
+of the longer read would match exactly to some area in the reference level string.
+Instead of looking for the exact match in the reference we will cut the reference
+level string into overlapping subsequences of length $k$ and put them into a hashtable.
+Hash table is a data structure that allows insertion and search of an element in
+amortized time complexity $O(1)$. When we have this hashtable ready after the
+preprocessing we can start with the actual read processing. For every read, we will
+build the level string from the raw signal. Then, we will cut it into the overlapping
+subsequences of the same length $k$ and see how many of them can be found in our
+prepared hashtable. We call all the subsequences that are present in the hashtable
+hits. Our initial assumption is that the number of hits will be considerably higher
+for the read belonging to the reference.
+
+We would want to now see how our discretization works and how similar are two level
+strings of reference and the real signal that corresponds to this reference. We are
+also interested in how some random read level string with our reference level string.

@@ -2,23 +2,23 @@
 
 \label{kap:proposedMethod} % id kapitoly pre prikaz ref
 
-In this chapter, we will present our proposed method that will allow us to work
-with the squiggles more easily.
+In this chapter, we will present our proposed method that will allow us to more
+easily work with the squiggles.
 
 \section{Squiggles as Sequencing of Discrete Observations}
 
-When we somehow obtain the simulated signal from the reference, we want to be able
+When we obtain the simulated signal from the reference DNA, we want to be able
 to decide during the process of sequencing if the DNA molecule currently passing
 through the pore is from this reference signal. This comes down to finding if the
-another signal is present in this reference signal. If both of these signals would
-be short, it would be quite possible to do even manualy. As we will see, to a
+current squiggle is present in this reference signal. If both of these signals would
+be short, it would be quite possible to do even manually. As we will see, to a
 certain extent, we can see that the two signals are similar. However, we need to
-do this fast and on very long signals as we want to create a fast yet accurate solution.
+do this fast and on very long signals.
 
 The idea of our solution is to discretize the simulated signal of the
 reference sequence. We want to come with some better representation of the
-squiggles that represents signal well and also provides some advantages such as
-easy searching of the signal in this representation. In our current setup, we are
+squiggles that represents them well and also provides some advantages such as
+easy searching in this representation. In our current setup, we are
 not very limited by the preprocessing time but we need to decide very fast once
 we are sequencing the DNA. This puts some speed limitations on our discretizing
 process during the processing of the DNA. What we will do is that we will
@@ -34,29 +34,39 @@ We say that signal $a_i$ is in $j$-th window if it holds that:
 $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
 \end{center}
 
-% TODO obrazok
-
 If the signals $a_0, a_1, \cdots, a_n$ are in the windows $w_0, w_1, \cdots ,w_n$
 respectively, we call $ls$ such that $ls=w_1w_2\cdots w_n$ the level string of the
-signal $s$. An example of this method on some signal for $w=6$ is on TODO. This method has
-several good properties that we use. The first and obvious property is that the same signal has the
-same level string each time for the unchanged $w$. Besides this, small changes and
+signal $s$. After this, we will contract subsequent occurrences of the same level.
+So level string "aabccaa" becomes "abca". An example of this method on some signal
+for $w=6$ is on TODO. 
+
+TODO: Add image of short raw signal with the levels and level string
+
+This method has several good properties that we use. The first and obvious
+property is that the same signal has the same level string each time for the unchanged $w$. Besides this, small changes and
 oscillations in the signal will eventually stay at the same level most of the time.
+We mentioned that the signal consists of some events that are represented by longer signal that is around same level.
+With this method, we hope that one event remains in the one window. Subsequent
+contraction of the level string should cause that one event is in most cases represented by
+one level.
+
 Another good factor is that with the change of the parameter $w$ we can change how specific
 and informative our method is. With the $w=2$ we can not say a lot about the two signals
 that have level string equal. With bigger $w$ we can miss the two same signals
-if there is a little noise present. We also mentioned the different lengths of
-the real and simulated signal. To offset even this negative phenomenon, we will contract
-subsequent occurrences of the same level. So level string "aabccaa" becomes "abca".
+if there is a little noise present.
+
+TODO: add two images with 3-5 levels and 12+ levels. Show that the oscillations are
+out of window for higher number of levels. Then show that for lower number of levels
+two "events" are quite distinct but are on the same level.
 
 \section{Simulating Squiggles from Reference}
 
 We already stated that we need to obtain some reference squiggle that we
-can sample and use to later split squiggle between that we are interested and not
+can sample and use to later split squiggles between that we are interested and not
 interested in. For this purpose, we need to take the reference in the form of a DNA sequence
-and turn it into a signal. We will use the nanopore data variant caller (nadavca)
-which is a tool that can take a DNA sequence as an input and produce a simulated signal.
-This simulation of signal is based on the kmer model that we already mentioned. 
+and turn it into a signal. This simulation of signal is based on the kmer model
+which works with 6-mers. For every 6-mer we will generate signal equal to the mean
+of the gaussian distribution.
 
 This simulation does not take into account that the signal from one nucleotide is
 measured several times. We already estimated that single nucleotide is on average
@@ -67,36 +77,43 @@ standard deviation \ref{obr:simVsReal}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}
-\caption[Hehe]{Simulated signal vs real signal}
+\caption[Hehe]{Simulated signal vs real signal, normalized}
 \label{obr:simVsReal}
 \end{figure}
 
-% https://github.com/lykaust15/DeepSimulator
-There are some more advanced simulators of signal such as DeepSimulator but we
-wanted to begin with the simplest possible solution.
-
-Now we have a simulated reference signal. We can see that the simulated and real
-signal are not identical in \ref{obr:simVsReal}. This poses problems as we want to have these signals as
+Now we have a simulated reference signal. On \ref{obr:simVsReal} we can see that the simulated and real
+signal are not identical. This poses problems as we want to have these signals as
 similar as possible. The first thing that we want to consider is normalization. There
 are two possible approaches, local and global normalization. We will try both these
 approaches. One of the most wide-spread ways of doing this is to subtract mean and dividing
 signal by standard deviation. The other possible solution is subtracting median value
-as the frequent outliers can deform the mean. 
+as the frequent outliers can deform the mean.
 
-Another visible problem is that the real signal is somehow contracted
+Another visible problem is that the real squiggle is somehow contracted
 in some places. This is caused by the fact that the DNA molecule is not moving
-through the pore at a constant speed. 
+through the nanopore at a constant speed.
+
+As there are differences between simulated and real signal, there are two possible
+ideas how to overcome this differences. One is to make the simulated signal more like
+the real signal. The first thing that we could do would be adding some gaussian noise
+that creates more noisy signal. There are also some more advanced simulators of
+signal such as DeepSimulator. We want to go the other way and make the real signal
+less noisy so we will now address the most important differences between simulated and real signal.
+
+% https://github.com/lykaust15/DeepSimulator
 
 \subsection{Oscillations}
 
 We already saw in TODO that one of the biggest differences between simulated and
 real signal is the noise which can be seen as small oscillations of the signal. This is
 one of the reasons that we use windows - so small oscillations within the window
-are dealt with. However, when our method is used without any modifications it
+are dealt with. We can also pretty easily adapt the number of windows as we saw in TODO.
+However, when our method is used without any modifications it
 produces much longer level string for real signal than for simulated signal.
 The problem arises when the oscillations are located on the borders of the windows.
+This is something that unfortunately happens too often.
 There are several possibilities to deal with this behavior not affecting speed too
-much. We tried several smoothing algorithms to reduce noise. From simple as the
+much. We tried several smoothing techniques to reduce noise. From simple as the
 moving average and the moving median to some more complicated as a kalman filter.
 For now, we will stick to the faster solutions and choose one of the simpler techniques.
 
@@ -108,29 +125,46 @@ of a simulated signal that jumps. Again, we can use the moving average. Instead 
 the moving median, it has a nice advantage that it causes signal not to jump from
 one level to another but rather move continuously.
 
+TODO: Add image of signal smoothed by moving average and moving median.
 
 \section{Identification of Reads Based on Shared k-mers}
 
-So now, we can transform the reference DNA sequence to signal using our simulation
-process, choose the size of the window - $w$, create the level string of the reference.
-Then, when the real signal from the read arrives, we will perform the same process
-as with the simulated reference signal. Now we have one reference level string and
-one which we want to find in it. We see that this can be better formulated as an
-algorithmic problem. However, there is a very small probability that the level string
-of the longer read would match exactly to some area in the reference level string.
-Instead of looking for the exact match in the reference we will cut the reference
-level string into overlapping subsequences of length $k$ and put them into a hashtable.
-Hash table is a data structure that allows insertion and search of an element in
-amortized time complexity $O(1)$. When we have this hashtable ready after the
-preprocessing we can start with the actual read processing. For every read, we will
-build the level string from the raw signal. Then, we will cut it into the overlapping
-subsequences of the same length $k$ and see how many of them can be found in our
-prepared hashtable. We call all the subsequences that are present in the hashtable
-hits. Our initial assumption is that the number of hits will be considerably higher
-for the read belonging to the reference.
 
-We would want to now see how our discretization works and how similar are two level
-strings of reference and the real signal that corresponds to this reference. We are
-also interested in how some random read level string with our reference level string.
 
 \section{Experimental evaluation}
+
+
+\subsection{Level string alignment}
+
+To see how the reference level string and read level string compare to each other
+we will align them. The input to the alignment algorithm are two strings $s_1$, $s_2$:
+$s_1=a_1a_2\cdots a_n$, $s_2=b_1b_2\cdots b_m$. The alignment are strings
+$s_3$, $s_4$: $s_3 = c_1c_2c_3\cdots c_k$, $s_4 = d_1d_2d_3\cdots d_k$
+such that if $c_i \neq d_i$ then $c_i = - \lor d_i = -$.
+
+Example of allignment of $s_1 = AAACTGC$ and $s_2 = AACGTC$ is:
+
+\begin{center}
+$s_3 = $AAAC\,-\,TGC\\
+$s_4 = $AA\,-\,CGT\,-\,C
+\end{center}
+
+There are a lot of alingments of the two particular strings. Most of the time we
+are interested in some particular alignment. For this purpose we need to have the
+scoring system. We can for example minimize the number of dashes.
+
+Using the alignment defined this way we can see how two level strings compare to
+each other and how similar they are.
+
+Finding the best alignment is not trivial. We use a dynamic programming for
+solving this problem. Let $T[i][j]$ be the best allignment of string $s_{1_i} = a_1a_2\cdots a_i$
+and $s_{2_j} = b_1b_2\cdots b_j$. We will for simplification say that $\forall i, j: T[i][0] = i, T[0][j] = j$.
+
+\[
+T[i][j] = \bigl.
+  \begin{cases}
+    0, & \forall i,j : i\leq 0 \lor j\leq 0 \\
+    max(T[i-1][j-1] + 1, T[i-1][j], T[i][j-1]) & \text{only if} \, a_i = b_i \\ 
+    max(T[i-1][j], T[i][j-1]) & \text{otherwise}
+  \end{cases}
+\]
