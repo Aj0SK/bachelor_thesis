@@ -17,7 +17,7 @@ do this fast and on very long signals.
 
 The idea of our solution is to discretize the simulated signal of the
 reference sequence. We want to come with some better representation of the
-squiggles that represents them well and also provides some advantages such as
+squiggles that represents them well and also provide some advantages such as
 easy searching in this representation. In our current setup, we are
 not very limited by the preprocessing time but we need to decide very fast once
 we are sequencing the DNA. This puts some speed limitations on our discretizing
@@ -45,7 +45,7 @@ TODO: Add image of short raw signal with the levels and level string
 This method has several good properties that we use. The first and obvious
 property is that the same signal has the same level string each time for the unchanged $w$. Besides this, small changes and
 oscillations in the signal will eventually stay at the same level most of the time.
-We mentioned that the signal consists of some events that are represented by longer signal that is around same level.
+We mentioned that the signal consists of some events that are represented by a longer signal that is around the same level.
 With this method, we hope that one event remains in the one window. Subsequent
 contraction of the level string should cause that one event is in most cases represented by
 one level.
@@ -56,17 +56,17 @@ that have level string equal. With bigger $w$ we can miss the two same signals
 if there is a little noise present.
 
 TODO: add two images with 3-5 levels and 12+ levels. Show that the oscillations are
-out of window for higher number of levels. Then show that for lower number of levels
+out of a window for a higher number of levels. Then show that for a lower number of levels
 two "events" are quite distinct but are on the same level.
 
 \section{Simulating Squiggles from Reference}
 
 We already stated that we need to obtain some reference squiggle that we
-can sample and use to later split squiggles between that we are interested and not
+can sample and use to later split squiggles between that we are interested in and not
 interested in. For this purpose, we need to take the reference in the form of a DNA sequence
-and turn it into a signal. This simulation of signal is based on the kmer model
-which works with 6-mers. For every 6-mer we will generate signal equal to the mean
-of the gaussian distribution.
+and turn it into a signal. This simulation of the signal is based on the 6-mer kmer model.
+So for every 6-mer in our reference DNA, we will generate signal equal to the mean
+of the gaussian distribution for that particular 6-mer.
 
 This simulation does not take into account that the signal from one nucleotide is
 measured several times. We already estimated that single nucleotide is on average
@@ -94,17 +94,19 @@ in some places. This is caused by the fact that the DNA molecule is not moving
 through the nanopore at a constant speed.
 
 As there are differences between simulated and real signal, there are two possible
-ideas how to overcome this differences. One is to make the simulated signal more like
-the real signal. The first thing that we could do would be adding some gaussian noise
-that creates more noisy signal. There are also some more advanced simulators of
+ideas on how to overcome these differences. One is to make the simulated signal more like
+the real signal. The first thing that we could do would be adding some Gaussian noise
+that creates a more noisy signal. There are also some more advanced simulators of
 signal such as DeepSimulator. We want to go the other way and make the real signal
 less noisy so we will now address the most important differences between simulated and real signal.
 
+
+TODO: Add citation for DeepSimulator
 % https://github.com/lykaust15/DeepSimulator
 
 \subsection{Oscillations}
 
-We already saw in TODO that one of the biggest differences between simulated and
+We already saw in \ref{obr:simVsReal} that one of the biggest differences between simulated and
 real signal is the noise which can be seen as small oscillations of the signal. This is
 one of the reasons that we use windows - so small oscillations within the window
 are dealt with. We can also pretty easily adapt the number of windows as we saw in TODO.
@@ -114,8 +116,8 @@ The problem arises when the oscillations are located on the borders of the windo
 This is something that unfortunately happens too often.
 There are several possibilities to deal with this behavior not affecting speed too
 much. We tried several smoothing techniques to reduce noise. From simple as the
-moving average and the moving median to some more complicated as a kalman filter.
-For now, we will stick to the faster solutions and choose one of the simpler techniques.
+moving average and the moving median to some more complicated as a Kalman filter.
+For now, we will stick to faster solutions and choose one of the simpler techniques.
 
 \subsection{Signal continuity}
 
@@ -129,7 +131,8 @@ TODO: Add image of signal smoothed by moving average and moving median.
 
 \section{Identification of Reads Based on Shared k-mers}
 
-
+We will now look at how the simulated reference signal compares to the raw read
+corresponding to this reference and random read from the other sequencing.
 
 \section{Experimental evaluation}
 
@@ -140,7 +143,7 @@ To see how the reference level string and read level string compare to each othe
 we will align them. The input to the alignment algorithm are two strings $s_1$, $s_2$:
 $s_1=a_1a_2\cdots a_n$, $s_2=b_1b_2\cdots b_m$. The alignment are strings
 $s_3$, $s_4$: $s_3 = c_1c_2c_3\cdots c_k$, $s_4 = d_1d_2d_3\cdots d_k$
-such that if $c_i \neq d_i$ then $c_i = - \lor d_i = -$.
+such that if $c_i \neq d_i$ then $c_i = - \lor d_i = -$ and also 
 
 Example of allignment of $s_1 = AAACTGC$ and $s_2 = AACGTC$ is:
 
@@ -149,11 +152,11 @@ $s_3 = $AAAC\,-\,TGC\\
 $s_4 = $AA\,-\,CGT\,-\,C
 \end{center}
 
-There are a lot of alingments of the two particular strings. Most of the time we
-are interested in some particular alignment. For this purpose we need to have the
-scoring system. We can for example minimize the number of dashes.
+There are a lot of alignments of the two particular strings. Most of the time we
+are interested in some particular alignment. For this purpose, we need to have a
+scoring system. We can, for example, minimize the number of dashes.
 
-Using the alignment defined this way we can see how two level strings compare to
+Using the alignment defined this way we can see how two-level strings compare to
 each other and how similar they are.
 
 Finding the best alignment is not trivial. We use a dynamic programming for
