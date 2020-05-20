@@ -39,7 +39,7 @@ def getLevelStr(signal, signalShift, signalScale, l, out, index):
 
 ################################################################################
 
-def contigToString(contig, out, index):
+def contigToString(contig, l, out, index):
     out[index] = ""
     
     refSeqPos = str(contig[:])
@@ -62,8 +62,8 @@ def contigToString(contig, out, index):
         refSignalNeg, 0, len(refSignalNeg)
     )
 
-    for l in levels:
-        refStringPos = computeString(
+    
+    refStringPos = computeString(
             refSignalPos,
             0,
             len(refSignalPos),
@@ -73,7 +73,7 @@ def contigToString(contig, out, index):
             overflow=overflow,
         )
 
-        refStringNeg = computeString(
+    refStringNeg = computeString(
             refSignalNeg,
             0,
             len(refSignalNeg),
@@ -83,18 +83,19 @@ def contigToString(contig, out, index):
             overflow=overflow,
         )
 
-        out[index] += f"{contig.name} {l} + {refStringPos}\n"
-        out[index] += f"{contig.name} {l} - {refStringNeg}\n"
+    out[index] += f"{contig.name} {l} + {refStringPos}\n"
+    out[index] += f"{contig.name} {l} - {refStringNeg}\n"
 
 
 threads = []
 outStrs = []
 
 for contig in ref:
-    x = threading.Thread(target=contigToString, args=(contig, outStrs, len(outStrs)))
-    outStrs.append(None)
-    threads.append(x)
-    x.start()
+    for l in levels:
+        x = threading.Thread(target=contigToString, args=(contig, l, outStrs, len(outStrs)))
+        outStrs.append(None)
+        threads.append(x)
+        x.start()
     
 for i in range(len(threads)):
     threads[i].join()
