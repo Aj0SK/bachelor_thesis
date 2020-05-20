@@ -20,10 +20,28 @@ from nadavca.dtw import KmerModel
 from signalHelper import stringToSignal
 from signalHelper import smoothSignal, computeNorm, computeString
 
+import threading
+
 ref = Fasta(refFilePath)
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
-for contig in ref:
+################################################################################
+def getLevelStr(signal, signalShift, signalScale, l, out, index):
+    out[index] = computeString(
+        signal,
+        0,
+        len(signal),
+        signalShift,
+        signalScale,
+        l,
+        overflow=overflow,
+    )
+
+################################################################################
+
+def contigToString(contig, out, index):
+    out[index] = ""
+    
     refSeqPos = str(contig[:])
     refSeqNeg = str(contig[:].complement)
 
@@ -65,5 +83,19 @@ for contig in ref:
             overflow=overflow,
         )
 
-        print(f"{contig.name} {l} + {refStringPos}")
-        print(f"{contig.name} {l} - {refStringNeg}")
+        out[index] += f"{contig.name} {l} + {refStringPos}\n"
+        out[index] += f"{contig.name} {l} - {refStringNeg}\n"
+
+
+threads = []
+outStrs = []
+
+for contig in ref:
+    x = threading.Thread(target=contigToString, args=(contig, outStrs, len(outStrs)))
+    outStrs.append(None)
+    threads.append(x)
+    x.start()
+    
+for i in range(len(threads)):
+    threads[i].join()
+    print(outStrs[i], end="")
