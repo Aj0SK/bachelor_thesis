@@ -12,10 +12,13 @@ refFilePath = "../../../data/sapIngB1.fa"
 
 repeatSignal = 10
 
-kmerLen = list(range(4, 35))
-levels = list(range(4, 15))
+kmerLen = list(range(4, 40))
+levels = list(range(4, 10))
 
-workingLen = 7000
+plotLevels = range(4, 10)
+plotKmerLen = range(4, 40, 10)
+
+workingLen = 2000
 
 minSignal, maxSignal = -2.0, 2.0
 
@@ -57,6 +60,22 @@ def overlappingKmersSpecial(str1, str2, k):
     return count
         
 
+def plotAOC(src):
+    src.sort()
+    src.reverse()
+    X, Y = [], []
+    x, y = 0, 0
+    for i in src:
+        X.append(x)
+        Y.append(y)
+        if i[1] == 0:
+            y += 1
+        else:
+            x += 1
+    #print(X)
+    #print(Y)
+    return X, Y
+
 ############s###################################################################
 
 posReadsPaths = getReadsInFolder(readsPosFilePath, minSize=0)
@@ -69,9 +88,12 @@ mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 nonZeroHits = [[0] * len(kmerLen) for _ in range(len(levels))]
 
+pomery = [[[] for j in kmerLen] for i in levels]
+readCounter = 0
+
 for posRead in posReadsPaths:
     nadavca_align = nadavca.align_signal(
-        refFilePath, [posRead], bwa_executable="../bwa/bwa"
+        refFilePath, [posRead]
     )
 
     if len(nadavca_align) != 1:
@@ -79,6 +101,9 @@ for posRead in posReadsPaths:
     if nadavca_align[0][0].reverse_complement == True:
         #print("Problem!")
         pass
+    
+    if readCounter == 150:
+        break
     
     nadavca_align = nadavca_align[0]
 
@@ -89,6 +114,8 @@ for posRead in posReadsPaths:
         continue
     
     print("Working on", posRead)
+    print(f"So far done {readCounter} reads")
+    readCounter += 1
     
     refSeq = "".join(nadavca_align[0].reference_part)
 
@@ -127,9 +154,6 @@ for posRead in posReadsPaths:
             fakeSignal, 0, len(fakeSignal), fakeShift, fakeScale, l, overflow=0.30,
         )
     
-    #plt.plot(readSignal[:1000])
-    #plt.show()
-    
     for l in levels[:1]:
         a, b = stringAllignment(refStrings[l], readStrings[l])
         c, d = stringAllignment(refStrings[l], fakeStrings[l])
@@ -153,9 +177,57 @@ for posRead in posReadsPaths:
             #if goodOverlap >= 3:
             #    nonZeroHits[l-levels[0]][k-kmerLen[0]] += 1
             #x = nonZeroHits[l-levels[0]][k-kmerLen[0]]
-            if k >= l and k < 30:
+            #if k >= l and k < 30:
                 #print(f"{k}:{x}", end = '\t')
-                print(f"{k}:{goodOverlap}/{badOverlap}", end = '\t')
+            print(f"{k}:{goodOverlap}/{badOverlap}", end = '\t')
+            
+            pomery[levels.index(l)][kmerLen.index(k)].append((goodOverlap, 0))
+            pomery[levels.index(l)][kmerLen.index(k)].append((badOverlap, 1))
+            
+            if goodOverlap == 0:
+                badOverlap = 1000
+                goodOverlap = 100
+            if (badOverlap/goodOverlap) > 2.0:
+                badOverlap = 2*goodOverlap
+                #rat.append(100.0 * badOverlap / goodOverlap)
+            #pomery[l-levels[0]][k-kmerLen[0]].append(100.0 * badOverlap / goodOverlap)
         print()
             
-            
+'''
+fig, axs = plt.subplots(len(levels))
+
+import math
+
+for i in range(len(levels)):https://www.forbes.com/sites/qai/2020/05/18/boeing-and-delta-among-stocks-to-watch-this-week/#44277ebe1f64
+    #for j in range(len(kmerLen)):
+    X, Y = [], []
+    for j in range(len(kmerLen)):
+        if len(pomery[i][j]) == 0:
+            continue
+        rat = pomery[i][j]
+        X = range(0, 205)
+        y = [0] * 205
+        for k in rat:
+            y[math.floor(k)] += 1
+        Y.append([sum(y[:k])/len(rat) for k in range(len(y))])
+    Y = np.array(Y)
+    axs[i].plot(X, Y.T)
+    axs[i].set_title(f"This is level {levels[i]}")
+
+plt.show()
+'''
+
+fig, axs = plt.subplots(len(plotLevels))
+
+for i in range(len(plotLevels)):
+    X, Y = [], []
+    for k in range(len(plotKmerLen)):
+        rat = pomery[levels.index(plotLevels[i])][kmerLen.index(plotKmerLen[k])]
+        x, y = plotAOC(rat)
+        X = x
+        Y.append(y)
+        axs[i].plot(X, y, label = str(k))
+    axs[i].legend(loc="lower right")
+    Y = np.array(Y)
+
+plt.show()

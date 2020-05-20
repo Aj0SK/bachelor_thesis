@@ -125,11 +125,11 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     
     goodHits = overlappingKmers(readString2Sm,refString2Sm,kmerLen)
     totalG += goodHits
-    print(goodHits, end="\n")
+    print("GoodHits:", goodHits, end="\n")
     
     badHits = overlappingKmers(readString2Sm,fakeString2Sm,kmerLen)
     totalF += badHits
-    print(badHits, end="\n")
+    print("BadHits", badHits, end="\n")
     
     G.append(goodHits)
     F.append(badHits)

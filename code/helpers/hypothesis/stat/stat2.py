@@ -118,7 +118,7 @@ def helper(hashTable, reads, infoString):
             totalNum += 1
             total += hashTable.get(kmer, 0)
         
-        print(f"Read {readFile} : \t {total-before}")
+        #print(f"Read {readFile} : \t {total-before}")
     print(f"{infoString} k {k} l {levels} -> {total} / {totalNum}")
 
 for levels in [8]:#range(6, 15):
@@ -140,12 +140,12 @@ for levels in [8]:#range(6, 15):
         
         for contig in storeContig.values():
             buildDictionarySpecial(hashTable, contig, k)
-        #toDel = []
-        #for key, count in hashTable.items():
-        #    if count >= 100000:
-        #        toDel.append(key)
-        #for key in toDel:
-        #    del hashTable[key]
+        toDel = []
+        for key, count in hashTable.items():
+            if count >= 100:
+                toDel.append(key)
+        for key in toDel:
+            del hashTable[key]
         
         helper(hashTable, posReads, "+")
         helper(hashTable, negReads, "-")

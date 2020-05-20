@@ -53,18 +53,18 @@ contig = ref[0]
 refSignal = stringToSignal(str(contig), mod, repeatSignal=repeatSignal)
 refString = getGlobalString(refSignal)
 helperDict = {"a": "A", "b": "C", "c": "G", "d": "T"}
-refString = "".join(helperDict[i] for i in refString)
+#refString = "".join(helperDict[i] for i in refString)
 
-with open("./helper.fa", "w") as f:
-    f.write(">" + "x" + "\n")
-    f.write(refString.upper() + "\n")
+#with open("./nieco.fa", "w") as f:
+#    f.write(">" + "x" + "\n")
+#    f.write(refString.upper() + "\n")
 
-refLevelIdx = mp.Aligner("./nieco.fa")
+refLevelIdx = mp.Aligner("./helper.fa")
 assert refLevelIdx, "failed to load/build reference index"
 
 print("Priprava hotovo!")
 
-posCounter, negCounter = 0, 3
+posCounter, negCounter = 3, 3
 goodPosReads, counter = 0, 0
 
 print("Positive reads!")
@@ -93,7 +93,7 @@ for readFile in posReadsFiles:
     readString = getGlobalString(readSignal)
 
     readString = "".join(helperDict[i] for i in readString)
-    readString = readString[:2000]
+    readString = readString[:1500]
     
     levelHits = list(refLevelIdx.map(readString, cs = True))
     levelHits = [i for i in levelHits if i.strand == 1]
@@ -154,7 +154,7 @@ for readFile in negReadsFiles[:negCounter]:
     readString = "".join(helperDict[i] for i in readString)
     
     print(len(readString))
-    readString = readString[:2000]
+    readString = readString[:1500]
     
     levelHits = list(refLevelIdx.map(readString))
     

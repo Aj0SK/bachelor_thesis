@@ -1,18 +1,15 @@
 refFilePath = "../../../data/sapIngB1.fa"
-# kmer model
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
-targetContig = "contig1"
 targetBeg, targetEnd = 0, 1000000000#1000000#50000
 
-posTestCases, negTestCases = 40, 40
-levels = 4
+levels = 9
 repeatSignal = 10
 kmerLength = 14
 overflow = 0.30
 smoothParam = 5
 
-maxCount = 1000000
+maxCount = 10000
 
 ################################################################################
 
