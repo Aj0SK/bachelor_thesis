@@ -1,4 +1,5 @@
 -e git+https://github.com/fmfi-compbio/nadavca@6c45377ba545b6817f84ed7d5747274656fbe7b9#egg=nadavca
+-e git+https://github.com/nanoporetech/bwapy@4390a8404993bac15afd263f861ac23fca12cd6e#egg=bwapy
 cycler==0.10.0
 h5py==2.10.0
 kiwisolver==1.1.0

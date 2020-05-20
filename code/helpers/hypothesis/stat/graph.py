@@ -8,7 +8,7 @@ levels = []
 
 d = {}
 
-with open("out4.txt", "r") as f:
+with open("out1.txt", "r") as f:
     for line in f.readlines():
         line = line.split()
         k = int(line[2])
@@ -21,12 +21,15 @@ with open("out4.txt", "r") as f:
         if line[0] == "+":
             d[(k, level)] = d.get((k, level), 1) * hits
         if line[0] == "-":
-            d[(k, level)] = d.get((k, level), 1) / hits
+            d[(k, level)] = d.get((k, level), 1) / (hits+0.000000001)
 
 data = []
 
 klens = list(set(klens))
 levels = list(set(levels))
+
+klens.sort()
+levels.sort()
 
 for i in range(1, 100):
     x = []

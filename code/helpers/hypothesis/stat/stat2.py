@@ -1,5 +1,5 @@
 refFilePath = "../../../data/sapIngB1.fa"
-# kmer model
+refIndex = "../../../data/ref.index"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
 # positive and negative reads folder
@@ -109,43 +109,40 @@ def helper(hashTable, reads, infoString):
             
         readSignal = readSignal[fromRead:toRead]
         readString = getLevelStr(readSignal, levels)
-                
-        before = total
+
         for i in range(len(readString)):
             if kmerNum == totalNum:
                 break
             kmer = readString[i : i + k]
             totalNum += 1
             total += hashTable.get(kmer, 0)
-        
-        #print(f"Read {readFile} : \t {total-before}")
     print(f"{infoString} k {k} l {levels} -> {total} / {totalNum}")
 
-for levels in [8]:#range(6, 15):
+for levels in range(4, 13):
     storeContig = {}
 
-    for contig in Fasta(refFilePath):
-        print("Next!")
-        ref = str(contig)
-        contigSignal = stringToSignal(ref, mod, repeatSignal=repeatSignal)
-        levelStr = getLevelStr(contigSignal, levels)
-        storeContig[contig.name] = levelStr
+    with open(refIndex, 'r') as outFile:
+        for line in outFile:
+            line = line.split()
+            if int(line[1]) != levels or line[2] != "+":
+                continue
 
-    #print("Refstrings ready!")
+            levelStr = line[3]
+            storeContig[line[0]] = levelStr
 
-    hk = list(range(5, 35))
+    hk = list(range(5, 30))
 
     for k in hk:
         hashTable = {}
         
         for contig in storeContig.values():
             buildDictionarySpecial(hashTable, contig, k)
-        toDel = []
+        '''toDel = []
         for key, count in hashTable.items():
             if count >= 100:
                 toDel.append(key)
         for key in toDel:
-            del hashTable[key]
+            del hashTable[key]'''
         
         helper(hashTable, posReads, "+")
         helper(hashTable, negReads, "-")

@@ -29,49 +29,31 @@ readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
-maxTests = 400
+maxTests = 100
 repeatSignal = 10
 
+levels = list(range(4, 12))
 kmerLen = list(range(4, 40))
-levels = list(range(4, 10))
 
-plotLevels = range(4, 10)
-plotKmerLen = range(4, 40, 10)
+plotLevels = list(range(4, 12))
+plotKmerLen = (range(4, 40))
 
 signalFrom = 5000
 signalTo = 7000
 
-
-def helper(a, b):
-    a = list(a)
-    b = list(b)
-
-    for s in range(1, len(a) - 1):
-        if b[s - 1] != "-" and b[s + 1] != "-" and a[s + 1] != "-" and a[s - 1] != "-":
-            if a[s] == "-" and ord(b[s]) == (ord(a[s - 1]) + ord(a[s + 1])) // 2:
-                a[s] = "X"  # chr((ord(a[s-1]) + ord(a[s+1]))//2)
-            if b[s] == "-" and ord(a[s]) == (ord(b[s - 1]) + ord(b[s + 1])) // 2:
-                b[s] = "X"  # chr((ord(a[s-1]) + ord(a[s+1]))//2)
-
-    a = "".join(a)
-    b = "".join(b)
-    return a, b
-
-
-def succesive(a, b):
-    longest = 0
-    currLen = 0
-
-    for i in range(len(a)):
-        if a[i] == "-" or b[i] == "-":
-            longest = max(longest, currLen)
-            currLen = 0
+def plotAOC(src):
+    src.sort()
+    src.reverse()
+    X, Y = [], []
+    x, y = 0, 0
+    for i in src:
+        X.append(x)
+        Y.append(y)
+        if i[1] == 0:
+            y += 1
         else:
-            currLen += 1
-    return max(longest, currLen)
-
-
-rat = []
+            x += 1
+    return X, Y
 
 ### get corresponding part of the reference using minimap2
 referenceIdx = mp.Aligner(refFile)
@@ -81,15 +63,9 @@ mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 posReads = getReadsInFolder(readsPosFilePath, minSize=1000000)
 negReads = getReadsInFolder(readsNegFilePath, minSize=1000000)
 
-goodK, totalK = 0, 0
-
-dobre, zle = 0, 0
-
 pomery = [[[] for j in kmerLen] for i in levels]
 
-successfulReads = 0
-
-for readFile in posReads[: min(len(posReads), maxTests)]:
+for readFile in posReads:
     print(readFile)
     try:
         readFastq, readEvents = getSeqfromRead(readFile)
@@ -106,7 +82,10 @@ for readFile in posReads[: min(len(posReads), maxTests)]:
         # print("Too many or too few hits, skipping read.")
         continue
     hit = hits[0]
-    successfulReads += 1
+
+    maxTests -= 1
+    if maxTests == 0:
+        break
 
     if hit.strand == 1:
         refSeq = str(Fasta(refFile)[hit.ctg][hit.r_st : hit.r_en])
@@ -191,7 +170,17 @@ for readFile in posReads[: min(len(posReads), maxTests)]:
         print()
     
 
-print("Skipped {0} out of {1}".format(maxTests - successfulReads, maxTests))
+fig, axs = plt.subplots(len(plotLevels))
 
-print("Good is: " + str(spaces_G))
-print("Bad  is: " + str(spaces_F))
+for i in range(len(plotLevels)):
+    X, Y = [], []
+    for k in range(len(plotKmerLen)):
+        rat = pomery[levels.index(plotLevels[i])][kmerLen.index(plotKmerLen[k])]
+        x, y = plotAOC(rat)
+        X = x
+        Y.append(y)
+        axs[i].plot(X, y, label = str(k))
+    axs[i].legend(loc="lower right")
+    Y = np.array(Y)
+
+plt.show()

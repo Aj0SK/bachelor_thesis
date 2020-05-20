@@ -98,16 +98,12 @@ for posRead in posReadsPaths:
 
     if len(nadavca_align) != 1:
         continue
-    if nadavca_align[0][0].reverse_complement == True:
-        #print("Problem!")
-        pass
     
-    if readCounter == 150:
+    if readCounter == 10:
         break
     
     nadavca_align = nadavca_align[0]
 
-    # refStr = str(ref[nadavca_align[0].contig_name])
     fromSignal, toSignal = nadavca_align[0].signal_range
     
     if (toSignal-fromSignal) < workingLen:
@@ -120,9 +116,8 @@ for posRead in posReadsPaths:
     refSeq = "".join(nadavca_align[0].reference_part)
 
     refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
-    readSignal = np.array(getSignalFromRead(posRead)[fromSignal:toSignal], dtype=float)
-    # fakeSignal = np.array(stringToSignal(fakeSeq, mod, repeatSignal = repeatSignal),
-    #                float)
+    readSignal = np.array(getSignalFromRead(posRead), dtype=float)
+    readSignal = readSignal[fromSignal:toSignal]
     fakeSignal = []
     fakeIndex = -1
     while len(fakeSignal) <= toSignal:
