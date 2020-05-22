@@ -10,6 +10,7 @@ kmerModelFilePath = "../../data/kmer_model.hdf5"
 
 repeatSignal = 10
 overflow = 0.3
+smoothParam = 5
 
 levels = range(4, 15)
 
@@ -34,8 +35,8 @@ for contig in ref:
         stringToSignal(refSeqNeg, mod, repeatSignal=repeatSignal), float
     )
 
-    refSignalPos = smoothSignal(refSignalPos, 5)
-    refSignalNeg = smoothSignal(refSignalNeg, 5)
+    refSignalPos = smoothSignal(refSignalPos, smoothParam)
+    refSignalNeg = smoothSignal(refSignalNeg, smoothParam)
 
     refSignalPosShift, refSignalPosScale = computeNorm(
         refSignalPos, 0, len(refSignalPos)
