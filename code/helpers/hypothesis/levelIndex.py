@@ -20,28 +20,10 @@ from nadavca.dtw import KmerModel
 from signalHelper import stringToSignal
 from signalHelper import smoothSignal, computeNorm, computeString
 
-import threading
-
 ref = Fasta(refFilePath)
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
-################################################################################
-def getLevelStr(signal, signalShift, signalScale, l, out, index):
-    out[index] = computeString(
-        signal,
-        0,
-        len(signal),
-        signalShift,
-        signalScale,
-        l,
-        overflow=overflow,
-    )
-
-################################################################################
-
-def contigToString(contig, l, out, index):
-    out[index] = ""
-    
+for contig in ref:
     refSeqPos = str(contig[:])
     refSeqNeg = str(contig[:].complement)
 
@@ -52,8 +34,8 @@ def contigToString(contig, l, out, index):
         stringToSignal(refSeqNeg, mod, repeatSignal=repeatSignal), float
     )
 
-    smoothSignal(refSignalPos, 5)
-    smoothSignal(refSignalNeg, 5)
+    refSignalPos = smoothSignal(refSignalPos, 5)
+    refSignalNeg = smoothSignal(refSignalNeg, 5)
 
     refSignalPosShift, refSignalPosScale = computeNorm(
         refSignalPos, 0, len(refSignalPos)
@@ -62,8 +44,8 @@ def contigToString(contig, l, out, index):
         refSignalNeg, 0, len(refSignalNeg)
     )
 
-    
-    refStringPos = computeString(
+    for l in levels:
+        refStringPos = computeString(
             refSignalPos,
             0,
             len(refSignalPos),
@@ -73,7 +55,7 @@ def contigToString(contig, l, out, index):
             overflow=overflow,
         )
 
-    refStringNeg = computeString(
+        refStringNeg = computeString(
             refSignalNeg,
             0,
             len(refSignalNeg),
@@ -83,20 +65,5 @@ def contigToString(contig, l, out, index):
             overflow=overflow,
         )
 
-    out[index] += f"{contig.name} {l} + {refStringPos}\n"
-    out[index] += f"{contig.name} {l} - {refStringNeg}\n"
-
-
-threads = []
-outStrs = []
-
-for contig in ref:
-    for l in levels:
-        x = threading.Thread(target=contigToString, args=(contig, l, outStrs, len(outStrs)))
-        outStrs.append(None)
-        threads.append(x)
-        x.start()
-    
-for i in range(len(threads)):
-    threads[i].join()
-    print(outStrs[i], end="")
+        print(f"{contig.name} {l} + {refStringPos}")
+        print(f"{contig.name} {l} - {refStringNeg}")

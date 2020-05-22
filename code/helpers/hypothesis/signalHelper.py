@@ -82,7 +82,7 @@ def normalizeWindow(
     # w = kf.smooth(w)[0].flatten()
     return
 
-
+'''
 def getLevelString(
     w,
     minSignal=defaultMinSignal,
@@ -97,7 +97,7 @@ def getLevelString(
 
     outString = "".join([k for k, g in groupby(outString)])
     return outString
-
+'''
 
 """
 def getLevelString(w, minSignal = defaultMinSignal, maxSignal = defaultMaxSignal, numLevels = defaultNumberOfLevels, borderArea=defaultBorderArea):
@@ -238,6 +238,17 @@ def countDashes(alligned, consec):
 
 ################################################################################
 
+def getLevelString(signal, smoothParam, levels, overflow):
+    signal = smoothSignal(signal, smoothParam)
+    signalShift, signalScale = computeNorm(signal, 0, len(signal))
+    signalString = computeString(signal,
+                                 0,
+                                 len(signal),
+                                 signalShift,
+                                 signalScale,
+                                 levels,
+                                 overflow=overflow)
+    return signalString
 
 def computeNorm(signal, start, end):
     med = np.mean(signal[start:end])
@@ -320,6 +331,15 @@ def smoothSignal(signal, window_len):
 
     return newsignal
 
+def smoothSignalMed(signal, window_len):
+    newsignal = []
+    win = [signal[0]] * window_len
+    for i in range(0, len(signal)):
+        win = win[1:]
+        win.append(signal[i])
+        newsignal.append(np.median(win))
+
+    return newsignal
 
 def buildDictionary(string, k):
     dict = {}

@@ -1,10 +1,8 @@
 refFilePath = "../data/sapIngB1.fa"
 read = "../data/pos-basecalled/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1706_ch_249_strand.fast5"
 
-#fromSignal, toSignal = 10050, 10110
-#fromSignal, toSignal = 10050, 10200
-fromSignal, toSignal = 10150, 10200
-levels = 6
+fromSignal, toSignal = 10050, 10200
+levels = 12
 
 import sys
 import numpy as np
@@ -41,22 +39,19 @@ for i in range(len(events)):
     signalLevels[(event[0]+event[1])//2] = helper[event[0]]
 
 plt.ylim(mini-5, maxi+5)
-
 plt.yticks(np.arange(mini+levelSize/2, maxi+levelSize/2, levelSize), y_values)
 plt.xticks(range(len(signal)), signalLevels)
 
-c = ["#e28c06", "#00ff00", "#00bfff", "#dbfd45", np.random.rand(3,), np.random.rand(3,)]
-
+colors = np.random.rand(12, 3)
 for i in range(len(events)):
     event = events[i]
     b = event[0]
     e = event[1]
     plt.plot(range(e-1, e+1), signal[e-1:e+1], color = "#000000", linewidth="1", zorder=2)
-    plt.plot(range(b, e), signal[b:e], color = "#000000", linewidth = "1.0", zorder=1)
-    plt.scatter(range(b, e), signal[b:e], marker = 'o', color = c[ord(helper[b])-ord("a")-1], zorder=3)
+    plt.plot(range(b, e), signal[b:e], color = colors[ord(helper[b])-ord("a")-1], linewidth = "3.0", zorder=1)
     #print(x)
     #plt.axvline(x=event[0], ymin = 0, ymax = b)
     #plt.axvline(x=event[1]-1, ymin = 0, ymax = e)
 
-#plt.scatter(range(len(signal)), signal, marker = 'o', color = "#000000", zorder=3)
+plt.scatter(range(len(signal)), signal, marker = 'o', color = "#000000", s = 0.5, zorder=3)
 plt.show()
