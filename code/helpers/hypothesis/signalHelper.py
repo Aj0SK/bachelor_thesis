@@ -27,7 +27,7 @@ import glob
 
 # get reads from folder with size at least minSize(to ensure longer reads)
 def getReadsInFolder(path, minSize=1000000):
-    fileNames = glob.glob(path + "/*.fast5", recursive=True)
+    fileNames = glob.glob(path + "/**/*.fast5", recursive=True)
     fileNames = [i for i in fileNames if os.path.getsize(i) > minSize]
     return fileNames
 
