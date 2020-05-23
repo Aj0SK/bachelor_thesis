@@ -2,8 +2,8 @@ refFilePath = "../data/sapIngB1.fa"
 read = "../data/pos-basecalled/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1706_ch_249_strand.fast5"
 
 #fromSignal, toSignal = 10050, 10110
-#fromSignal, toSignal = 10050, 10200
-fromSignal, toSignal = 10150, 10200
+fromSignal, toSignal = 10050, 10200
+#fromSignal, toSignal = 10150, 10200
 levels = 6
 
 import sys

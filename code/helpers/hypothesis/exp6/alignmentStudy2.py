@@ -10,17 +10,17 @@ readsNegFilePath = "../../../data/neg-basecalled"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 refFilePath = "../../../data/sapIngB1.fa"
 
+smoothParam = 5
 repeatSignal = 10
+workingLen = 5000
 
-kmerLen = list(range(4, 40))
-levels = list(range(4, 10))
+readNum = 10
 
-plotLevels = range(4, 10)
-plotKmerLen = range(4, 40, 10)
+kmerLen = list(range(4, 35, 3))
+levels = list(range(4, 12, 2))
 
-workingLen = 2000
-
-minSignal, maxSignal = -2.0, 2.0
+plotLevels = levels  # range(4, 10)
+plotKmerLen = kmerLen  # range(4, 40, 10)
 
 import sys
 import math
@@ -32,33 +32,21 @@ from pyfaidx import Fasta
 import nadavca
 from nadavca.dtw import KmerModel
 
-sys.path.append("../")
+import matplotlib
+import matplotlib.pyplot as plt
 
+sys.path.append("../")
 from signalHelper import (
     stringToSignal,
     getSignalFromRead,
     getReadsInFolder,
     stringAllignment,
     overlappingKmers,
-    buildDictionary,
+    computeNorm,
+    computeString,
+    smoothSignal,
 )
-from signalHelper import computeNorm, computeString, smoothSignal
 
-import matplotlib
-import matplotlib.pyplot as plt
-
-def overlappingKmersSpecial(str1, str2, k):
-    dic1 = buildDictionary(str1, k)
-    index, count = 0, 0
-    while index < len(str2)-k+1:
-        w = str2[index:index+k]
-        if w in dic1:
-            count += 1
-            index += 5
-            continue
-        index += 1
-    return count
-        
 
 def plotAOC(src):
     src.sort()
@@ -72,11 +60,10 @@ def plotAOC(src):
             y += 1
         else:
             x += 1
-    #print(X)
-    #print(Y)
     return X, Y
 
-############s###################################################################
+
+################################################################################
 
 posReadsPaths = getReadsInFolder(readsPosFilePath, minSize=0)
 negReadsPaths = getReadsInFolder(readsNegFilePath, minSize=0)
@@ -86,33 +73,34 @@ ref = Fasta(refFilePath)
 # load basecalled sequence and signal
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
+################################################################################
+
 nonZeroHits = [[0] * len(kmerLen) for _ in range(len(levels))]
 
 pomery = [[[] for j in kmerLen] for i in levels]
+overlap = [[[] for j in kmerLen] for i in levels]
 readCounter = 0
 
 for posRead in posReadsPaths:
-    nadavca_align = nadavca.align_signal(
-        refFilePath, [posRead]
-    )
+    if readCounter == readNum:
+        break
+
+    nadavca_align = nadavca.align_signal(refFilePath, [posRead])
 
     if len(nadavca_align) != 1:
         continue
-    
-    if readCounter == 10:
-        break
-    
-    nadavca_align = nadavca_align[0]
 
+    nadavca_align = nadavca_align[0]
     fromSignal, toSignal = nadavca_align[0].signal_range
-    
-    if (toSignal-fromSignal) < workingLen:
+
+    if (toSignal - fromSignal) < workingLen:
         continue
-    
+
+    print(f"Signal alligned from {fromSignal} to {toSignal}")
     print("Working on", posRead)
     print(f"So far done {readCounter} reads")
     readCounter += 1
-    
+
     refSeq = "".join(nadavca_align[0].reference_part)
 
     refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
@@ -129,9 +117,9 @@ for posRead in posReadsPaths:
     refSignal = refSignal[:workingLen]
     fakeSignal = fakeSignal[:workingLen]
 
-    readSignal = smoothSignal(readSignal, 5)
-    refSignal = smoothSignal(refSignal, 5)
-    fakeSignal = smoothSignal(fakeSignal, 5)
+    readSignal = smoothSignal(readSignal, smoothParam)
+    refSignal = smoothSignal(refSignal, smoothParam)
+    fakeSignal = smoothSignal(fakeSignal, smoothParam)
     readShift, readScale = computeNorm(readSignal, 0, len(readSignal))
     refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
     fakeShift, fakeScale = computeNorm(fakeSignal, 0, len(fakeSignal))
@@ -148,81 +136,73 @@ for posRead in posReadsPaths:
         fakeStrings[l] = computeString(
             fakeSignal, 0, len(fakeSignal), fakeShift, fakeScale, l, overflow=0.30,
         )
-    
-    for l in levels[:1]:
+
+    for l in levels:
         a, b = stringAllignment(refStrings[l], readStrings[l])
         c, d = stringAllignment(refStrings[l], fakeStrings[l])
-        a, b, c, d = a[0:120], b[0:120], c[0:120], d[0:120]
-        #print(f"{l}:\n{a}\n{b}\n{c}\n{d}\n")
-        
-    '''for l in levels:
         for k in kmerLen:
-            goodOverlap = overlappingKmers(refStrings[l], readStrings[l], k)
-            badOverlap = overlappingKmers(refStrings[l], fakeStrings[l], k)
-            print(f"{l}-levels, {k}-kmerlen: {goodOverlap} vs {badOverlap}")'''
-            
-    
+            counter = 0
+            for i in range(len(readStrings[l]) - k + 1):
+                for j in range(len(refStrings[l]) - k + 1):
+                    w1 = readStrings[l][i : i + k]
+                    w2 = refStrings[l][j : j + k]
+                    if ("-" not in w1) and ("-" not in w2):
+                        counter += 1
+
     for l in levels:
-        print(f"levels({l}): #", end = "")
+        # print(f"levels({l}): #", end="")
         for k in kmerLen:
-            #goodOverlap = overlappingKmersSpecial(refStrings[l], readStrings[l], k)
-            #badOverlap = overlappingKmersSpecial(refStrings[l], fakeStrings[l], k)
             goodOverlap = overlappingKmers(refStrings[l], readStrings[l], k)
             badOverlap = overlappingKmers(refStrings[l], fakeStrings[l], k)
-            #if goodOverlap >= 3:
-            #    nonZeroHits[l-levels[0]][k-kmerLen[0]] += 1
-            #x = nonZeroHits[l-levels[0]][k-kmerLen[0]]
-            #if k >= l and k < 30:
-                #print(f"{k}:{x}", end = '\t')
-            print(f"{k}:{goodOverlap}/{badOverlap}", end = '\t')
-            
-            pomery[levels.index(l)][kmerLen.index(k)].append((goodOverlap, 0))
-            pomery[levels.index(l)][kmerLen.index(k)].append((badOverlap, 1))
-            
+
+            overlap[levels.index(l)][kmerLen.index(k)].append((goodOverlap, 0))
+            overlap[levels.index(l)][kmerLen.index(k)].append((badOverlap, 1))
+
             if goodOverlap == 0:
                 badOverlap = 1000
                 goodOverlap = 100
-            if (badOverlap/goodOverlap) > 2.0:
-                badOverlap = 2*goodOverlap
-                #rat.append(100.0 * badOverlap / goodOverlap)
-            #pomery[l-levels[0]][k-kmerLen[0]].append(100.0 * badOverlap / goodOverlap)
+            if (badOverlap / goodOverlap) > 2.0:
+                badOverlap = 2 * goodOverlap
+            pomery[levels.index(l)][kmerLen.index(k)].append(
+                100.0 * badOverlap / goodOverlap
+            )
         print()
-            
-'''
-fig, axs = plt.subplots(len(levels))
+
+
+fig, axs = plt.subplots(len(plotLevels))
 
 import math
 
-for i in range(len(levels)):https://www.forbes.com/sites/qai/2020/05/18/boeing-and-delta-among-stocks-to-watch-this-week/#44277ebe1f64
-    #for j in range(len(kmerLen)):
+for i in range(len(plotLevels)):
     X, Y = [], []
-    for j in range(len(kmerLen)):
+    for j in range(len(plotKmerLen)):
         if len(pomery[i][j]) == 0:
             continue
-        rat = pomery[i][j]
+        data = pomery[i][j]
         X = range(0, 205)
         y = [0] * 205
-        for k in rat:
+        for k in data:
             y[math.floor(k)] += 1
-        Y.append([sum(y[:k])/len(rat) for k in range(len(y))])
+        # Y.append(y)
+        Y.append([sum(y[:k]) / len(data) for k in range(len(y))])
     Y = np.array(Y)
     axs[i].plot(X, Y.T)
     axs[i].set_title(f"This is level {levels[i]}")
 
 plt.show()
-'''
 
 fig, axs = plt.subplots(len(plotLevels))
 
 for i in range(len(plotLevels)):
     X, Y = [], []
     for k in range(len(plotKmerLen)):
-        rat = pomery[levels.index(plotLevels[i])][kmerLen.index(plotKmerLen[k])]
-        x, y = plotAOC(rat)
+        data = overlap[levels.index(plotLevels[i])][kmerLen.index(plotKmerLen[k])]
+        x, y = plotAOC(data)
         X = x
         Y.append(y)
-        axs[i].plot(X, y, label = str(k))
-    axs[i].legend(loc="lower right")
+        axs[i].plot(X, y, label=str(k))
+    # axs[i].legend(loc="lower right")
     Y = np.array(Y)
+    axs[i].set_title(f"This is level {levels[i]}")
 
 plt.show()

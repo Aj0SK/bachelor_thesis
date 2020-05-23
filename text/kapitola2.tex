@@ -2,22 +2,22 @@
 
 \label{kap:proposedMethod} % id kapitoly pre prikaz ref
 
-In this chapter, we will present our proposed method that will allow us to more
-easily work with the squiggles.
+In this chapter, we will present our proposed method that will allow us to work
+more easily with the squiggles.
 
 \section{Squiggles as Sequencing of Discrete Observations}
 
-When we obtain the simulated signal from the reference DNA, we want to be able
+When we obtain the simulated squiggle from the reference DNA, we want to be able
 to decide during the process of sequencing if the DNA molecule currently passing
-through the pore is from this reference signal. This comes down to finding if the
-current squiggle is present in this reference signal. If both of these signals would
+through the pore is from this reference squiggle. This comes down to finding if the
+current squiggle is present in the reference squiggle. If both of these signals would
 be short, it would be quite possible to do even manually. As we will see, to a
 certain extent, we can see that the two signals are similar. However, we need to
 do this fast and on very long signals.
 
-The idea of our solution is to discretize the simulated signal of the
+The idea of our solution is to discretize the simulated squiggle of the
 reference sequence. We want to come with some better representation of the
-squiggles that represents them well and also provide some advantages such as
+squiggles that represents them well and also provides some advantages such as
 easy searching in this representation. In our current setup, we are
 not very limited by the preprocessing time but we need to decide very fast once
 we are sequencing the DNA. This puts some speed limitations on our discretizing
@@ -37,15 +37,20 @@ $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-
 If the signals $a_0, a_1, \cdots, a_n$ are in the windows $w_0, w_1, \cdots ,w_n$
 respectively, we call $ls$ such that $ls=w_1w_2\cdots w_n$ the level string of the
 signal $s$. After this, we will contract subsequent occurrences of the same level.
-So level string "aabccaa" becomes "abca". An example of this method on some signal
-for $w=6$ is on TODO. 
+So level string "aabccaa" becomes "abca". An example of the transformation of the squiggle
+to the level string for $w=6$ is on \ref{obr:levelsCreation}.
 
-TODO: Add image of short raw signal with the levels and level string
+\begin{figure}
+\centerline{\includegraphics[width=0.8\textwidth, height=0.4\textheight]{images/levelsCreation}}
+\caption[Hehe]{Simulated signal vs real signal, normalized}
+\label{obr:levelsCreation}
+\end{figure}
 
 This method has several good properties that we use. The first and obvious
-property is that the same signal has the same level string each time for the unchanged $w$. Besides this, small changes and
-oscillations in the signal will eventually stay at the same level most of the time.
-We mentioned that the signal consists of some events that are represented by a longer signal that is around the same level.
+property is that the same signal has the same level string each time for the
+unchanged $w$. Besides this, small changes and oscillations in the signal will
+eventually stay at the same level most of the time. We mentioned that the signal
+consists of some events that are represented by a longer signal that is around the same level.
 With this method, we hope that one event remains in the one window. Subsequent
 contraction of the level string should cause that one event is in most cases represented by
 one level.
@@ -55,9 +60,11 @@ and informative our method is. With the $w=2$ we can not say a lot about the two
 that have level string equal. With bigger $w$ we can miss the two same signals
 if there is a little noise present.
 
-TODO: add two images with 3-5 levels and 12+ levels. Show that the oscillations are
-out of a window for a higher number of levels. Then show that for a lower number of levels
-two "events" are quite distinct but are on the same level.
+In TODO and TODO we see two examples of the number of levels. We will now discuss
+what happens with the small and big number of levels. We can see that for the high
+number of levels, one event is less likely to remain in one window. It is caused
+mainly by the noise that can change very easily and this causes that two same signals
+do not have the same level string.
 
 \section{Simulating Squiggles from Reference}
 
@@ -65,7 +72,7 @@ We already stated that we need to obtain some reference squiggle that we
 can sample and use to later split squiggles between that we are interested in and not
 interested in. For this purpose, we need to take the reference in the form of a DNA sequence
 and turn it into a signal. This simulation of the signal is based on the 6-mer kmer model.
-So for every 6-mer in our reference DNA, we will generate signal equal to the mean
+For every 6-mer in our reference DNA, we will generate signal equal to the mean
 of the gaussian distribution for that particular 6-mer.
 
 This simulation does not take into account that the signal from one nucleotide is
@@ -100,7 +107,6 @@ that creates a more noisy signal. There are also some more advanced simulators o
 signal such as DeepSimulator. We want to go the other way and make the real signal
 less noisy so we will now address the most important differences between simulated and real signal.
 
-
 TODO: Add citation for DeepSimulator
 % https://github.com/lykaust15/DeepSimulator
 
@@ -127,15 +133,44 @@ of a simulated signal that jumps. Again, we can use the moving average. Instead 
 the moving median, it has a nice advantage that it causes signal not to jump from
 one level to another but rather move continuously.
 
-TODO: Add image of signal smoothed by moving average and moving median.
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.5\textheight]{images/testSmooth}}
+\caption[Hehe]{Simulated signal vs real signal, normalized}
+\label{obr:testSmooth}
+\end{figure}
+
+In \ref{obr:testSmooth} we can see the part of simulated and corresponding real squiggle.
+Then, in the subsequent two graphs, we apply the moving average with the window len
+of 5. We can see that this smoothed the simulated signal but also smoothed the noise
+that we could observed in the events. With the median smoothing the outcome is quite
+similar but lacks in the quality of smoothing the simulated signal.
 
 \section{Identification of Reads Based on Shared k-mers}
 
-We will now look at how the simulated reference signal compares to the raw read
-corresponding to this reference and random read from the other sequencing.
+Now we will want to test our method of representation. What we will do is that we
+take the read, reference corresponding to it and a some other read. We will then
+try to tell which read is from the reference and which is not based only on the
+level strings of the respective squiggles. We emphasized the speed many times, so
+we will try to come up with the fast test. What we will do is that we will split the
+individual level strings into overlapping k-mers. We will then find what is the overlap
+between reference and the sample squiggles. From the number of the overlaps, we will try
+to estimate, which sample squiggle is from the reference and which is not. This is very
+simple heuristics but we think that this method could work well and also enables us
+to only query for the indexed k-mer which is something that can be done really fast.
 
 \section{Experimental evaluation}
 
+We will now look at how the simulated reference signal compares to the raw read
+corresponding to this reference and random read from the other sequencing. We will
+not evaluate the data only based on shared k-mers as this metrics can be misleading.
+
+\subsection{Data preparation}
+
+For this experiments we will use the data that we discribe more closely in \ref{kap:apendA}
+Hovewer, we will use the squiggles from the Saprochaete fungicola only if their signal
+is successfully aligned into the reference using the Nadavca. We then create the
+simulated reference signal from the reference part that Nadavca identified, pick
+some random read from the sequencing of the Saprochaete ingens and run our analysis.
 
 \subsection{Level string alignment}
 
@@ -143,7 +178,12 @@ To see how the reference level string and read level string compare to each othe
 we will align them. The input to the alignment algorithm are two strings $s_1$, $s_2$:
 $s_1=a_1a_2\cdots a_n$, $s_2=b_1b_2\cdots b_m$. The alignment are strings
 $s_3$, $s_4$: $s_3 = c_1c_2c_3\cdots c_k$, $s_4 = d_1d_2d_3\cdots d_k$
-such that if $c_i \neq d_i$ then $c_i = - \lor d_i = -$ and also 
+such that:
+
+\begin{enumerate}
+\item $s_3$ and $s_4$ was created from $s_1$, $s_2$ respectively by inserting dashes
+\item $c_i \neq d_i$ then $c_i = - \lor d_i = -$
+\end{enumerate}
 
 Example of allignment of $s_1 = AAACTGC$ and $s_2 = AACGTC$ is:
 
@@ -153,8 +193,9 @@ $s_4 = $AA\,-\,CGT\,-\,C
 \end{center}
 
 There are a lot of alignments of the two particular strings. Most of the time we
-are interested in some particular alignment. For this purpose, we need to have a
-scoring system. We can, for example, minimize the number of dashes.
+are interested in some particular alignment. For this purpose, we will create a
+scoring system and we will try to find the maximum/minimum alignment in this scoring
+system. We can, for example, minimize the number of dashes.
 
 Using the alignment defined this way we can see how two-level strings compare to
 each other and how similar they are.
@@ -171,3 +212,11 @@ T[i][j] = \bigl.
     max(T[i-1][j], T[i][j-1]) & \text{otherwise}
   \end{cases}
 \]
+
+\subsection{Results}
+
+The first thing that we will look on is the number of shared k-mers as we already
+stated this is our first.
+
+The second metrics we will be interested in is mutual alignment of the sample
+level strings and the reference level string.

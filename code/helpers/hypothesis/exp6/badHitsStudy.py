@@ -14,7 +14,7 @@ repeatSignal = 10
 overflow = 0.3
 smoothParam = 5
 
-kmerLen = 6
+kmerLen = 17
 level = 12
 
 workingContig = "contig3"
@@ -137,13 +137,13 @@ with open(refIndex, "r") as outFile:
         levelStr = line[3]
         storeContig[line[0]] = levelStr
 
-for contig in ref:
+'''for contig in ref:
     if contig.name != workingContig:
         continue
     contigSignal = stringToSignal(str(contig), mod, repeatSignal=repeatSignal)
-    smoothSignal(contigSignal, smoothParam)
+    contigSignal = smoothSignal(contigSignal, smoothParam)
     globalNorms[contig.name] = computeNorm(contigSignal, 0, len(contigSignal))
-    """storeContig[contig.name], infoString = computeStringInformative(
+    storeContig[contig.name], infoString = computeStringInformative(
         contigSignal,
         0,
         len(contigSignal),
@@ -151,7 +151,7 @@ for contig in ref:
         globalNorms[contig.name][0],
         level,
         overflow=overflow,
-    )"""
+    )'''
 
 print("Preparation done!")
 
@@ -165,7 +165,7 @@ for contigName in storeContig.keys():
     buildDictionarySpecial(hashTables[-1], storeContig[contigName], kmerLen)
     buildDictionarySpecial(hashTable, storeContig[contigName], kmerLen)
 
-for sample in posReadsPaths[:100]:
+for sample in posReadsPaths[:400]:
     try:
         readFastq, readEvents = getSeqfromRead(sample)
     except:
@@ -188,12 +188,12 @@ for sample in posReadsPaths[:100]:
     refSeq = str(Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
     refSignal = stringToSignal(refSeq, mod, repeatSignal)
     refSignal = smoothSignal(refSignal, smoothParam)
-    #refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
-    refShift, refScale = globalNorms[hit.ctg][0], globalNorms[hit.ctg][1]
+    refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
+    #refShift, refScale = globalNorms[hit.ctg][0], globalNorms[hit.ctg][1]
     refString = computeString(
         refSignal, 0, len(refSignal), refShift, refScale, level, overflow=overflow
     )
-    refString = refString[3 : len(refString) - 3]
+    refString = refString[10 : len(refString) - 10]
 
     contigX = storeContig[hit.ctg]
     startInRef = -1
@@ -205,13 +205,13 @@ for sample in posReadsPaths[:100]:
             print(f"Hit is in ctg {hit.ctg} in [{e};{e+readSignalEnd//repeatSignal}] around {e/len(contigX)}")
     if startInRef == -1:
         print("Problem!")
-        continue
+        #continue
 
     readSignal = getSignalFromRead(sample)
     readSignal = readSignal[readSignalBeg:readSignalEnd]
     readString = getLevelString(readSignal, smoothParam, level, overflow)
 
-    refString = refString[readSignalBeg//repeatSignal:readSignalEnd//repeatSignal]
+    #refString = refString[readSignalBeg//repeatSignal:readSignalEnd//repeatSignal]
 
     u = []
     for i in range(len(readString) - kmerLen + 1):
@@ -221,7 +221,7 @@ for sample in posReadsPaths[:100]:
             if w1 == w2:
                 u.append((i,j))
     
-    print(u)
+    #print(u)
     #exit(0)
 
     refHash = {}
@@ -241,7 +241,7 @@ for sample in posReadsPaths[:100]:
         if w in refHash:
             hits2.append(w)
 
-    print(f"Roznych je tam {len(set(hits2))}")
+    #print(f"Roznych je tam {len(set(hits2))}")
 
     wind = 100
     x = []
@@ -258,10 +258,11 @@ for sample in posReadsPaths[:100]:
                 d[wind * hits[j] // contigLen] += 1
                 x.append((hits[j], i))
         d[aproxPos] += 1000
+        print(d)
 
-        possibleHits = helperF(x)
+        possibleHits = helperF(x, 5)
         for i in possibleHits:
-            if abs(i - startInRef) <= 1500 and i >= startInRef:
+            if abs(i) <= 1500 and i >= startInRef:
                 print(startInRef, i)
 
     print(
