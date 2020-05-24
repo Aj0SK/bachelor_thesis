@@ -1,57 +1,66 @@
 refFilePath = "../data/sapIngB1.fa"
 read = "../data/pos-basecalled/magnu_20181010_FAH93149_MN26672_sequencing_run_sapIng_19842_read_1706_ch_249_strand.fast5"
 
-fromSignal, toSignal = 10050, 10200
-levels = 12
+workLen = 50
+levels = 3
+mini, maxi = -2.0, 2.0
 
 import sys
 import numpy as np
+from itertools import groupby
 
 sys.path.append("../helpers/hypothesis")
-from signalHelper import getSignalFromRead
+from signalHelper import getSignalFromRead, stringAllignment
 
 import matplotlib.pyplot as plt
 
-signal = getSignalFromRead(read)[fromSignal:toSignal]
+def normal(signal):
+    newsignal = signal - np.mean(signal)
+    newsignal /= np.std(newsignal)
+    return newsignal
 
-mini, maxi = min(signal), max(signal) + 5
-levelSize = (maxi-mini)/levels
+def f(signal, mini, levelSize):
+    helper = [chr(ord("a") + int((i-mini)/levelSize)) for i in signal]
+    helper = "".join(helper)
+    helper = "".join([k for k, g in groupby(helper)])
+    return helper
 
-y_values = [chr(ord("a") + i) for i in range(levels)]
-y_axis = np.arange(0, levels, 1)
+signal = getSignalFromRead(read)
+signal1, signal2 = [], []
+found = False
+
+levelSize = 0, 0, 0
+
+signal = normal(signal)
+
+signal[signal>maxi] = maxi
+signal[signal<mini] = mini
+
+helper = {}
+
+counter = 3
+
+for i in range(0, len(signal)-2*workLen+1, 30):
+    signal1 = signal[i:i+workLen]
+
+    levelSize = (maxi-mini)/levels
+
+    str1 = f(signal1, mini, levelSize)
+
+    if str1 in helper:
+        counter -= 1
+        if counter != 0:
+            continue
+        print(i)
+        print(helper[str1])
+        signal2 = signal[helper[str1]:helper[str1]+workLen]
+        #signal2 = normal(signal2)
+        break
+    
+    helper[str1] = i
 
 for a in np.arange(mini, maxi+levelSize, levelSize):
     plt.axhline(y=a, color = 'r', linewidth = '2')
-
-helper = [chr(ord("a") + int((i-mini)/levelSize)) for i in signal]
-signalLevels = [" "] * len(helper)
-
-events = []
-begg = 0
-for i in range(len(helper)):
-    if helper[i] != helper[begg]:
-        events.append((begg,i))
-        begg = i
-events.append((begg, i))
-
-for i in range(len(events)):
-    event = events[i]
-    signalLevels[(event[0]+event[1])//2] = helper[event[0]]
-
-plt.ylim(mini-5, maxi+5)
-plt.yticks(np.arange(mini+levelSize/2, maxi+levelSize/2, levelSize), y_values)
-plt.xticks(range(len(signal)), signalLevels)
-
-colors = np.random.rand(12, 3)
-for i in range(len(events)):
-    event = events[i]
-    b = event[0]
-    e = event[1]
-    plt.plot(range(e-1, e+1), signal[e-1:e+1], color = "#000000", linewidth="1", zorder=2)
-    plt.plot(range(b, e), signal[b:e], color = colors[ord(helper[b])-ord("a")-1], linewidth = "3.0", zorder=1)
-    #print(x)
-    #plt.axvline(x=event[0], ymin = 0, ymax = b)
-    #plt.axvline(x=event[1]-1, ymin = 0, ymax = e)
-
-plt.scatter(range(len(signal)), signal, marker = 'o', color = "#000000", s = 0.5, zorder=3)
+plt.plot(signal1)
+plt.plot(signal2)
 plt.show()
