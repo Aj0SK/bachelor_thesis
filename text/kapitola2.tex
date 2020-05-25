@@ -121,8 +121,11 @@ produces much longer level string for real signal than for simulated signal.
 The problem arises when the oscillations are located on the borders of the windows.
 This is something that unfortunately happens too often.
 There are several possibilities to deal with this behavior not affecting speed too
-much. We tried several smoothing techniques to reduce noise. From simple as the
-moving average and the moving median to some more complicated as a Kalman filter.
+much. We tried several smoothing techniques to reduce noise. Moving average is the
+smoothing technique that for every entry $s_i$ in some signal $s$ count its new value
+$snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We wil call the
+$k$ the size of the window or also smoothing constant. We can then simply change
+the average function to median to obtain moving median.
 For now, we will stick to faster solutions and choose one of the simpler techniques.
 
 \subsection{Signal continuity}
@@ -157,6 +160,12 @@ between reference and the sample squiggles. From the number of the overlaps, we 
 to estimate, which sample squiggle is from the reference and which is not. This is very
 simple heuristics but we think that this method could work well and also enables us
 to only query for the indexed k-mer which is something that can be done really fast.
+Beside the windows count this is another useful parametrizable metrics. We can estimate
+that there will be a lot of shared kmers of len less than 10 even between two unrelated
+squiggles. As we gradually increase the len of the kmer, we expect that the number
+of random hits will decrease. On the other hand, we cannot increase the length of kmer
+a lot because there is increasing probability that some random level causes the
+whole hit to fail.
 
 \section{Experimental evaluation}
 
@@ -215,8 +224,20 @@ T[i][j] = \bigl.
 
 \subsection{Results}
 
-The first thing that we will look on is the number of shared k-mers as we already
-stated this is our first.
+The first thing that we evaluated is the number of shared k-mers as we already
+stated this will be our first metric.
 
 The second metrics we will be interested in is mutual alignment of the sample
-level strings and the reference level string.
+level strings and the reference level string. We will align them using the scoring
+scheme we already presented. The problem with the shared kmers is that we only look
+for the shared kmers but we do not evaluate the relative positions of matched pairs.
+This means that we can easily count as the matching pair also some two kmers that
+do not correspond to the same signal. With the reasonable number of levels this will
+not happen often for a short read. The big advantage of the allignment of the strings
+is that it tells us more accurately what is the overall similarity of the level strings.
+
+For the higher number of levels it is common to see the alignment equally
+long between the both reads. This is caused by the fact that despite our eforts there
+is too big difference between real and simulated signal so it is pretty common for
+the alignment to miss some level. What is more obvious is that the common thing in
+the

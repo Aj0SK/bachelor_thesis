@@ -59,8 +59,36 @@ for i in range(0, len(signal)-2*workLen+1, 30):
     
     helper[str1] = i
 
+#signal2[20:] += 0.7
+#signal1[:20] -= 0.5
+
 for a in np.arange(mini, maxi+levelSize, levelSize):
     plt.axhline(y=a, color = 'r', linewidth = '2')
 plt.plot(signal1)
 plt.plot(signal2)
+plt.show()
+
+import nadavca
+from nadavca.dtw import KmerModel
+
+nadavca_align = nadavca.align_signal(
+    refFilePath, [read], bwa_executable="./bwa/bwa"
+)
+
+assert len(nadavca_align) == 1, "Error! More than one alignment!"
+nadavca_align = nadavca_align[0]
+
+fromSignal, toSignal = nadavca_align[0].signal_range
+table = nadavca_align[1][:30]
+refSeq = "".join(nadavca_align[0].reference_part)[:30]
+
+signal = signal[table[0][1]:table[10][2]]
+signal = normal(signal)
+
+signal[signal<mini] = mini
+signal[signal>maxi] = maxi
+
+for a in np.arange(mini, maxi, (maxi-mini)/12):
+    plt.axhline(y=a, color = 'r', linewidth = '2')
+plt.plot(signal)
 plt.show()
