@@ -14,13 +14,13 @@ smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 10
+readNum = 50
 
-kmerLen = list(range(4, 35, 3))
-levels = list(range(4, 12, 2))
+kmerLen = list(range(4, 36, 1))
+levels = list(range(4, 15, 1))
 
-plotLevels = levels  # range(4, 10)
-plotKmerLen = kmerLen  # range(4, 40, 10)
+plotLevels = [4, 5, 7, 9, 11, 13]  # range(4, 10)
+plotKmerLen = [4, 7, 13, 17, 21, 28]  # range(4, 40, 10)
 
 import sys
 import math
@@ -45,21 +45,22 @@ from signalHelper import (
     computeNorm,
     computeString,
     smoothSignal,
+    countDashes,
 )
 
 
 def plotAOC(src):
     src.sort()
     src.reverse()
-    X, Y = [], []
+    X, Y = [0], [0]
     x, y = 0, 0
     for i in src:
-        X.append(x)
-        Y.append(y)
         if i[1] == 0:
             y += 1
         else:
             x += 1
+        X.append(x)
+        Y.append(y)
     return X, Y
 
 
@@ -75,10 +76,10 @@ mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 ################################################################################
 
-nonZeroHits = [[0] * len(kmerLen) for _ in range(len(levels))]
-
 pomery = [[[] for j in kmerLen] for i in levels]
 overlap = [[[] for j in kmerLen] for i in levels]
+goodDash = [[] for i in levels]
+badDash = [[] for i in levels]
 readCounter = 0
 
 for posRead in posReadsPaths:
@@ -96,13 +97,12 @@ for posRead in posReadsPaths:
     if (toSignal - fromSignal) < workingLen:
         continue
 
-    print(f"Signal alligned from {fromSignal} to {toSignal}")
+    #print(f"Signal alligned from {fromSignal} to {toSignal}")
     print("Working on", posRead)
     print(f"So far done {readCounter} reads")
     readCounter += 1
 
     refSeq = "".join(nadavca_align[0].reference_part)
-
     refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
     readSignal = np.array(getSignalFromRead(posRead), dtype=float)
     readSignal = readSignal[fromSignal:toSignal]
@@ -140,6 +140,22 @@ for posRead in posReadsPaths:
     for l in levels:
         a, b = stringAllignment(refStrings[l], readStrings[l])
         c, d = stringAllignment(refStrings[l], fakeStrings[l])
+        
+        #a = a[:300]
+        #b = b[:300]
+        #c = c[:300]
+        #d = d[:300]
+        
+        dashes1 = [countDashes(a, i) + countDashes(b, i) for i in range(1, 21)]
+        dashes2 = [countDashes(c, i) + countDashes(d, i) for i in range(1, 21)]
+        
+        goodDash[levels.index(l)].append(dashes1)
+        badDash[levels.index(l)].append(dashes2)
+        
+        #print(dashes1)
+        #print(dashes2)
+        
+        '''
         for k in kmerLen:
             counter = 0
             for i in range(len(readStrings[l]) - k + 1):
@@ -147,10 +163,10 @@ for posRead in posReadsPaths:
                     w1 = readStrings[l][i : i + k]
                     w2 = refStrings[l][j : j + k]
                     if ("-" not in w1) and ("-" not in w2):
-                        counter += 1
+                        counter += 1'''
 
     for l in levels:
-        # print(f"levels({l}): #", end="")
+        print(f"levels({l}): #", end="")
         for k in kmerLen:
             goodOverlap = overlappingKmers(refStrings[l], readStrings[l], k)
             badOverlap = overlappingKmers(refStrings[l], fakeStrings[l], k)
@@ -166,32 +182,37 @@ for posRead in posReadsPaths:
             pomery[levels.index(l)][kmerLen.index(k)].append(
                 100.0 * badOverlap / goodOverlap
             )
+            print(f"{k}: {goodOverlap}/{badOverlap}", end = " ")
         print()
 
 
-fig, axs = plt.subplots(len(plotLevels))
+#fig, axs = plt.subplots(len(plotLevels))
 
 import math
 
-for i in range(len(plotLevels)):
-    X, Y = [], []
-    for j in range(len(plotKmerLen)):
-        if len(pomery[i][j]) == 0:
-            continue
-        data = pomery[i][j]
-        X = range(0, 205)
-        y = [0] * 205
-        for k in data:
-            y[math.floor(k)] += 1
-        # Y.append(y)
-        Y.append([sum(y[:k]) / len(data) for k in range(len(y))])
-    Y = np.array(Y)
-    axs[i].plot(X, Y.T)
-    axs[i].set_title(f"This is level {levels[i]}")
+a = []
 
+for i in range(len(plotLevels)):
+    g = [0] * 20
+    b = [0] * 20
+    for j in range(len(goodDash[levels.index(plotLevels[i])])):
+        for k in range(20):
+            g[k] += goodDash[levels.index(plotLevels[i])][j][k]
+        for k in range(20):
+            b[k] += badDash[levels.index(plotLevels[i])][j][k]
+    g = [k/len(goodDash[levels.index(plotLevels[i])]) for k in g]
+    b = [k/len(goodDash[levels.index(plotLevels[i])]) for k in b]
+    #a.append(g)
+    #a.append(b)
+    #a.append([g[i]/b[i] if b[i] != 0 else 1 for i in range(len(g))])
+    a.append([sum(g[:5])/(sum(b[:5])+0.0000001)] + [sum(g[9:16])/(sum(b[9:16])+0.0000001)])
+
+plt.imshow(a, cmap = "hot", interpolation = "nearest")
 plt.show()
 
-fig, axs = plt.subplots(len(plotLevels))
+
+dim1, dim2 = 2, 3
+fig, axs = plt.subplots(dim1, dim2)
 
 for i in range(len(plotLevels)):
     X, Y = [], []
@@ -200,9 +221,35 @@ for i in range(len(plotLevels)):
         x, y = plotAOC(data)
         X = x
         Y.append(y)
-        axs[i].plot(X, y, label=str(k))
+        axs[i//dim2, i%dim2].plot(X, y, label=str(k), linewidth=2)
     # axs[i].legend(loc="lower right")
     Y = np.array(Y)
-    axs[i].set_title(f"This is level {levels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"This is level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_aspect('equal', adjustable='box')
+axs[dim1-1, dim2-1].legend(loc="lower right")
+
+plt.show()
+
+
+dim1, dim2 = 2, 3
+fig, axs = plt.subplots(dim1, dim2)
+
+import math
+
+for i in range(len(plotLevels)):
+    X, Y = [], []
+    for j in range(len(plotKmerLen)):
+        data = pomery[levels.index(plotLevels[i])][kmerLen.index(plotKmerLen[j])]
+        if len(data) == 0:
+            continue
+        X = range(0, 205)
+        y = [0] * 205
+        for k in data:
+            y[math.floor(k)] += 1
+        # Y.append(y)
+        Y.append([sum(y[:k]) / len(data) for k in range(len(y))])
+    Y = np.array(Y)
+    axs[i//dim2, i%dim2].plot(X, Y.T)
+    axs[i//dim2, i%dim2].set_title(f"This is level {plotLevels[i]}")
 
 plt.show()
