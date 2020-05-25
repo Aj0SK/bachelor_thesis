@@ -77,15 +77,16 @@ two squiggles from the same DNA sequence to not have the same level string.
 We already stated that we need to obtain some reference squiggle that we
 can sample and use to later split squiggles between that we are interested in and not
 interested in. For this purpose, we need to take the reference in the form of a DNA sequence
-and turn it into a signal. This simulation of the signal is based on the 6-mer kmer model.
-For every 6-mer in our reference DNA, we will generate signal equal to the mean
-of the gaussian distribution for that particular 6-mer.
+and turn it into a squiggle. This simulation of the squiggle is based on the 6-mer model.
+For every subsequent 6-mer in our reference DNA, we will generate signal equal to
+the mean of the gaussian distribution for that particular 6-mer. This mean value
+is the information provided for us by the manufacturer of MinION through the kmer model.
 
 This simulation does not take into account that the signal from one nucleotide is
 measured several times. We already estimated that single nucleotide is on average
 measured about 10 times so we will duplicate every entry in this simulated signal
 10 times. We want to see how this signal compares to real signal so to put these
-two into perspective we normalize this signal by subtracting mean and removing
+two into perspective we normalize this signal by subtracting mean and dividing by
 standard deviation \ref{obr:simVsReal}.
 
 \begin{figure}
@@ -94,12 +95,11 @@ standard deviation \ref{obr:simVsReal}.
 \label{obr:simVsReal}
 \end{figure}
 
-Now we have a simulated reference signal. On \ref{obr:simVsReal} we can see that the simulated and real
-signal are not identical. This poses problems as we want to have these signals as
-similar as possible. The first thing that we want to consider is normalization. There
-are two possible approaches, local and global normalization. We will try both these
-approaches. One of the most wide-spread ways of doing this is to subtract mean and dividing
-signal by standard deviation. The other possible solution is subtracting median value
+Now we have a simulated reference squiggle. We can see on \ref{obr:simVsReal} that the simulated and real
+squiggle are not identical. This poses problem as we want to have these signals as
+similar as possible. The first thing that we want to consider is normalization.
+One of the most wide-spread ways of doing this is to subtract mean and dividing
+squiggle by standard deviation. The other possible solution is subtracting median value
 as the frequent outliers can deform the mean.
 
 Another visible problem can be seen when we compare events in simulated and real squiggle
@@ -116,7 +116,7 @@ that creates a more noisy signal. There are also some more advanced simulators o
 signal such as DeepSimulator\cite{deepsimulator}. We want to go the other way and make the real signal
 less noisy so we will now address the most important differences between simulated and real signal.
 
-\subsection{Oscillations}
+\subsection{Signal oscillations and continuity}
 
 We already saw in \ref{obr:simVsReal} that one of the biggest differences between simulated and
 real signal is the noise which can be seen as small oscillations of the signal. This is
@@ -125,16 +125,14 @@ are dealt with. We can also pretty easily adapt the number of windows.
 However, when our method is used without any modifications it
 produces much longer level string for real signal than for simulated signal.
 The problem arises when the oscillations are located on the borders of the windows.
-This is something that unfortunately happens too often.
-There are several possibilities to deal with this behavior not affecting speed too
+This is something that unfortunately happens too often. There are several
+possibilities to deal with this behavior not affecting speed too
 much. We tried several smoothing techniques to reduce noise. Moving average is the
 smoothing technique that for every entry $s_i$ in some signal $s$ count its new value
 $snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We wil call the
 $k$ the size of the window or also smoothing parameter. We can also simply change
 the average function to median to obtain moving median. For now, we will stick
-to faster solutions and choose one of the simpler techniques.
-
-\subsection{Signal continuity}
+to faster smoothing techniques such as the moving average.
 
 The next difference that was visible from the comparison of real signal level string
 and the simulated signal level string is that the real signal is more continuous instead
@@ -156,28 +154,31 @@ similar but lacks in the quality of smoothing the simulated signal.
 
 \section{Identification of Reads Based on Shared k-mers}
 
-Now we will want to test our method of representation. What we will do is that we
-take the read, reference corresponding to it and a some other read. We will then
-try to tell which read is from the reference and which is not based only on the
-level strings of the respective squiggles. We emphasized the speed many times, so
-we will try to come up with the fast test. What we will do is that we will split the
+What we will do is that we take the squiggle, reference corresponding to it and
+some other squiggle. We will then try to tell which squiggle is from the reference
+and which is not based only on the level strings of the respective squiggles. We
+emphasized the speed many times, so we will try to come up with the fast test.
+What we will do is that we will split the
 individual level strings into overlapping k-mers. We will then find what is the overlap
 between reference and the sample squiggles. From the number of the overlaps, we will try
 to estimate, which sample squiggle is from the reference and which is not. This is very
 simple heuristics but we think that this method could work well and also enables us
-to only query for the indexed k-mer which is something that can be done really fast.
-Beside the windows count this is another useful parametrizable metrics. We can estimate
-that there will be a lot of shared kmers of len less than 10 even between two unrelated
-squiggles. As we gradually increase the len of the kmer, we expect that the number
+to only query for the individual k-mers in some index which is something that can be done really fast.
+Beside the windows count, k-mer length is another useful parametrizable metrics. We can estimate
+that there will be a lot of shared kmers of length less than 10 even between two unrelated
+squiggles. As we gradually increase the length of the kmer, we expect that the number
 of random hits will decrease. On the other hand, we cannot increase the length of kmer
-a lot because there is increasing probability that some random level causes the
-whole hit to fail.
+too much as there is increasing probability that some random noise or other anomaly
+in the real squiggle causes the failure of finding the kmer in the index.
 
 \section{Experimental evaluation}
 
-We will now look at how the simulated reference signal compares to the raw read
-corresponding to this reference and random read from the other sequencing. We will
-not evaluate the data only based on shared k-mers as this metrics can be misleading.
+Now we will want to test our method in how accurately it represents the squiggle
+through the level string and how informative this level string is. We will
+look at how the level string from the simulated reference squiggle compares to the
+level string of the squiggle corresponding to this reference and random squiggle
+from the sequencing of another organism. We will not evaluate the level strings
+only based on shared k-mers as this metrics can be misleading.
 
 \subsection{Data preparation}
 
@@ -241,9 +242,3 @@ This means that we can easily count as the matching pair also some two kmers tha
 do not correspond to the same signal. With the reasonable number of levels this will
 not happen often for a short read. The big advantage of the allignment of the strings
 is that it tells us more accurately what is the overall similarity of the level strings.
-
-For the higher number of levels it is common to see the alignment equally
-long between the both reads. This is caused by the fact that despite our eforts there
-is too big difference between real and simulated signal so it is pretty common for
-the alignment to miss some level. What is more obvious is that the common thing in
-the
