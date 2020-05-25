@@ -1,6 +1,6 @@
 \chapter{Squiggle Discretization and Similarity Between Squiggles}
 
-\label{kap:proposedMethod} % id kapitoly pre prikaz ref
+\label{kap:proposedMethod}
 
 In this chapter, we will present our proposed method that will allow us to work
 more easily with the squiggles.
@@ -8,47 +8,47 @@ more easily with the squiggles.
 \section{Squiggles as Sequencing of Discrete Observations}
 
 When we obtain the simulated squiggle from the reference DNA, we want to be able
-to decide during the process of sequencing if the DNA molecule currently passing
+to decide during the process of sequencing if the squiggle currently passing
 through the pore is from this reference squiggle. This comes down to finding if the
-current squiggle is present in the reference squiggle. If both of these signals would
-be short, it would be quite possible to do even manually. As we will see, to a
-certain extent, we can see that the two signals are similar. However, we need to
-do this fast and on very long signals.
+current squiggle is present somewhere in the reference squiggle. If both of the squiggles
+are short, it is not that hard even for human eye to say, that two signals are from
+roughly the same DNA sequence. However, we need to do this fast and on big number
+of very long signals.
 
-The idea of our solution is to discretize the simulated squiggle of the
+The idea of our solution is to discretize the squiggle simulated from the
 reference sequence. We want to come with some better representation of the
 squiggles that represents them well and also provides some advantages such as
 easy searching in this representation. In our current setup, we are
 not very limited by the preprocessing time but we need to decide very fast once
 we are sequencing the DNA. This puts some speed limitations on our discretizing
 process during the processing of the DNA. What we will do is that we will
-represent the signal as a string. We split the signal vertically into several
+represent the squiggle as a string of characters. We split the squiggle vertically into several
 windows in such a manner that everything between some minimal and maximal
 value is in some window. These windows are of constant length and do not
-overlap. More formally, let $a_i$ be the signal at the time $i$, $m$ the number of
-vertical windows. Now, we have some signal $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
+overlap. More formally, let $a_i$ be the readout at the time $i$, $m$ the number of
+vertical windows. Now, we have some squiggle $s$ of length $n$, $s=a_1a_2a_3\cdots a_n$.
 Besides this, we have some values $min_a$, $max_a$ that $\forall a_i: min_a \leq a_i < max_a$.
-We say that signal $a_i$ is in $j$-th window if it holds that:
+We say that the readout $a_i$ is in $j$-th window if it holds that:
 
 \begin{center}
 $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
 \end{center}
 
-If the signals $a_0, a_1, \cdots, a_n$ are in the windows $w_0, w_1, \cdots ,w_n$
-respectively, we call $ls$ such that $ls=w_1w_2\cdots w_n$ the level string of the
-signal $s$. After this, we will contract subsequent occurrences of the same level.
+If the readouts $a_0, a_1, \cdots, a_n$ are in the windows $w_0, w_1, \cdots ,w_n$
+respectively, we call $ls$ such that $ls=w_1w_2\cdots w_n$ the \textit{level string} of the
+squiggle $s$. After this, we will contract subsequent occurrences of the same level.
 So level string "aabccaa" becomes "abca". An example of the transformation of the squiggle
 to the level string for $w=6$ is on \ref{obr:levelsCreation}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.8\textwidth, height=0.4\textheight]{images/levelsCreation}}
-\caption[Hehe]{Simulated signal vs real signal, normalized}
+\caption[TODO]{Simulated signal vs real signal, normalized}
 \label{obr:levelsCreation}
 \end{figure}
 
 This method has several good properties that we use. The first and obvious
-property is that the same signal has the same level string each time for the
-unchanged $w$. Besides this, small changes and oscillations in the signal will
+property is that the same squiggle has the same level string each time for the
+unchanged $w$. Besides this, small changes and oscillations in the squiggle will
 eventually stay at the same level most of the time. We mentioned that the signal
 consists of some events that are represented by a longer signal that is around the same level.
 With this method, we hope that one event remains in the one window. Subsequent
@@ -57,14 +57,20 @@ one level.
 
 Another good factor is that with the change of the parameter $w$ we can change how specific
 and informative our method is. With the $w=2$ we can not say a lot about the two signals
-that have level string equal. With bigger $w$ we can miss the two same signals
-if there is a little noise present.
+that have level string equal. With bigger $w$ we can miss the two squiggles from
+the same DNA sequence if there is a little noise present.
 
-In TODO and TODO we see two examples of the number of levels. We will now discuss
-what happens with the small and big number of levels. We can see that for the high
-number of levels, one event is less likely to remain in one window. It is caused
-mainly by the noise that can change very easily and this causes that two same signals
-do not have the same level string.
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/levelDiff}}
+\caption[TODO]{TODO}
+\label{obr:levelDiff}
+\end{figure}
+
+We now look at the two scenarios when the number of levels is small and high.
+We can see in \ref{obr:levelDiff} that for the small number of levels, small noise can cause signal to cross into another level. Even if the signal crossed the level border slightly, it creates the level
+string equal to the signal that properly cross the border and remained in the level
+most probably because of the real event. With high number of levels, like we see in \ref{obr:levelDiff} one event is less likely to remain in one window. It is caused mainly by the noise that can change very easily and this causes that
+two squiggles from the same DNA sequence to not have the same level string.
 
 \section{Simulating Squiggles from Reference}
 
@@ -96,26 +102,26 @@ approaches. One of the most wide-spread ways of doing this is to subtract mean a
 signal by standard deviation. The other possible solution is subtracting median value
 as the frequent outliers can deform the mean.
 
-Another visible problem is that the real squiggle is somehow contracted
-in some places. This is caused by the fact that the DNA molecule is not moving
-through the nanopore at a constant speed.
+Another visible problem can be seen when we compare events in simulated and real squiggle
+The events in the simulated signal are perfectly straight. In the real signal we can see
+the phenomenon called \textit{drift}. This is fact that real event tends to slide
+up or down throughout the time. The another difference is that the real squiggle
+is sometimes contracted in some places. This is caused by the fact that the DNA
+molecule is not moving through the pore at a constant speed.
 
 As there are differences between simulated and real signal, there are two possible
 ideas on how to overcome these differences. One is to make the simulated signal more like
 the real signal. The first thing that we could do would be adding some Gaussian noise
 that creates a more noisy signal. There are also some more advanced simulators of
-signal such as DeepSimulator. We want to go the other way and make the real signal
+signal such as DeepSimulator\cite{deepsimulator}. We want to go the other way and make the real signal
 less noisy so we will now address the most important differences between simulated and real signal.
-
-TODO: Add citation for DeepSimulator
-% https://github.com/lykaust15/DeepSimulator
 
 \subsection{Oscillations}
 
 We already saw in \ref{obr:simVsReal} that one of the biggest differences between simulated and
 real signal is the noise which can be seen as small oscillations of the signal. This is
 one of the reasons that we use windows - so small oscillations within the window
-are dealt with. We can also pretty easily adapt the number of windows as we saw in TODO.
+are dealt with. We can also pretty easily adapt the number of windows.
 However, when our method is used without any modifications it
 produces much longer level string for real signal than for simulated signal.
 The problem arises when the oscillations are located on the borders of the windows.
@@ -124,9 +130,9 @@ There are several possibilities to deal with this behavior not affecting speed t
 much. We tried several smoothing techniques to reduce noise. Moving average is the
 smoothing technique that for every entry $s_i$ in some signal $s$ count its new value
 $snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We wil call the
-$k$ the size of the window or also smoothing constant. We can then simply change
-the average function to median to obtain moving median.
-For now, we will stick to faster solutions and choose one of the simpler techniques.
+$k$ the size of the window or also smoothing parameter. We can also simply change
+the average function to median to obtain moving median. For now, we will stick
+to faster solutions and choose one of the simpler techniques.
 
 \subsection{Signal continuity}
 
