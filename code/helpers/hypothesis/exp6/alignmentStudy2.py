@@ -14,7 +14,7 @@ smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 50
+readNum = 150
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -205,9 +205,27 @@ for i in range(len(plotLevels)):
     #a.append(g)
     #a.append(b)
     #a.append([g[i]/b[i] if b[i] != 0 else 1 for i in range(len(g))])
-    a.append([sum(g[:5])/(sum(b[:5])+0.0000001)] + [sum(g[9:16])/(sum(b[9:16])+0.0000001)])
+    entry = [sum(g[:5])/(sum(b[:5])+0.0000001)] + [sum(g[9:16])/(sum(b[9:16])+0.0000001)]
+    a.append(entry)
 
-plt.imshow(a, cmap = "hot", interpolation = "nearest")
+a = np.array(a)
+
+fig, ax = plt.subplots()
+
+ax.imshow(a.T)
+ax.set_xticks(np.arange(len(plotLevels)))
+ax.set_xticklabels(plotLevels)
+ax.set_yticks(np.arange(2))
+ax.set_yticklabels(["<= 5", ">= 10"])
+
+for i in range(len(plotLevels)):
+    for j in range(2):
+        text = ax.text(i, j, str(a[i, j])[:7],
+                       ha="center", va="center", color="w")
+
+ax.set_ylabel("Gap len")
+ax.set_xlabel("Level number")
+fig.tight_layout()
 plt.show()
 
 
@@ -221,15 +239,18 @@ for i in range(len(plotLevels)):
         x, y = plotAOC(data)
         X = x
         Y.append(y)
-        axs[i//dim2, i%dim2].plot(X, y, label=str(k), linewidth=2)
+        axs[i//dim2, i%dim2].plot(X, y, label=str(plotKmerLen[k]), linewidth=2)
     # axs[i].legend(loc="lower right")
     Y = np.array(Y)
-    axs[i//dim2, i%dim2].set_title(f"This is level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
     axs[i//dim2, i%dim2].set_aspect('equal', adjustable='box')
-axs[dim1-1, dim2-1].legend(loc="lower right")
+#axs[dim1-1, dim2-1].legend(loc="lower right")
+
+handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
+fig.subplots_adjust(bottom=0.1, wspace=0.1)
+fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
 
 plt.show()
-
 
 dim1, dim2 = 2, 3
 fig, axs = plt.subplots(dim1, dim2)
@@ -248,8 +269,12 @@ for i in range(len(plotLevels)):
             y[math.floor(k)] += 1
         # Y.append(y)
         Y.append([sum(y[:k]) / len(data) for k in range(len(y))])
+        axs[i//dim2, i%dim2].plot(list(X), Y[-1], label=str(plotKmerLen[j]), linewidth=2)
     Y = np.array(Y)
-    axs[i//dim2, i%dim2].plot(X, Y.T)
-    axs[i//dim2, i%dim2].set_title(f"This is level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
+
+handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
+fig.subplots_adjust(bottom=0.1, wspace=0.1)
+fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
 
 plt.show()

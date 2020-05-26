@@ -62,11 +62,11 @@ for i in range(0, len(signal)-2*workLen+1, 30):
 #signal2[20:] += 0.7
 #signal1[:20] -= 0.5
 
-for a in np.arange(mini, maxi+levelSize, levelSize):
+'''for a in np.arange(mini, maxi+levelSize, levelSize):
     plt.axhline(y=a, color = 'r', linewidth = '2')
 plt.plot(signal1)
 plt.plot(signal2)
-plt.show()
+plt.show()'''
 
 import nadavca
 from nadavca.dtw import KmerModel
@@ -79,16 +79,19 @@ assert len(nadavca_align) == 1, "Error! More than one alignment!"
 nadavca_align = nadavca_align[0]
 
 fromSignal, toSignal = nadavca_align[0].signal_range
-table = nadavca_align[1][:30]
-refSeq = "".join(nadavca_align[0].reference_part)[:30]
+table = nadavca_align[1][:100]
+refSeq = "".join(nadavca_align[0].reference_part)[:100]
 
-signal = signal[table[0][1]:table[10][2]]
+signal = signal[table[0][1]:table[25][2]]
 signal = normal(signal)
 
-signal[signal<mini] = mini
-signal[signal>maxi] = maxi
+fig, (axs1, axs2) = plt.subplots(1, 2)
 
-for a in np.arange(mini, maxi, (maxi-mini)/12):
-    plt.axhline(y=a, color = 'r', linewidth = '2')
-plt.plot(signal)
+for a in np.arange(mini, maxi+0.0001, levelSize/4):
+    axs2.axhline(y=a, color = 'r', linewidth = '2')
+axs2.plot(signal)
+
+for a in np.arange(mini, maxi+0.0001, levelSize):
+    axs1.axhline(y=a, color = 'r', linewidth = '2')
+axs1.plot(signal)
 plt.show()
