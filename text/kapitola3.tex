@@ -36,14 +36,19 @@ has at least theoretical possibility to work. For this purpose, we will try to
 find our query level string in the reference level string. We already know that
 it does not make sense to look for the exact match so we will need some string searching
 technique that can deal with the small errors. There are more algorithms that are able
-to do this. We decided to tweak a Minimap2 \cite{li2018minimap2} algorithm we already
-talked about in TODO. What we will do is that we choose the number of levels $w=4$.
+to do this. We decided to tweak a Minimap2 \cite{li2018minimap2} algorithm. This is
+one of the most popular sequence alligning algorithms. This algorithm can take the
+query DNA sequence and find it in long reference DNA sequence. It is also able to
+find the query string even if it does not exactly match any subsequence exactly.
+This algorithm works only with the DNA sequences. What we will do is that we choose
+the number of levels $w=4$.
 This will cause that the reference and query level strings will both consist of
-the characters 'a', 'b', 'c', 'd'. When we will substitute 'a', 'b', 'c', 'd' by
-'A', 'C', 'G', 'T' subsequently, we will obtain the manipulated level strings that
+the characters 'a', 'b', 'c', 'd'. We then substitute 'a', 'b', 'c', 'd' by
+'A', 'C', 'G', 'T' subsequently. We now obtained the manipulated level strings that
 are represented using the DNA sequences. Now, we can use the Minimap2 algorithm for
 finding our manipulated query level string in the manipulated reference level string.
-Of course there is small catch and it is the fact that we need to ignore the hits
-on the reverse strand as the reverse strand does not carry the same information
-as in the real DNA sequence.
+As the Minimap2 is most of the time used and also optimized to perform well on DNA
+sequences, we need to be careful of some catches that come with using it for this
+purpose. For example, we need to ignore the hits on the reverse strand as the
+reverse strand does not carry the same information as in the real DNA sequence.
 
