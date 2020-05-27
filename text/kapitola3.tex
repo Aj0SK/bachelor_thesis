@@ -32,7 +32,7 @@ also interested in how some random read level string with our reference level st
 \subsection{Aligning the squiggle level string}
 
 Before trying to optimize for the speed it would be good to know if our method
-has at least theoretical possibility to work. For this purpose, we will try to
+has at least some possibility to work. For this purpose, we will try to
 find our query level string in the reference level string. We already know that
 it does not make sense to look for the exact match so we will need some string searching
 technique that can deal with the small errors. There are more algorithms that are able
@@ -41,8 +41,7 @@ one of the most popular sequence alligning algorithms. This algorithm can take t
 query DNA sequence and find it in long reference DNA sequence. It is also able to
 find the query string even if it does not exactly match any subsequence exactly.
 This algorithm works only with the DNA sequences. What we will do is that we choose
-the number of levels $w=4$.
-This will cause that the reference and query level strings will both consist of
+the number of levels $w=4$. This will cause that the reference and query level strings will both consist of
 the characters 'a', 'b', 'c', 'd'. We then substitute 'a', 'b', 'c', 'd' by
 'A', 'C', 'G', 'T' subsequently. We now obtained the manipulated level strings that
 are represented using the DNA sequences. Now, we can use the Minimap2 algorithm for
@@ -51,4 +50,5 @@ As the Minimap2 is most of the time used and also optimized to perform well on D
 sequences, we need to be careful of some catches that come with using it for this
 purpose. For example, we need to ignore the hits on the reverse strand as the
 reverse strand does not carry the same information as in the real DNA sequence.
+This also speeds up whole algorithm considerably.
 

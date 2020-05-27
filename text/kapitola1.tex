@@ -2,13 +2,10 @@
 % TODO, vysvetlit eventy
 \label{kap:selSeq}
 
-In this chapter, we are going to explain what is selective sequencing. We
-show what advantages this method brings and then look at the main challenges and
-the current state of research in this area.
+In this chapter, we explain the term selective sequencing. We highlight the
+advantages of this method and look at the current state of research in this area.
 
-\section{DNA nanopore sequencing}
-
-\subsection{DNA}
+\section{DNA}
 
 % TODO: pridat zdroj %https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
 Genetics is a branch of biology that studies genes, genetic variation, and heredity.
@@ -19,19 +16,21 @@ almost every living cell. Based on the information from this molecule our cells 
 themselves. Nowadays, it is possible to look at the DNA of the organism. This is
 one of the strongest tools of genetics as it helps us tell what are the functions
 of different parts of DNA by comparing it between organisms and looking at the
-consequences of different mutations. DNA stores genetic information in the form of a sequence of
-nucleotides. The stored information is defined by their particular order. There are four types of DNA nucleotides:
-adenine(A), cytosine(C), guanine(G) and thymine(T). In fact, DNA consists of two long
-strings of these nucleotides that together create the DNA molecule. However, these
-two strings are connected in a complementary way. If there is A on one string
-then on the other one must be T. If there is a C then on the other string we can expect
-it's complement G. For the organisms, it means that they can (to some extent) repair
+consequences of different mutations.
+
+DNA stores genetic information in the form of a sequence of nucleotides. The stored
+information is defined by their particular order. There are four types of DNA nucleotides:
+adenine (A), cytosine (C), guanine (G) and thymine (T). In fact, DNA consists of two long
+strings of these nucleotides that together create the DNA molecule. The two strands
+are connected in a complementary way. If there is A on the forward strand
+then there is T on the reverse. If there is a C on the one strand we can expect
+it's complement G on the other one. In this way, the cell machinery can (to some extent) repair
 missing nucleotides based on the complement rules. An example of how we can think
-of DNA is on \ref{obr:acgt}. From now, we will for simplicity assume that DNA
-sequence is a sequence of characters A, C, G, T. This simple representation
-is very good as it can be easily represented in the computer. It also stores enough
-information so we can recover the other complementary DNA string easily.
-The process of obtaining DNA sequence is called \textit{DNA sequencing}.
+of DNA is on \ref{obr:acgt}.
+
+From now, we will represent the DNA sequence as a sequence of characters A, C, G, T.
+Such representation stores enough information so we can recover the other complementary
+DNA strand easily.
 
 % TODO: obrazok zdroj https://www.genome.gov/genetics-glossary/acgt
 
@@ -41,25 +40,18 @@ The process of obtaining DNA sequence is called \textit{DNA sequencing}.
 \label{obr:acgt}
 \end{figure}
 
-\subsection{DNA sequencing}
+\section{DNA sequencing}
 
+The process of obtaining DNA sequence is called \textit{DNA sequencing}.
 The DNA molecule is very long and processing it whole at once would be very hard.
 Single DNA molecule in one cell can reach up to 2 meters when untangled.
 %https://www.sciencefocus.com/the-human-body/how-long-is-your-dna/
-Thus, it is convenient to broke down the whole DNA molecule into many shorter parts.
-This can be done chemically but it brings some problems, especially some of the
-DNA molecules could be missed during sequencing so we would lose information about
-the corresponding part of DNA. Because of this, we use DNA polymerases to duplicate these shorter DNA sequences
-many times so we end up with a mixture containing our DNA molecule, broken into
-many duplicated parts. DNA polymerases can stick to the DNA molecule and rebuild the complementary
-part which in fact creates a copy of that particular DNA molecule.
-Once we have this mixture of shorter DNA molecules we need to sequence individual
-parts and then somehow connect them together to obtain the nucleotide string representing
-our original DNA molecule.
-
-One of the devices that serve this purpose is MinION\cite{lu2016oxford}. MinION is
-a cheap and versatile DNA sequencer with the size of the modern smartphone showed in
-\ref{obr:minIon}.
+Thus, it is convenient to broke down the whole DNA molecule into many shorter fragments.
+This can be done chemically. Once we have this mixture of shorter DNA molecules we need to sequence individual
+shorter fragments and then somehow connect them together to obtain the nucleotide string representing
+our original DNA molecule. One of the devices that can sequence the mixture of the
+DNA fragmentsMinION\cite{lu2016oxford}. MinION is a cheap and versatile DNA sequencer
+with the size of the larger USB key (see in Figure \ref{obr:minIon}).
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/minion}}
@@ -67,13 +59,13 @@ a cheap and versatile DNA sequencer with the size of the modern smartphone showe
 \label{obr:minIon}
 \end{figure}
 
-This sequencer consists of an active surface filled with many \textit{nanopores}. A nanopore
+MinION consists of an active surface filled with many \textit{nanopores}. A nanopore
 is a small hole with an electric current passing through it. When the positive charge
 is generated on the other side of the surface negatively charged DNA molecules
 will start to pass through the pores. As the molecule of DNA is passing through the pore of
 MinION, we can observe changes in the flow of an electric current passing through the pore.
 This electric current is measured over the discrete-time and it is called \textit{signal},
-\textit{raw signal} or \textit{squiggle}. The example of the squiggle is on figure \ref{obr:minIonCurrent}.
+\textit{raw signal} or \textit{squiggle}. The example of the squiggle is shown in Figure \ref{obr:minIonCurrent}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/signal}}
@@ -81,37 +73,41 @@ This electric current is measured over the discrete-time and it is called \texti
 \label{obr:minIonCurrent}
 \end{figure}
 
-The MinION version we use for the DNA sequencing process around 400 nucleotides per second
-per the nanopore. The value of the current signal is measured around 4000 times per second so it is good to
-estimate that one nucleotide produces on average about 10 signals. The signal
+Currently, MinION processes around 450 nucleotides per second for each nanopore.
+The value of the current signal is measured 4000 times per second so each
+nucleotide produces on average about 8-9 \textit{readouts}. The signal
 generated from the pass of the single DNA molecule through the single pore is called \textit{read}.
-One of the advantages of the MinION sequencer is that it produces quite long reads.
+One of the advantages of the MinION sequencer is that it produces very long reads.
 The length of the read is stated in kb(kilo-bases) where base corresponds to one nucleotide.
 The mean length of the read in some scenarios ranges from 13kb to 20kb. Additionally,
-due to fact that MinION has several nanopores it can process multiple DNA molecules in
-parallel.
+due to the fact that MinION has 200-500 nanopores it can produce large amounts of
+data very quickly.
 
 % TODO: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5793790/
 
-When we obtain the raw signal from the pore, we need to finally convert it into the DNA
-sequence. What is crucial for transcription of the signal into the DNA sequence is
-that as the molecule of DNA is passing through the pore, only a small
-number of nucleotides in the proximity of pore influence the current output signal.
-The sequence of $k$ nucleotides is called \textit{k-mer}. An output signal of MinION
-is not dependent only on nucleotide currently in the pore but rather by current
-3-mer that is present in the proximity of the pore. There are several studies on
-how much is signal influenced by more distant nucleotides. However, the version
-of MinION we are working with is said to be influenced mainly by the closest 6-mer. 
-Usually, with the MinION we are provided a kmer model. It is a list of all possible
-$k$-mers for some $k$ that states the mean and standard deviation of a Gaussian
-distribution that describes expected signal for the particular $k$-mer.
-So from the measurements of signal throughout the time, using a method called base-calling, we can tell how the molecule
-of DNA looked like. The early base-calling algorithms tried to split the signal into
-\textit{events}. Event is a longer sequence of signals at the roughly same level corresponding
-to one particular $k$-mer. From the mapping of the events to particular $k$-mer using
-a $k$-mer model they tried to predict what sequence passed through this pore.
-Now, the more successful base-calling algorithms are based on recurrent neural
-networks. Despite big improvements in the base-calling algorithms, the overall
+After obtaining the raw signal from the pore, it needs to be finally converted into the DNA
+sequence. Importantly, as the DNA passes through the pore, only a small
+number of nucleotides in the proximity of the pore influence the current output signal.
+
+The output signal of MinION is mostly dependent only on the context of the k
+nucleotides(also called \textit{k-mers} present in the proximity of the pore. There are several studies on
+how much is signal influenced by more distant nucleotides. It is gennerally accepted
+that using the $k = 6$ is appropriate for building an accurate model of the signal. 
+Usually, with the MinION we are provided a kmer model.
+
+In general, the signal model is a list of all possible $k$-mers for some $k$
+that states the mean and standard deviation of a Gaussian distribution that
+describes expected distribution signal readout for that particular $k$-mer.
+Using the measurements of signal over the time, using a method called base-calling, we can reconstruct the
+sequence of the DNA molecule that produced that signal.
+
+Early base-calling algorithms tried to split the signal into \textit{events}\cite{david2017nanocall}.
+Event is a longer sequence of signals at the roughly same level corresponding
+to one particular $k$-mer. Using a k-mer model on events, as well as information
+that k-mers following each should overlap one can predict the sequence that passed through this pore.
+
+Nowadays, the more successful base-calling algorithms are based on recurrent neural
+networks. Despite large improvements in the base-calling algorithms, the overall
 process of base-calling is quite slow and resource-intensive. 
 
 After the base-calling, we need to join this all base-called reads together to form the
