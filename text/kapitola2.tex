@@ -2,22 +2,22 @@
 
 \label{kap:proposedMethod}
 
-In this chapter, we will present our proposed method that will allow us to work
+In this chapter, we present our proposed method that allows us to work
 with the squiggles more easily.
 
 \section{Squiggles as Sequencing of Discrete Observations}
 
-When we obtain the simulated squiggle from the reference DNA, we want to be able
+When we somehow obtain the simulated squiggle from the reference DNA, we want to be able
 to decide during the process of sequencing if the squiggle currently passing
 through the pore is from this reference squiggle or not. This comes down to finding if the
 current squiggle is present somewhere in the reference squiggle. If both of the squiggles
-are short, it is not that hard task even for human eyes. The fact that two signals are from
-roughly the same DNA sequence is most of the time visible. However, we need to do
-this fast and on big number of very long signals.
+are short, it is not that hard task even for humans. The fact that two signals are roughly
+from the same DNA sequence is most of the time visible. However, we need to do
+this fast and on a big number of very long signals.
 
 The idea of our method is to discretize the squiggle simulated from the
 reference DNA sequence. We want to come with some better representation of the
-squiggles that represents them well and also provides some advantages such as
+squiggles that represents them well and also provide some advantages such as
 easy searching in this representation. In our current setup, we are
 not very limited by the preprocessing time but we need to decide very fast once
 we are sequencing the DNA. This puts some speed limitations on our discretizing
@@ -34,16 +34,15 @@ We say that the readout $a_i$ is in $j$-th window if it holds that:
 $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-min_a}{m}$
 \end{center}
 
-If the readouts $a_0, a_1, \cdots, a_n$ are in the windows $w_0, w_1, \cdots ,w_n$
-respectively, we call $ls=w_1w_2\cdots w_n$ where the subsequent characters are contracted
-the \textit{level string} of the squiggle $s$. So if the $ls=aabccaa$ then level string from this level sequence is "abca".
-An example of the transformation of the squiggle to the level string for $w=6$ is on \ref{obr:levelsCreation}.
-
-% TODO: Tu by to chcelo preformulovat
+Let the readouts $a_0, a_1, \cdots, a_n$ be in the windows $w_0, w_1, \cdots ,w_n$
+respectively. If $ls=w_1w_2\cdots w_n$ then $ls$ where the subsequent characters are contracted
+is called the \textit{level string} of the squiggle $s$. So if the $ls=aabccaa$
+then level string from this level sequence is "abca". An example of the transformation
+of the squiggle to the level string for $w=6$ is on \ref{obr:levelsCreation}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.8\textwidth, height=0.4\textheight]{images/levelsCreation}}
-\caption[TODO]{Simulated signal vs real signal, normalized}
+\caption[TODO]{Squiggle with the level string on the x-axis}
 \label{obr:levelsCreation}
 \end{figure}
 
@@ -63,15 +62,15 @@ the same DNA sequence if there is a little noise present in one of them.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/levelDiff}}
-\caption[TODO]{TODO}
+\caption[TODO]{Examples of the squiggle divided into 3 and 12 windows}
 \label{obr:levelDiff}
 \end{figure}
 
 We now look at the two scenarios when the number of levels is small and high.
-We can see in \ref{obr:levelDiff} that for the small number of levels, small noise can cause signal to cross into another level. 
+We can see in \ref{obr:levelDiff} that for the small number of levels, small noise can cause a signal to cross into another level. 
 Even if the signal crossed the level border slightly, it created the level
-string equal to the signal that properly crossed the border and remained in the level
-most probably representing the real event. With high number of levels, like we see in \ref{obr:levelDiff} one event is less likely to remain in one window. It is caused mainly by the noise that can change very easily and this causes that
+string equal to the signal that properly crossed the border and remained at the level
+most probably representing the real event. With a high number of levels, like we see in \ref{obr:levelDiff} one event is less likely to remain in one window. It is caused mainly by the noise that can change very easily and this causes
 two squiggles from the same DNA sequence to not have the same level string.
 
 \section{Simulating Squiggles from Reference}
@@ -80,7 +79,7 @@ We already stated that we need to obtain some reference squiggle that we
 can sample and use later to split squiggles between that we are interested in and not
 interested in. Most of the time, we are only handed the reference in the form of a DNA sequence
 so it is up to us to create some reference squiggle from it. Our simulation of the squiggle is based on the 6-mer model.
-For every subsequent 6-mer in our reference DNA, we will generate signal(event) equal to
+For every subsequent 6-mer in our reference DNA, we will generate a signal (event) equal to
 the mean of the gaussian distribution for that particular 6-mer. This mean value
 is the information provided for us by the manufacturer of MinION through the kmer model
 that we already mentioned in TODO.
@@ -99,19 +98,19 @@ and dividing by standard deviation \ref{obr:simVsReal}.
 \end{figure}
 
 Now we have a simulated reference squiggle. We can see on \ref{obr:simVsReal} that the simulated and real
-squiggle are not identical. This poses problem as we want to have these squiggles as
+squiggle are not identical. This poses a problem as we want to have these squiggles as
 similar as possible. The first thing that we want to consider is normalization.
 One of the most wide-spread ways of doing this is to subtract mean and dividing
-squiggle by standard deviation. The other possible solution is subtracting median value
+squiggle by the standard deviation. The other possible solution is subtracting median value
 as the frequent outliers can deform the mean. We will stick to the first solution
 but we will remove outliers in a way that everything over and under some value will
 be clamped to the target range. Most of the time this will be -2 for the lower bound
 and 2 for the upper bound.
 
 Another visible problem can be seen when we compare events in the simulated and real squiggle.
-The events in the simulated signal are perfectly straight. In the real signal we can sometimes see
-the phenomenon called \textit{drift}. This is fact that real event tends to slide
-up or down throughout the time. The another difference is that the real squiggle
+The events in the simulated signal are perfectly straight. In the real signal, we can sometimes see
+the phenomenon called \textit{drift}. This is a fact that real event tends to slide
+up or down over time. Another difference is that real squiggle
 is sometimes contracted in some places. This is caused by the fact that the DNA
 molecule is not moving through the pore at a constant speed.
 
@@ -124,7 +123,7 @@ less noisy so we will now address the most important differences between simulat
 
 \subsection{Signal oscillations and continuity}
 
-We already saw in \ref{obr:simVsReal} that one of the biggest differences between simulated and
+We already saw in Fig. \ref{obr:simVsReal} that one of the biggest differences between simulated and
 real squiggle is the noise which can be seen as small oscillations of the signal. This is
 one of the reasons that we use windows - so small oscillations within the window
 are dealt with. We can also pretty easily adapt the number of windows.
@@ -135,9 +134,9 @@ This is something that unfortunately happens too often. There are several
 possibilities to deal with this behavior not affecting speed too
 much. We tried several smoothing techniques to reduce noise. \textit{Moving average} is the
 smoothing technique that for every entry $s_i$ in some signal $s$ count its new value
-$snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We wil call the
+$snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We will call the
 $k$ the size of the window or also the \textit{smoothing parameter}. We can also simply change
-the average function to median to obtain the \textit{moving median}. For now, we will stick
+the average function to the median to obtain the \textit{moving median}. For now, we will stick
 to faster smoothing techniques.
 
 The next difference that was visible from the comparison of real signal level string
@@ -152,19 +151,19 @@ one level to another but rather move continuously.
 \label{obr:testSmooth}
 \end{figure}
 
-In \ref{obr:testSmooth} we can see the part of simulated and corresponding real squiggle.
-Then, in the subsequent two graphs, we apply the moving average with the window length
+In Fig. \ref{obr:testSmooth} we can see the part of the simulated and corresponding real squiggle.
+Then, in the subsequent two graphs, we apply the moving average with a window length
 of 5. We can see that this smoothed the simulated squiggle but also smoothed the noise
-that we could observed in the events. With the median smoothing the outcome is quite
-similar but lacks in the quality of smoothing the simulated signal.
+that we could observe in the events. With the median smoothing, the outcome is quite
+similar but lacks the quality of smoothing the simulated signal.
 
 \section{Identification of Reads Based on Shared k-mers}
 
 Now we want to show how we will distinguish if the two squiggles are similar or not.
-What we will do is that we take the real squiggle, the reference squiggle corresponding to it and
+What we will do is that we take the real squiggle, the reference squiggle corresponding to it, and
 some other real squiggle. We will then try to tell which squiggle is from the reference
 and which is not based only on the level strings of the respective squiggles. We
-emphasized the speed many times, so we will try to come up with the fast test.
+emphasized the speed many times, so we will try to come up with a fast test.
 What we will do is that we will split the individual level strings into overlapping k-mers.
 When we use the term k-mer in the context of the level string we mean any $k$ subsequent
 characters from this string. We will then find what is the overlap
@@ -172,11 +171,11 @@ between k-mers from the reference squiggle and the sample squiggles. From the nu
 to predict, which sample squiggle is from the reference and which is not. This is very
 simple heuristics but we think that this method could work well and also enables us
 to only query for the individual k-mers in some index which is something that can be done really fast.
-Beside the windows count, k-mer length is another useful parameter. We can estimate
+Besides the windows count, k-mer length is another useful parameter. We can estimate
 that there will be a lot of shared k-mers of length less than 10 even between two unrelated
 squiggles. As we gradually increase the length of the k-mer, we expect that the number
 of random hits will decrease. On the other hand, we cannot increase the length of k-mer
-too much as there is increasing probability that some random noise or other anomaly
+too much as there is an increasing probability that some random noise or other anomalies
 in the real squiggle causes the failure of finding the k-mer in the index.
 
 \section{Experimental evaluation}
@@ -186,12 +185,12 @@ through the level string and how informative this level string is. We will
 look at how the level string from the simulated reference squiggle compares to the
 level string of the real squiggle corresponding to this reference and random real squiggle
 from the sequencing of another organism. We will not evaluate the level strings
-only based on shared k-mers as this metrics can be misleading.
+only based on shared k-mers as this metric can be misleading.
 
 \subsection{Data preparation}
 
-For this experiments we will use the data that we discribe more closely in \ref{kap:apendA}
-Hovewer, we will use the squiggles from the Saprochaete fungicola only if they
+For this experiments, we will use the data that we describe more closely in Fig. \ref{kap:apendA}
+However, we will use the squiggles from the Saprochaete fungicola only if they
 are successfully aligned into the reference using the Nadavca. We then create the
 simulated reference signal from the reference part that Nadavca identified, pick
 some random read from the sequencing of the Saprochaete ingens and run our analysis
@@ -202,8 +201,7 @@ many times over.
 To see how two level strings compare to each other we will align them. The input
 to the alignment algorithm are two strings $s_1$, $s_2$:
 $s_1=a_1a_2\cdots a_n$, $s_2=b_1b_2\cdots b_m$. The alignment are strings
-$s_3$, $s_4$: $s_3 = c_1c_2c_3\cdots c_k$, $s_4 = d_1d_2d_3\cdots d_k$
-such that:
+$s_3$, $s_4: s_3 = c_1c_2c_3\cdots c_k$, $s_4 = d_1d_2d_3\cdots d_k$ such that:
 
 \begin{enumerate}
 \item $s_3$ and $s_4$ was created from $s_1$, $s_2$ respectively by inserting dashes
@@ -217,13 +215,13 @@ $s_3 = $AAAC\,-\,TGC\\
 $s_4 = $AA\,-\,CGT\,-\,C
 \end{center}
 
-There are a lot of alignments of the two strings. Most of the time we
+There are a lot of alignments between the two strings. Most of the time we
 are interested in some particular alignment. For this purpose, we will create a
-scoring system and we will try to find the maximum/minimum alignment in this scoring
+scoring system and we will try to find the maximal (minimal) alignment in this scoring
 system. We can, for example, minimize the number of dashes. Using the alignment
-defined this way we can see how two level strings compare to each other and how similar they are.
-Finding the best alignment is not trivial. We use a dynamic programming for
-solving this problem. Let $T[i][j]$ be the best allignment of string $s_{1_i} = a_1a_2\cdots a_i$
+defined this way we can see how two-level strings compare to each other and how similar they are.
+Finding the best alignment is not trivial. We use dynamic programming for
+solving this problem. Let $T[i][j]$ be the best alignment of string $s_{1_i} = a_1a_2\cdots a_i$
 and $s_{2_j} = b_1b_2\cdots b_j$. We will for simplification say that $\forall i, j: T[i][0] = i, T[0][j] = j$.
 
 \[
@@ -240,45 +238,45 @@ T[i][j] = \bigl.
 The first thing that we evaluate is the number of shared k-mers as we already
 stated this will be our main metric.
 
-The second metrics we will be interested in is mutual alignment of the sample
+The second metric we will be interested in is mutual alignment of the sample
 level strings and the reference level string. We will align them using the scoring
 scheme we already presented. The problem with the shared k-mer count is that we only look
-for the shared kmers but we do not evaluate the relative positions of matched pairs.
-This means that we can easily count as the matching pair also some two kmers that
-do not correspond to the same signal. With the reasonable number of levels this will
-not happen often for a short read. The big advantage of the allignment of the strings
+for the shared k-mers but we do not evaluate the relative positions of matched pairs.
+This means that we can easily count as the matching pair also some two k-mers that
+do not correspond to the same signal. With a reasonable number of levels, this will
+not happen often for a short read. The big advantage of the alignment of the strings
 is that it tells us more accurately what is the overall similarity of the level strings.
 
-In the \ref{obr:res_2} we see the ROC curve that represents how the overall number
-of hits in the squiggles from the reference compare to the number of hits in the
+In Fig. \ref{obr:res_2} we see the ROC curve that represents how the overall number
+of hits in the squiggles from the reference compares to the number of hits in the
 random squiggle.
 
 We then looked at what is the ratio of hits in the reference level string between squiggle
-from this reference against random squiggle. In the \ref{obr:res_3} we see cummulative percentage
-of testcases that had respective ration. If the number of hits of the positive squiggle
-was zero, we marked this as negative thing and use the ratio 1:2.
+from this reference against random squiggle. In the \ref{obr:res_3} we see the cumulative percentage
+of test cases that had respective ration. If the number of hits of the positive squiggle
+was zero, we marked this as a negative thing and use the ratio 1:2.
 
-In the \ref{obr:res_1} we looked more closely at the properties of the alignment. We
+In Fig.\ref{obr:res_1} we looked more closely at the properties of the alignment. We
 have been interested in how often we can see the successive dashes called \textit{gaps}.
-We learned we need to distinguis between the length of the particular gaps. So we split
-their count according to their length to number of gaps shorter than 6 and longer than 9.
+We learned we need to distinguish between the length of the particular gaps. So we split
+their count according to their length to the number of gaps shorter than 6 and longer than 9.
 In the \ref{obr:res_1} we present our findings for positive(squiggle from the reference)
-and negative(random squiggle) squiggles. We present the ratio of number of the gaps divided
-by the length of the level string of the respective squiggles. For better visualisation
+and negative(random squiggle) squiggles. We present the ratio of the number of the gaps divided
+by the length of the level string of the respective squiggles. For better visualization,
 we show the gaps per 100 level string characters for gaps shorter than 6 and gaps
 per 1000 level string characters for longer gaps. We can see that the number of gaps
-shorter than six favours lower number of levels and gradually increases with the number
+shorter than six favors a lower number of levels and gradually increases with the number
 of levels. The number of longer gaps behaves in the completely opposite way. 
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}
-\caption[TODO]{TODO}
+\caption[TODO]{ROC curve of the hits}
 \label{obr:res_2}
 \end{figure}
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3}}
-\caption[TODO]{TODO}
+\caption[TODO]{Cummulative distribution of hit ratios}
 \label{obr:res_3}
 \end{figure}
 
