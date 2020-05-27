@@ -174,32 +174,33 @@ simple heuristics but we think that this method could work well and also enables
 to only query for the individual k-mers in some index which is something that can be done really fast.
 Beside the windows count, k-mer length is another useful parameter. We can estimate
 that there will be a lot of shared k-mers of length less than 10 even between two unrelated
-squiggles. As we gradually increase the length of the kmer, we expect that the number
-of random hits will decrease. On the other hand, we cannot increase the length of kmer
+squiggles. As we gradually increase the length of the k-mer, we expect that the number
+of random hits will decrease. On the other hand, we cannot increase the length of k-mer
 too much as there is increasing probability that some random noise or other anomaly
-in the real squiggle causes the failure of finding the kmer in the index.
+in the real squiggle causes the failure of finding the k-mer in the index.
 
 \section{Experimental evaluation}
 
 Now we will want to test our method in how accurately it represents the squiggle
 through the level string and how informative this level string is. We will
 look at how the level string from the simulated reference squiggle compares to the
-level string of the squiggle corresponding to this reference and random squiggle
+level string of the real squiggle corresponding to this reference and random real squiggle
 from the sequencing of another organism. We will not evaluate the level strings
 only based on shared k-mers as this metrics can be misleading.
 
 \subsection{Data preparation}
 
 For this experiments we will use the data that we discribe more closely in \ref{kap:apendA}
-Hovewer, we will use the squiggles from the Saprochaete fungicola only if their signal
-is successfully aligned into the reference using the Nadavca. We then create the
+Hovewer, we will use the squiggles from the Saprochaete fungicola only if they
+are successfully aligned into the reference using the Nadavca. We then create the
 simulated reference signal from the reference part that Nadavca identified, pick
-some random read from the sequencing of the Saprochaete ingens and run our analysis.
+some random read from the sequencing of the Saprochaete ingens and run our analysis
+many times over.
 
 \subsection{Level string alignment}
 
-To see how the reference level string and read level string compare to each other
-we will align them. The input to the alignment algorithm are two strings $s_1$, $s_2$:
+To see how two level strings compare to each other we will align them. The input
+to the alignment algorithm are two strings $s_1$, $s_2$:
 $s_1=a_1a_2\cdots a_n$, $s_2=b_1b_2\cdots b_m$. The alignment are strings
 $s_3$, $s_4$: $s_3 = c_1c_2c_3\cdots c_k$, $s_4 = d_1d_2d_3\cdots d_k$
 such that:
@@ -216,14 +217,11 @@ $s_3 = $AAAC\,-\,TGC\\
 $s_4 = $AA\,-\,CGT\,-\,C
 \end{center}
 
-There are a lot of alignments of the two particular strings. Most of the time we
+There are a lot of alignments of the two strings. Most of the time we
 are interested in some particular alignment. For this purpose, we will create a
 scoring system and we will try to find the maximum/minimum alignment in this scoring
-system. We can, for example, minimize the number of dashes.
-
-Using the alignment defined this way we can see how two-level strings compare to
-each other and how similar they are.
-
+system. We can, for example, minimize the number of dashes. Using the alignment
+defined this way we can see how two level strings compare to each other and how similar they are.
 Finding the best alignment is not trivial. We use a dynamic programming for
 solving this problem. Let $T[i][j]$ be the best allignment of string $s_{1_i} = a_1a_2\cdots a_i$
 and $s_{2_j} = b_1b_2\cdots b_j$. We will for simplification say that $\forall i, j: T[i][0] = i, T[0][j] = j$.
@@ -261,12 +259,6 @@ ratio of hits in the squiggle coming from the reference vs hits in the random sq
 In the \ref{obr:res_1} we see the ratio of gaps between the squiggle from the 
 
 \begin{figure}
-\centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/res_1}}
-\caption[TODO]{TODO}
-\label{obr:res_1}
-\end{figure}
-
-\begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}
 \caption[TODO]{TODO}
 \label{obr:res_2}
@@ -276,4 +268,10 @@ In the \ref{obr:res_1} we see the ratio of gaps between the squiggle from the
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3}}
 \caption[TODO]{TODO}
 \label{obr:res_3}
+\end{figure}
+
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/res_1}}
+\caption[TODO]{TODO}
+\label{obr:res_1}
 \end{figure}
