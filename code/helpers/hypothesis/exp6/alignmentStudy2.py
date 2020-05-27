@@ -14,7 +14,7 @@ smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 5
+readNum = 150
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -157,6 +157,8 @@ for posRead in posReadsPaths:
         dashes1 = [countDashes(a, i) + countDashes(b, i) for i in range(1, 21)]
         dashes2 = [countDashes(c, i) + countDashes(d, i) for i in range(1, 21)]
         
+        print(dashes2)
+        
         goodDash[levels.index(l)].append(dashes1)
         badDash[levels.index(l)].append(dashes2)
         
@@ -208,7 +210,7 @@ for i in range(len(plotLevels)):
     b = [k/len(goodDash[levels.index(plotLevels[i])]) for k in b]
     entry = []
     entry += [100*sum(g[:5])/alignLenRead[levels.index(plotLevels[i])], 100*sum(b[:5])/alignLenFake[levels.index(plotLevels[i])]] 
-    entry += [100*sum(g[9:16])/alignLenRead[levels.index(plotLevels[i])], 100*sum(b[9:16])/alignLenFake[levels.index(plotLevels[i])]]
+    entry += [1000*sum(g[9:16])/alignLenRead[levels.index(plotLevels[i])], 1000*sum(b[9:16])/alignLenFake[levels.index(plotLevels[i])]]
     a.append(entry)
 
 a = np.array(a)
