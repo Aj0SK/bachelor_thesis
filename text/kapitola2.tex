@@ -237,26 +237,34 @@ T[i][j] = \bigl.
 
 \subsection{Results}
 
-The first thing that we evaluated is the number of shared k-mers as we already
-stated this will be our first metric.
+The first thing that we evaluate is the number of shared k-mers as we already
+stated this will be our main metric.
 
 The second metrics we will be interested in is mutual alignment of the sample
 level strings and the reference level string. We will align them using the scoring
-scheme we already presented. The problem with the shared kmers is that we only look
+scheme we already presented. The problem with the shared k-mer count is that we only look
 for the shared kmers but we do not evaluate the relative positions of matched pairs.
 This means that we can easily count as the matching pair also some two kmers that
 do not correspond to the same signal. With the reasonable number of levels this will
 not happen often for a short read. The big advantage of the allignment of the strings
 is that it tells us more accurately what is the overall similarity of the level strings.
 
-In the \ref{obr:res_2} we see the AOC curve that represents how the overall number
+In the \ref{obr:res_2} we see the ROC curve that represents how the overall number
 of hits in the squiggles from the reference compare to the number of hits in the
 random squiggle.
 
-In the \ref{obr:res_3} we see what percentage of the test cases had what actual
-ratio of hits in the squiggle coming from the reference vs hits in the random squiggle 
+We then looked at what is the ratio of hits in the reference level string between squiggle
+from this reference against random squiggle. In the \ref{obr:res_3} we see cummulative percentage
+of testcases that had respective ration. If the number of hits of the positive squiggle
+was zero, we marked this as negative thing and use the ratio 1:2.
 
-In the \ref{obr:res_1} we see the ratio of gaps between the squiggle from the 
+In the \ref{obr:res_1} we looked more closely at the properties of the alignment. We
+have been interested in how often we can see the successive dashes called \textit{gaps}.
+We learned we need to distinguis between the length of the particular gaps. So we split
+their count according to their length to number of gaps shorter than 6 and longer than 9.
+In the \ref{obr:res_1} we present our findings for positive(squiggle from the reference)
+and negative(random squiggle) squiggles. We present the ratio of number of the gaps divided
+by the length of the level string of the respective squiggles.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}

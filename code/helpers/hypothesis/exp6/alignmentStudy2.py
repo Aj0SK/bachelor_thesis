@@ -14,7 +14,7 @@ smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 150
+readNum = 5
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -80,6 +80,8 @@ pomery = [[[] for j in kmerLen] for i in levels]
 overlap = [[[] for j in kmerLen] for i in levels]
 goodDash = [[] for i in levels]
 badDash = [[] for i in levels]
+alignLenRead = [0 for _ in levels]
+alignLenFake = [0 for _ in levels]
 readCounter = 0
 
 for posRead in posReadsPaths:
@@ -141,6 +143,12 @@ for posRead in posReadsPaths:
         a, b = stringAllignment(refStrings[l], readStrings[l])
         c, d = stringAllignment(refStrings[l], fakeStrings[l])
         
+        #alignLenRead[levels.index(l)] += len(a)
+        #alignLenFake[levels.index(l)] += len(c) 
+        
+        alignLenRead[levels.index(l)] += len(readStrings[l])
+        alignLenFake[levels.index(l)] += len(fakeStrings[l]) 
+        
         #a = a[:300]
         #b = b[:300]
         #c = c[:300]
@@ -186,10 +194,6 @@ for posRead in posReadsPaths:
         print()
 
 
-#fig, axs = plt.subplots(len(plotLevels))
-
-import math
-
 a = []
 
 for i in range(len(plotLevels)):
@@ -202,9 +206,59 @@ for i in range(len(plotLevels)):
             b[k] += badDash[levels.index(plotLevels[i])][j][k]
     g = [k/len(goodDash[levels.index(plotLevels[i])]) for k in g]
     b = [k/len(goodDash[levels.index(plotLevels[i])]) for k in b]
-    #a.append(g)
-    #a.append(b)
-    #a.append([g[i]/b[i] if b[i] != 0 else 1 for i in range(len(g))])
+    entry = []
+    entry += [100*sum(g[:5])/alignLenRead[levels.index(plotLevels[i])], 100*sum(b[:5])/alignLenFake[levels.index(plotLevels[i])]] 
+    entry += [100*sum(g[9:16])/alignLenRead[levels.index(plotLevels[i])], 100*sum(b[9:16])/alignLenFake[levels.index(plotLevels[i])]]
+    a.append(entry)
+
+a = np.array(a)
+
+fig, axs = plt.subplots(2, 1)
+
+print(a.T)
+print(a.T.shape)
+
+axs[0].imshow(a.T[:2])
+axs[0].set_xticks(np.arange(len(plotLevels)))
+axs[0].set_xticklabels(plotLevels)
+axs[0].set_yticks(np.arange(2))
+axs[0].set_yticklabels(["<= 5 pos", "<= 5 neg"])
+
+axs[1].imshow(a.T[2:])
+axs[1].set_xticks(np.arange(len(plotLevels)))
+axs[1].set_xticklabels(plotLevels)
+axs[1].set_yticks(np.arange(2))
+axs[1].set_yticklabels(["<= 10 pos", "<= 10 neg"])
+
+for i in range(len(plotLevels)):
+    for j in range(2):
+        text = axs[0].text(i, j, str(a[i, j])[:7],
+                       ha="center", va="center", color="w")
+    for j in range(2, 4):
+        text = axs[1].text(i, j-2, str(a[i, j])[:7],
+                       ha="center", va="center", color="w")
+
+axs[0].set_ylabel("Gap len")
+axs[0].set_xlabel("Level number")
+axs[1].set_ylabel("Gap len")
+axs[1].set_xlabel("Level number")
+fig.tight_layout()
+plt.show()
+
+
+'''
+a = []
+
+for i in range(len(plotLevels)):
+    g = [0] * 20
+    b = [0] * 20
+    for j in range(len(goodDash[levels.index(plotLevels[i])])):
+        for k in range(20):
+            g[k] += goodDash[levels.index(plotLevels[i])][j][k]
+        for k in range(20):
+            b[k] += badDash[levels.index(plotLevels[i])][j][k]
+    g = [k/len(goodDash[levels.index(plotLevels[i])]) for k in g]
+    b = [k/len(goodDash[levels.index(plotLevels[i])]) for k in b]
     entry = [sum(g[:5])/(sum(b[:5])+0.0000001)] + [sum(g[9:16])/(sum(b[9:16])+0.0000001)]
     a.append(entry)
 
@@ -227,6 +281,7 @@ ax.set_ylabel("Gap len")
 ax.set_xlabel("Level number")
 fig.tight_layout()
 plt.show()
+'''
 
 
 dim1, dim2 = 2, 3
@@ -254,8 +309,6 @@ plt.show()
 
 dim1, dim2 = 2, 3
 fig, axs = plt.subplots(dim1, dim2)
-
-import math
 
 for i in range(len(plotLevels)):
     X, Y = [], []
