@@ -5,7 +5,7 @@
 In this chapter we will look at the main challenges of our method and the ways
 we can overcome them.
 
-\section{Section 1}
+\section{Index idea}
 
 So now, we can transform the reference DNA sequence to signal using our simulation
 process, choose the size of the window - $w$, create the level string of the reference.
@@ -29,7 +29,7 @@ We would want to now see how our discretization works and how similar are two le
 strings of reference and the real signal that corresponds to this reference. We are
 also interested in how some random read level string with our reference level string.
 
-\subsection{Aligning the squiggle level string}
+\section{Aligning the squiggle level string}
 
 Before trying to optimize for the speed it would be good to know if our method
 has at least some possibility to work. For this purpose, we will try to
@@ -52,3 +52,12 @@ purpose. For example, we need to ignore the hits on the reverse strand as the
 reverse strand does not carry the same information as in the real DNA sequence.
 This also speeds up whole algorithm considerably.
 
+We now take the level string of the relatively big part of the squiggle. We take the
+fixed part of the squiggle from the $5000$th readout to the $60\,000$th. Of the 50
+tested squiggles, all of them were correctly alligned to the correct contig and also
+correct position. This was very promissing result so we decided to optimize a
+Minimap2 algorithm with adjusting some hyperparameters that this algorithm allows us
+to change to speed it up. For this solution, to be usable we need to take only
+shorter part of squiggle and from the start of it. With signal from the $5000$th
+readout to the $10\,000$th we have been able to find only the 31 out of 100 squiggles
+in around 1 minute.

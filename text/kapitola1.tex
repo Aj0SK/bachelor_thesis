@@ -167,7 +167,13 @@ The DTW is a dynamic programming algorithm that takes two signals and aligns the
 way that minimizes the total number of insertions and deletions. One of the limitations
 of DTW is that it has run time complexity $\mathcal{O}(n\cdot m)$ where $n$ and $m$
 is the length of the reference signal and read respectively. This poses a problem
-for this method if we wanted to use it for longer sequences...
+for this method if we wanted to use it for longer sequences.
+
+Another useful tool that we will heavily use during the testing of our method is
+nanopore data variant caller (Nadavca). It is very handy tool that requires a reference
+DNA sequence and squiggle. Nadavca is able to create the simulated reference signal
+and search for our squiggle in this signal using the already mentioned DTW algorithm.
+One drawback is that it is not fast enough to be used for selective sequencing.
 
 In our work, we attempt to improve the results of the work with the squiggles.
 We focus on the scenario, where we are given a reference sequence of the DNA. We

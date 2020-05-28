@@ -10,13 +10,13 @@ kmerModelFilePath = "../../../data/kmer_model.hdf5"
 readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 
-posTestCases, negTestCases = 50, 0
+posTestCases, negTestCases = 100, 0
 level = 4
 repeatSignal = 10
 overflow = 0.3
 smoothParam = 5
-fromRead, toRead = 5000, 15000
-contigNum = 4
+fromRead, toRead = 5000, 10000
+contigNum = 5
 
 levelStringFa = "helper392478942.fa"
 
@@ -90,14 +90,15 @@ with open(refIndex, "r") as outFile:
             f.write(">" + contigName + "\n")
             f.write(refString.upper() + "\n")
         contigNum -= 1
-        #if contigNum == 0:
-        #    break
+        if contigNum == 0:
+            break
 
-index = mp.Aligner(levelStringFa, w = 14, extra_flags = 0x100000)
+index = mp.Aligner(levelStringFa, w = 25, best_n = 5, extra_flags = 0x100000)
 #index = mp.Aligner(levelStringFa, w = 25)
 assert index, "failed to load/build reference index"
 
 print("Hashtable readyfor {0} nums!".format(contigNum))
+print(f"Processed: {str(processed)}")
 #######################################
 
 def processRead(path, contig_name = None, refPosition = -1):
@@ -120,11 +121,11 @@ def processRead(path, contig_name = None, refPosition = -1):
         print("{0}: {1} vs {2}".format(hit.ctg, hit.r_en-hit.r_st, hit.q_en-hit.q_st))
         hitPosition = hit.r_st/lengths[hit.ctg]
         print(f"Position of hit is {hitPosition}")
-        if abs(hitPosition-refPosition) < 0.001:
+        if abs(hitPosition-refPosition) <= 0.01:
             if contig_name != None and hit.ctg != contig_name:
                 print("Zle urceny contig!")
                 print("Return False.")
-                return False
+                #return False
             return True
         '''if diff < 0.05*(hit.q_en-hit.q_st):
             a, b = stringAllignment(str(refFasta[hit.ctg][hit.r_st:hit.r_en]), helperString[hit.q_st:hit.q_en])
