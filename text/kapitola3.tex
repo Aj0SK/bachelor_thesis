@@ -2,45 +2,48 @@
 
 \label{kap:methAdjust} % id kapitoly pre prikaz ref
 
-In this chapter we will look at the main challenges of our method and the ways
-we can overcome them.
+In this chapter, we look at how we can use our discretization algorithm and findings
+from the previous chapter to reach our goal of selective sequencing.
 
 \section{Index idea}
 
-So now, we can transform the reference DNA sequence to signal using our simulation
+We can transform the reference DNA sequence to signal using our simulation
 process, choose the size of the window - $w$, create the level string of the reference.
-Then, when the real signal from the read arrives, we will perform the same process
+Then, when the real signal from the squiggle arrives, we will perform the same process
 as with the simulated reference signal. Now we have one reference level string and
 one which we want to find in it. We see that this can be better formulated as an
-algorithmic problem. However, there is a very small probability that the level string
-of the longer read would match exactly to some area in the reference level string.
-Instead of looking for the exact match in the reference we will cut the reference
-level string into overlapping subsequences of length $k$ and put them into a hashtable.
+algorithmic problem. However, there is a minimal probability that the level string
+of the longer squiggle would match precisely to some area in the reference level string.
+Instead of looking for the exact match in the reference, we will cut the reference
+level string into overlapping subsequences of length $k$ and put them into a hash table.
 Hash table is a data structure that allows insertion and search of an element in
-amortized time complexity $O(1)$. When we have this hashtable ready after the
-preprocessing we can start with the actual read processing. For every read, we will
+amortized time complexity $O(1)$. When we have this hash table ready after the
+preprocessing, we can start with the actual squiggle processing. For every squiggle, we will
 build the level string from the raw signal. Then, we will cut it into the overlapping
 subsequences of the same length $k$ and see how many of them can be found in our
-prepared hashtable. We call all the subsequences that are present in the hashtable
-hits. Our initial assumption is that the number of hits will be considerably higher
-for the read belonging to the reference.
+prepared hashtable. We call all the subsequences from our query squiggle that are
+present in the hash table \textit{hits}. Our initial assumption is that the number
+of hits will be considerably higher for the read belonging to the reference.
 
-We would want to now see how our discretization works and how similar are two level
-strings of reference and the real signal that corresponds to this reference. We are
-also interested in how some random read level string with our reference level string.
+The important thing is that we need to use only the shortest part of the squiggle
+possible and also use only data from the beginning of the squiggle. Before tackling
+this way harder problem, we will look at easier task. We would want to see how
+our discretization works and how similar are two-level strings of reference and
+the real signal that corresponds to this reference. For this purpose, we will try to
+find our query level string in the reference level string.
 
 \section{Aligning the squiggle level string}
 
-Before trying to optimize for the speed it would be good to know if our method
-has at least some possibility to work. For this purpose, we will try to
-find our query level string in the reference level string. We already know that
-it does not make sense to look for the exact match so we will need some string searching
-technique that can deal with the small errors. There are more algorithms that are able
-to do this. We decided to tweak a Minimap2 \cite{li2018minimap2} algorithm. This is
-one of the most popular sequence alligning algorithms. This algorithm can take the
-query DNA sequence and find it in long reference DNA sequence. It is also able to
-find the query string even if it does not exactly match any subsequence exactly.
-This algorithm works only with the DNA sequences. What we will do is that we choose
+We already know that it does not make sense to look for the exact match of the query string in the reference
+so we will need some string searching technique that can deal with the small errors.
+Our alignment algorithm is a good solution but it lacks the neccessary speed. This
+algorithm works in the time complexity $O(r\cdot s)$ where $r$ is the length of the
+reference sequence and $q$ is the length of the query string. More algorithms are able
+to do this fast and with very high accuracy. We decided to tweak a Minimap2 \cite{li2018minimap2} algorithm. This is
+one of the most popular DNA sequence aligning algorithms. This algorithm can take the
+query DNA sequence and find it in a long reference DNA sequence. It is also able to
+find the query DNA string even if it does not exactly match any subsequence precisely.
+Hovewer, this algorithm works only with the DNA sequences. What we will do is that we choose
 the number of levels $w=4$. This will cause that the reference and query level strings will both consist of
 the characters 'a', 'b', 'c', 'd'. We then substitute 'a', 'b', 'c', 'd' by
 'A', 'C', 'G', 'T' subsequently. We now obtained the manipulated level strings that
@@ -50,14 +53,14 @@ As the Minimap2 is most of the time used and also optimized to perform well on D
 sequences, we need to be careful of some catches that come with using it for this
 purpose. For example, we need to ignore the hits on the reverse strand as the
 reverse strand does not carry the same information as in the real DNA sequence.
-This also speeds up whole algorithm considerably.
+This also speeds up the whole algorithm considerably.
 
 We now take the level string of the relatively big part of the squiggle. We take the
 fixed part of the squiggle from the $5\,000$th readout to the $60\,000$th. Of the 50
 tested squiggles, all of them were correctly aligned to the correct contig and also
-correct position. This was very promising result so we decided to optimize a
+correct position. This was a very promising result, so we decided to optimize a
 Minimap2 algorithm with adjusting some hyperparameters that this algorithm allows us
-to change to speed it up. For this solution, to be usable we need to take only
-shorter part of squiggle and from the start of it. With signal from the $5\,000$th
+to change to speed it up. For this solution, to be usable, we need to take only
+a shorter part of squiggle and from the start of it. With signal from the $5\,000$th
 readout to the $10\,000$th we have been able to find only the 31 out of 100 squiggles
-in around 1 minute. 
+in around 1 minute.

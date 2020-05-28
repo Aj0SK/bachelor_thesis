@@ -1,15 +1,12 @@
 refFilePath = "../../../data/sapIngB1.fa"
+refIndex = "../../../data/ref.index"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
 targetBeg, targetEnd = 0, 1000000000#1000000#50000
 
-levels = 9
-repeatSignal = 10
-kmerLength = 14
-overflow = 0.30
-smoothParam = 5
-
-maxCount = 10000
+kmerLens = [4, 7, 13, 14] # [4, 7, 13, 17, 21, 28] # list(range(4, 36, 1))
+levels = [4, 5, 7] # [4, 5, 7, 9, 11, 13] # list(range(4, 15, 1))
+maxCount = 1000000
 
 ################################################################################
 
@@ -29,20 +26,25 @@ from signalHelper import (
     smoothSignal,
 )
 
-def getLevelStr(signal):
-    currSignal = np.array(copy.deepcopy(signal), float)
-    currSignal = smoothSignal(currSignal, smoothParam)
-    currSignalShift, currSignalScale = computeNorm(currSignal, 0, len(currSignal))
-    currString = computeString(
-        currSignal,
-        0,
-        len(currSignal),
-        currSignalShift,
-        currSignalScale,
-        levels,
-        overflow=overflow,
-    )
-    return currString
+def helper(hashTable):
+    pocty = [0] * (maxCount+1)
+    totalNum = 0
+
+    for k, v in hashTable.items():
+        totalNum += v
+        if v >= maxCount:
+            continue
+        pocty[v] += 1
+        
+    sumUpTo = []
+    suma = 0
+    for i in range(maxCount):
+        suma += pocty[i] * (i+1)
+        if abs(suma/totalNum-1.0) < 0.01:
+            break
+        sumUpTo.append(suma/totalNum)
+
+    return sumUpTo
 
 ################################################################################
 
@@ -50,39 +52,40 @@ mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 hashTable = {}
 
-for contig in Fasta(refFilePath):
-    ref = str(contig)
-    contigSignal = stringToSignal(ref, mod, repeatSignal=repeatSignal)
-    contigSignal = contigSignal[targetBeg:targetEnd]
-    levelStr = getLevelStr(contigSignal)
-    
-    for i in range(len(levelStr)-kmerLength+1):
-        kmer = levelStr[i:i+kmerLength]
-        hashTable[kmer] = hashTable.get(kmer, 0) + 1
-    break
+storeContig = {}
+contigs = []
 
-pocty = [0] * (maxCount+1)
-totalNum = 0
+with open(refIndex, "r") as outFile:
+    for line in outFile:
+        line = [l.strip() for l in line.split()]
+        if int(line[1]) not in levels or line[2] != "+":
+            continue
 
-for k, v in hashTable.items():
-    totalNum += v
-    if v >= maxCount:
-        print(f"Really high count: {v} -> {k}")
-        continue
-    pocty[v] += 1
+        levelStr = line[3]
+        storeContig[(int(line[1]), line[0])] = levelStr
+        contigs.append(line[0])
 
-plt.scatter(range(0, maxCount+1), pocty, marker=r"+")
-plt.axhline(y = 0)
-plt.show()
+contigs = set(contigs)
+hashTable = {}
+results = {}
 
-sumUpTo = []
-suma = 0
-for i in range(1, maxCount+1):
-    suma += pocty[i] * i
-    sumUpTo.append(suma/totalNum)
+for l in levels:
+    for k in kmerLens:
+        h = {}
+        for contig in contigs:
+            levelStr = storeContig[(l, contig)]
+            for i in range(len(levelStr)-k+1):
+                kmer = levelStr[i:i+k]
+                h[kmer] = h.get(kmer, 0) + 1
+            #hashTable[(l, k)] = h
+        results[(l, k)] = helper(h)
+        print(f"l: {l} k: {k}")
+
+ee = results[(4, 14)]
 
 plt.xlabel("Početnosť kmerov")
 plt.ylabel("Agregované pokrytie referencie")
-plt.scatter(range(1, maxCount+1), sumUpTo, marker=r"+")
+plt.plot(list(range(1, len(ee)+1)), ee)
 plt.axhline(y = 0)
+plt.axhline(y = 1)
 plt.show()

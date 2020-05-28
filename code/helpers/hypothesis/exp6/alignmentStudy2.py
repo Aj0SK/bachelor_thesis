@@ -157,8 +157,6 @@ for posRead in posReadsPaths:
         dashes1 = [countDashes(a, i) + countDashes(b, i) for i in range(1, 21)]
         dashes2 = [countDashes(c, i) + countDashes(d, i) for i in range(1, 21)]
         
-        print(dashes2)
-        
         goodDash[levels.index(l)].append(dashes1)
         badDash[levels.index(l)].append(dashes2)
         

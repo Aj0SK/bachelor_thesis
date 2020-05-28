@@ -14,8 +14,8 @@ repeatSignal = 10
 overflow = 0.3
 smoothParam = 5
 
-kmerLen = 17
-level = 12
+kmerLen = 34
+level = 4
 
 workingContig = "contig3"
 
