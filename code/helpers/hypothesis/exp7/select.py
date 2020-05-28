@@ -10,7 +10,7 @@ kmerModelFilePath = "../../../data/kmer_model.hdf5"
 readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 
-posTestCases, negTestCases = 100, 0
+posTestCases, negTestCases = 300, 0
 level = 4
 repeatSignal = 10
 overflow = 0.3
@@ -93,7 +93,7 @@ with open(refIndex, "r") as outFile:
         if contigNum == 0:
             break
 
-index = mp.Aligner(levelStringFa, w = 25, best_n = 5, extra_flags = 0x100000)
+index = mp.Aligner(levelStringFa, w = 18, best_n = 5, extra_flags = 0x100000)
 #index = mp.Aligner(levelStringFa, w = 25)
 assert index, "failed to load/build reference index"
 
@@ -112,25 +112,22 @@ def processRead(path, contig_name = None, refPosition = -1):
     levelHits = list(index.map(helperString))
     
     if len(levelHits) == 0:
-        #print("Return False.")
         return False
     
     for hit in levelHits:
         diff = (hit.r_en-hit.r_st)-(hit.q_en-hit.q_st)
-        print("{0}: {1} vs {2}".format(hit.ctg, hit.r_en-hit.r_st, hit.q_en-hit.q_st))
         hitPosition = hit.r_st/lengths[hit.ctg]
-        print(f"Position of hit is {hitPosition}")
+        
+        print(f"Hit position is {hitPosition}")
+        
+        #if diff < 0.05*(hit.q_en-hit.q_st):
         if abs(hitPosition-refPosition) <= 0.001:
             if contig_name != None and hit.ctg != contig_name:
                 print("Zle urceny contig!")
                 print("Return False.")
-                #return False
-            #print("Return true.")
-            #return True
-        '''if diff < 0.05*(hit.q_en-hit.q_st):
-            a, b = stringAllignment(str(refFasta[hit.ctg][hit.r_st:hit.r_en]), helperString[hit.q_st:hit.q_en])
-            for i in range(1, 20):
-                print(i, ":", countDashes(a, i)+countDashes(b, i))'''
+                return False
+            return True
+        
     print("Return False.")
     return False
 
