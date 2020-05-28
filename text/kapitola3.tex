@@ -53,11 +53,11 @@ reverse strand does not carry the same information as in the real DNA sequence.
 This also speeds up whole algorithm considerably.
 
 We now take the level string of the relatively big part of the squiggle. We take the
-fixed part of the squiggle from the $5000$th readout to the $60\,000$th. Of the 50
-tested squiggles, all of them were correctly alligned to the correct contig and also
-correct position. This was very promissing result so we decided to optimize a
+fixed part of the squiggle from the $5\,000$th readout to the $60\,000$th. Of the 50
+tested squiggles, all of them were correctly aligned to the correct contig and also
+correct position. This was very promising result so we decided to optimize a
 Minimap2 algorithm with adjusting some hyperparameters that this algorithm allows us
 to change to speed it up. For this solution, to be usable we need to take only
-shorter part of squiggle and from the start of it. With signal from the $5000$th
+shorter part of squiggle and from the start of it. With signal from the $5\,000$th
 readout to the $10\,000$th we have been able to find only the 31 out of 100 squiggles
 in around 1 minute.
