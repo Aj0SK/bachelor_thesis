@@ -110,7 +110,9 @@ Nowadays, more successful base-calling algorithms are based on recurrent neural
 networks. Despite significant improvements in the base-calling algorithms, the overall
 process of base-calling is quite slow and resource-intensive.
 
-After the base-calling, we need to assemble this base-called squiggles, called \textit{reads},
+After the base-calling we have hundreds of these base-called squiggles, called \textit{reads}.
+Read is the squiggle that does not carry only the raw signal but also the information
+what nucleotide sequence is his signal representing. We need to assemble this reads,
 to form the resulting DNA sequence. This is quite hard as the base-calling process is not entirely
 accurate and produces some errors. Thanks to the duplication of the shorter DNA
 fragments, we are, in most cases, able to reconstruct the original DNA string.
