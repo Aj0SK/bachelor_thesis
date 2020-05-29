@@ -285,3 +285,26 @@ of levels. The number of longer gaps behaves in the completely opposite way.
 \caption[TODO]{TODO}
 \label{obr:res_1}
 \end{figure}
+
+\subsection{ROC curve}
+
+A receiver operating characteristic curve is a graphical illustration of how well
+the binary classificator performs on the data for particular threshold. The binary
+classifier system is a system that tries to predict the binary output from the inputs.
+We can predict based on the number of hits, if the squiggle is from the
+simulated reference squiggle or not. We can choose some threshold $t$ and say that
+our classificator predict all the squiggles with the number of hits bigger or equal
+than $t$ as from the reference squiggle. When working with binary predictor there
+are two important rates \textit{true positive rate} TPR and \textit{false positive rate} FPR. 
+TPR is a ratio of the correctly classified positive squiggles to the number of the all squiggles.
+FPR is a ratio of the squiggles that we incorrectly classified as positive. The ROC
+works by ploting the dependency of FPR on TPR for various threshold values $t$.
+If the binary classificator was random generator the ROC curve would be roughly
+linear. Very good classificator obtains the curve that is very close to the point
+$FPR = 0, TPR = 1$. We can see the example of these two curves on Fig. \ref{obr:roc}.
+
+\begin{figure}
+\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/roc}}
+\caption[TODO]{TODO}
+\label{obr:roc}
+\end{figure}
