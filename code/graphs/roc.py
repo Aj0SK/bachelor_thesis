@@ -13,7 +13,7 @@ y1 = 2*np.arctan(n*(x1-10))/math.pi - diff
 
 plt.plot(x, y)
 plt.plot(x, y1)
-plt.plot(x, np.linspace(0, -diff, 10000))
+plt.plot(x, np.linspace(0, -diff, 10000), linestyle = '--')
 
 plt.xlabel("FPR")
 plt.ylabel("TPR")

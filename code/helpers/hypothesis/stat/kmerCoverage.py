@@ -4,8 +4,8 @@ kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
 targetBeg, targetEnd = 0, 1000000000#1000000#50000
 
-kmerLens = [4, 7, 13, 14] # [4, 7, 13, 17, 21, 28] # list(range(4, 36, 1))
-levels = [4, 5, 7] # [4, 5, 7, 9, 11, 13] # list(range(4, 15, 1))
+kmerLens = [4, 7, 13, 17, 21, 28] # list(range(4, 36, 1))
+levels = [4, 5, 7, 9, 11, 13] # list(range(4, 15, 1))
 maxCount = 1000000
 
 ################################################################################
@@ -81,11 +81,15 @@ for l in levels:
         results[(l, k)] = helper(h)
         print(f"l: {l} k: {k}")
 
-ee = results[(4, 14)]
+dim1, dim2 = 2, 3
+fig, axs = plt.subplots(dim1, dim2)
 
-plt.xlabel("Početnosť kmerov")
-plt.ylabel("Agregované pokrytie referencie")
-plt.plot(list(range(1, len(ee)+1)), ee)
-plt.axhline(y = 0)
-plt.axhline(y = 1)
+for i in range(len(levels)):
+    axs[i//dim2, i%dim2].axhline(y = 0)
+    axs[i//dim2, i%dim2].axhline(y = 1)
+    for k in kmerLens:
+        ee = results[(levels[i], k)]
+        #plt.xlabel("Početnosť kmerov")
+        #plt.ylabel("Agregované pokrytie referencie")
+        axs[i//dim2, i%dim2].plot(list(range(1, len(ee)+1)), ee)
 plt.show()

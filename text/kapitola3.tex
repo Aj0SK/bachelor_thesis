@@ -33,6 +33,7 @@ the real signal that corresponds to this reference. For this purpose, we will tr
 find our query level string in the reference level string.
 
 \section{Aligning the squiggle level string}
+\label{section:alignMinimap}
 
 We already know that it does not make sense to look for the exact match of the query string in the reference
 so we will need some string searching technique that can deal with the small errors.
@@ -64,3 +65,12 @@ to change to speed it up. For this solution, to be usable, we need to take only
 a shorter part of squiggle and from the start of it. With signal from the $5\,000$th
 readout to the $10\,000$th we have been able to find only the 31 out of 100 squiggles
 in around 1 minute.
+
+\section{Building the Index}
+
+Results from the Chapter \ref{kap:proposedMethod} and Section \ref{section:alignMinimap}
+encouraged us that it is possible to build the reasonable index over the reference
+DNA sequence. We will proceed by building the index in the form of the big hashtable
+that stores all the k-mers that are present in the reference simulated level string.
+We now choose one individual contig from the reference DNA sequence and we create
+the
