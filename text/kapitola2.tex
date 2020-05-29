@@ -324,17 +324,20 @@ from this reference against random squiggle. In the \ref{obr:res_3} we see the c
 of test cases that had respective ration. If the number of hits of the positive squiggle
 was zero, we marked this as a negative thing and use the ratio 1:2.
 
-In Fig.\ref{obr:res_1} we looked more closely at the properties of the alignment. We
+In Figure \ref{obr:res_1} we looked more closely at the properties of the alignment. We
 have been interested in how often we can see the successive dashes called \textit{gaps}.
 We learned we need to distinguish between the length of the particular gaps. So we split
 their count according to their length to the number of gaps shorter than 6 and longer than 9.
-In the \ref{obr:res_1} we present our findings for positive(squiggle from the reference)
+In the Figure \ref{obr:res_1} we present our findings for positive(squiggle from the reference)
 and negative(random squiggle) squiggles. We present the ratio of the number of the gaps divided
 by the length of the level string of the respective squiggles. For better visualization,
 we show the gaps per 100 level string characters for gaps shorter than 6 and gaps
 per 1000 level string characters for longer gaps. We can see that the number of gaps
 shorter than six favors a lower number of levels and gradually increases with the number
 of levels. The number of longer gaps behaves in the completely opposite way. 
+
+The smoothing has a great impact on the resulst as we can see in Figure \ref{obr:res_2_nonorm}
+and \ref{obr:res_3_nonorm}.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}
@@ -343,9 +346,21 @@ of levels. The number of longer gaps behaves in the completely opposite way.
 \end{figure}
 
 \begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2_nonorm}}
+\caption[TODO]{ROC curve of the hits without smoothing}
+\label{obr:res_2_nonorm}
+\end{figure}
+
+\begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3}}
 \caption[TODO]{Cummulative distribution of hit ratios}
 \label{obr:res_3}
+\end{figure}
+
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3_nonorm}}
+\caption[TODO]{Cummulative distribution of hit ratios without smoothing}
+\label{obr:res_3_nonorm}
 \end{figure}
 
 \begin{figure}
