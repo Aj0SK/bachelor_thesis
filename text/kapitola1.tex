@@ -1,5 +1,4 @@
 \chapter{Selective DNA sequencing}
-% TODO, vysvetlit eventy
 \label{kap:selSeq}
 
 In this chapter, we explain the term selective sequencing. We highlight the
@@ -7,8 +6,7 @@ advantages of this method and look at the current state of research in this area
 
 \section{DNA}
 
-% TODO: pridat zdroj %https://en.wikipedia.org/wiki/Genetics#DNA_sequencing_and_genomics
-Genetics is a branch of biology that studies genes, genetic variation, and heredity.
+Genetics is a branch of biology that studies genes, genetic variation, and heredity \cite{genetics:2020}.
 It tries to explain the variability between animals, the source of hereditary diseases, and
 other important things that influence our lives. The DNA is the key molecule
 that stores biological information in living organisms. It is contained in
@@ -32,22 +30,18 @@ From now, we will represent the DNA molecule as a sequence of characters A, C, G
 Such representation stores enough information so we can recover the other complementary
 DNA strand easily.
 
-% TODO: obrazok zdroj https://www.genome.gov/genetics-glossary/acgt
-
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/acgt}}
-\caption[DNA]{DNA Molecule}
+\caption[DNA]{DNA Molecule \cite{acgt:2020}}
 \label{obr:acgt}
 \end{figure}
 
 \section{DNA sequencing}
 \label{section:dnaSequencing}
 
-%https://www.sciencefocus.com/the-human-body/how-long-is-your-dna/
-
 The process of obtaining DNA sequence is called \textit{DNA sequencing}.
 The DNA molecule is very long, and processing it whole at once would be very hard.
-The single DNA molecule in one cell can reach up to 2 meters when untangled.
+The single DNA molecule in one cell can reach up to 2 meters when untangled \cite{dnaLength:2020}.
 Thus, it is convenient to broke down the whole DNA molecule into many shorter fragments.
 This can be done chemically. Once we have this mixture of shorter DNA fragments, we need to sequence them
 individually and then assemble them to obtain the nucleotide string representing
@@ -57,7 +51,7 @@ with the size of the larger USB key (see in Figure \ref{obr:minIon}).
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/minion}}
-\caption[MinION]{MinION sequencer}
+\caption[MinION]{MinION sequencer\cite{MinION:2020}}
 \label{obr:minIon}
 \end{figure}
 
@@ -81,10 +75,8 @@ nucleotide produces on average about 8-9 \textit{readouts}. The signal
 generated from the pass of the single DNA fragment through the single pore is called \textit{squiggle}.
 One of the advantages of the MinION sequencer is that it produces very long squiggles.
 The length of the squiggles is stated in kb(kilo-bases) where base corresponds to one nucleotide.
-The mean length of the squiggles in some scenarios ranges from 13kb to 20kb. Additionally,
+The mean length of the squiggles in some scenarios ranges from 13kb to 20kb \cite{tyson2018minion}. Additionally,
 since MinION has 200-500 nanopores, it can produce large amounts of data very quickly.
-
-% TODO: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5793790/
 
 After obtaining the individual squiggles, these need to be converted into the DNA
 sequence. Importantly, as the DNA passes through the pore, only a small
