@@ -49,7 +49,7 @@ of the squiggle to the level string for $w=6$ is shown in Figure \ref{obr:levels
 \label{obr:levelsCreation}
 \end{figure}
 
-Discretization has several important properties that we will use later.
+Discretization has several important properties that we will later use.
 First, it is deterministic and the same squiggle has the same level
 string each time for the unchanged $w$. Second, small changes and variance in the signal readouts
 are unlikely to change the resulting level string most of the time. Note that the squiggle
@@ -79,14 +79,14 @@ We will address the signal oscillations in more detail in Section \ref{subsectio
 \section{Simulating Squiggles from the Reference}
 
 We stated that we need to obtain the reference squiggle. We need this reference squiggle
-so that we have some reference wchich we can sample and use later to split squiggles
+so that we have some reference which we can sample and use later to split squiggles
 between that we are interested in and not interested in.
 
 We create a simulated squiggle based on the 6-mer model,
 where each subsequent 6-mer in our reference DNA will generate a signal (event) equal to
 the mean of the gaussian distribution for that particular 6-mer. This mean value
 is the information provided for us by the manufacturer of MinION through the kmer model
-that we already mentioned in Section \ref{section:dnaSequencing}.
+that we mentioned in Section \ref{section:dnaSequencing}.
 
 Our simplistic approach to signal simulation does not take into account that the
 signal from one nucleotide is measured several times. Thus, we replicate every entry in the simulated signal
@@ -128,11 +128,13 @@ Now we have a simulated reference squiggle. We can see on \ref{obr:simVsReal} th
 squiggle are not identical. This poses a problem as we want to have these squiggles as
 similar as possible. The first thing that we want to consider is normalization.
 One of the most wide-spread ways of doing this is to subtract mean and dividing
-squiggle by the standard deviation. The other possible solution is subtracting median value
+the signal by the standard deviation. The other possible solution is subtracting median value
 as the frequent outliers can deform the mean. We will stick to the first solution
-but we will remove outliers in a way that everything over and under some value will
-be clamped to the target range. Most of the time this will be -2 for the lower bound
-and 2 for the upper bound.
+as our experiments showed that there is no big difference between squiggle mean
+and median value in most of the squiggles.
+After the normalization, we remove outliers in a way that everything over and under certain values will
+be clamped to the target range. Most of the time, this will be -2 as the lower bound
+and 2 as the upper bound.
 
 Another visible problem can be seen when we compare events in the simulated and real squiggle.
 The events in the simulated signal are perfect repeats of the same value. In the real signal, we can sometimes see
@@ -263,7 +265,7 @@ FPR is a ratio of the squiggles that we incorrectly classified as positive.
 The ROC works by ploting the dependency of FPR on TPR for various threshold values $t$.
 If the binary classificator was random generator the ROC curve would be roughly
 linear. Very good classificator obtains the curve that is very close to the point
-$FPR = 0, TPR = 1$. We can see the example of very good curve on Fig. \ref{obr:roc}.
+$FPR = 0, TPR = 1$. We can see the example of very good curve on Figure \ref{obr:roc}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/roc}}
@@ -272,6 +274,7 @@ $FPR = 0, TPR = 1$. We can see the example of very good curve on Fig. \ref{obr:r
 \end{figure}
 
 \subsection{Level string alignment}
+\label{section:alignment}
 
 To see how two level strings compare to each other we will align them. The input
 to the alignment algorithm are two strings $s_1$, $s_2$:
@@ -344,7 +347,7 @@ shorter than six favors a lower number of levels and gradually increases with th
 of levels. The number of longer gaps behaves in the completely opposite way. 
 
 The smoothing has a great impact on the resulst as we can see in Figure \ref{obr:res_2_nonorm}
-and \ref{obr:res_3_nonorm}.
+and Figure \ref{obr:res_3_nonorm}.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}

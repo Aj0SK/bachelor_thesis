@@ -19,11 +19,11 @@ level string into overlapping subsequences of length $k$ and put them into a has
 Hash table is a data structure that allows insertion and search of an element in
 amortized time complexity $O(1)$. When we have this hash table ready after the
 preprocessing, we can start with the actual squiggle processing. For every squiggle, we will
-build the level string from the raw signal. Then, we will cut it into the overlapping
+build the level string. Then, we will cut it into the overlapping
 subsequences of the same length $k$ and see how many of them can be found in our
 prepared hashtable. We call all the subsequences from our query squiggle that are
 present in the hash table \textit{hits}. Our initial assumption is that the number
-of hits will be considerably higher for the read belonging to the reference.
+of hits will be considerably higher for the squiggle that belongs to the reference.
 
 The important thing is that we need to use only the shortest part of the squiggle
 possible and also use only data from the beginning of the squiggle. Before tackling
@@ -36,10 +36,10 @@ find our query level string in the reference level string.
 \label{section:alignMinimap}
 
 We already know that it does not make sense to look for the exact match of the query string in the reference
-so we will need some string searching technique that can deal with the small errors.
-Our alignment algorithm is a good solution but it lacks the neccessary speed. This
+so we will need some string searching technique that can deal with few errors.
+Our alignment algorithm presented in Section \ref{section:alignment} could be adapted but it lacks the neccessary speed. This
 algorithm works in the time complexity $O(r\cdot s)$ where $r$ is the length of the
-reference sequence and $q$ is the length of the query string. More algorithms are able
+reference sequence and $q$ is the length of the query string. Many algorithms are able
 to do this fast and with very high accuracy. We decided to tweak a Minimap2 \cite{li2018minimap2} algorithm. This is
 one of the most popular DNA sequence aligning algorithms. This algorithm can take the
 query DNA sequence and find it in a long reference DNA sequence. It is also able to
