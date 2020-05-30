@@ -50,6 +50,9 @@ readSignal -= np.mean(readSignal)
 refSignal /= np.std(refSignal)
 readSignal /= np.std(readSignal)
 
+refSignal[refSignal>2.0] = 2.0
+readSignal[readSignal<-2.0] = -2.0
+
 refSignalAvg = smoothSignal(refSignal, smoothParam)
 readSignalAvg = smoothSignal(readSignal, smoothParam)
 
@@ -63,4 +66,26 @@ ax2[0].plot(range(len(refSignalAvg)), refSignalAvg)
 ax2[1].plot(range(len(readSignalAvg)), readSignalAvg)
 ax3[0].plot(range(len(refSignalMed)), refSignalMed)
 ax3[1].plot(range(len(readSignalMed)), readSignalMed)
+
+ax1[0].set_ylim(bottom = -2.2, top = 2.2)
+ax1[1].set_ylim(bottom = -2.2, top = 2.2)
+ax2[0].set_ylim(bottom = -2.2, top = 2.2)
+ax2[1].set_ylim(bottom = -2.2, top = 2.2)
+ax3[0].set_ylim(bottom = -2.2, top = 2.2)
+ax3[1].set_ylim(bottom = -2.2, top = 2.2)
+
+ax1[0].set_title(f"Simulated squiggle", fontsize=18)
+ax1[1].set_title(f"Real squiggle", fontsize=18)
+ax2[0].set_title(f"Simulated squiggle - average smoothing", fontsize=18)
+ax2[1].set_title(f"Real squiggle - average smoothing", fontsize=18)
+ax3[0].set_title(f"Simulated squiggle - median smoothing", fontsize=18)
+ax3[1].set_title(f"Real squiggle - median smoothing", fontsize=18)
+
+ax1[0].get_xaxis().set_visible(False)
+ax1[1].get_xaxis().set_visible(False)
+ax2[0].get_xaxis().set_visible(False)
+ax2[1].get_xaxis().set_visible(False)
+ax3[0].get_xaxis().set_visible(False)
+ax3[1].get_xaxis().set_visible(False)
+
 plt.show()
