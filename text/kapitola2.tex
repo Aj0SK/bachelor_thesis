@@ -12,6 +12,7 @@ introduce more suitable representation of the signal that enables easy searching
 query signal in the reference.
 
 \section{Squiggles as Sequences of Discrete Observations}
+\label{section:squigglesAsDiscrete}
 
 Given a simulated squiggle from the reference DNA, we want to decide whether the
 squiggle passing through the pore has originated from the reference. This task
@@ -53,12 +54,12 @@ Discretization has several important properties that we will later use.
 First, it is deterministic and the same squiggle has the same level
 string each time for the unchanged $w$. Second, small changes and variance in the signal readouts
 are unlikely to change the resulting level string most of the time. Note that the squiggle
-consists of some events that are represented by a longer signal that is around the same level.
-With this method, we hope that each event will remain insde a single window. Subsequent
-contraction of the level string thus results in one event being represented by
+consists of events that are represented by a longer signal that is around the same level.
+With this method, we hope that each event will remain insde a single window over over its
+duration. Subsequent contraction of the level string thus results in one event being represented by
 a signle character of a level string in most cases.
 
-Changes of the parameter $w$ balance specificity and informativness of our method.
+Change to the parameter $w$ balance specificity and informativness of our method.
 With the $w=2$ we can not say a lot about two squiggles that have the same level string.
 With larger $w$ we can miss two squiggles from the same DNA sequence if there is
 a too much noise present in one of them.
@@ -69,7 +70,7 @@ a too much noise present in one of them.
 \label{obr:levelDiff}
 \end{figure}
 
-Consider two scenarios when the number of levels is small and high.
+Consider two scenarios, when the number of levels is small and high.
 Figure \ref{obr:levelDiff} shows that for the small number of levels, a lot of
 different events stay in the same center window even if the higher number of levels
 could distinguish between these individual events. With a high number of levels,
@@ -92,8 +93,8 @@ Our simplistic approach to signal simulation does not take into account that the
 signal from one nucleotide is measured several times. Thus, we replicate every entry in the simulated signal
 10 times.
 
-We now compare the simulated squiggle to some real squiggle that arose from the real
-sequencing. Moreover, we do not want to compare our simulated squiggle with some unrelated squiggle
+We now compare the simulated squiggle to real squiggle that arose from the real
+sequencing. Moreover, we do not want to compare our simulated squiggle with unrelated squiggle
 but with the squiggle that corresponds to the same DNA region. Most of the time we
 compare the real signal and simulated signal such that we take some real squiggle.
 Then we find the part of the DNA reference that this squiggle corresponds to only
@@ -128,8 +129,8 @@ Now we have a simulated reference squiggle. We can see on \ref{obr:simVsReal} th
 squiggle are not identical. This poses a problem as we want to have these squiggles as
 similar as possible. The first thing that we want to consider is normalization.
 One of the most wide-spread ways of doing this is to subtract mean and dividing
-the signal by the standard deviation. The other possible solution is subtracting median value
-as the frequent outliers can deform the mean. We will stick to the first solution
+the signal by the standard deviation. The other possible solution is subtracting median value,
+as the frequent outliers can deform the mean. We will stick to the first solution,
 as our experiments showed that there is no big difference between squiggle mean
 and median value in most of the squiggles.
 After the normalization, we remove outliers in a way that everything over and under certain values will
@@ -152,11 +153,11 @@ The opposite approach is to make the real squiggle less noisy. We decided to go 
 second way so we will now address the most important differences between the
 real and simulated squiggles.
 
-\subsection{Signal oscillations and continuity}
+\section{Signal Oscillations and Continuity}
 \label{subsection:oscillations}
 
-We already saw in Figure \ref{obr:simVsReal} that one of the biggest differences between simulated and
-real squiggle is the noise which can be seen as small oscillations of the signal. This is
+Figure \ref{obr:simVsReal} clearly shows that one of the biggest differences between simulated and
+real squiggles is the noise which can be seen as small oscillations of the signal. This is
 one of the reasons that we use windows - so small oscillations within the window
 are dealt with. We can also pretty easily adapt the number of windows.
 However, when our method is used without any modifications it
@@ -171,7 +172,7 @@ $k$ the size of the window or also the \textit{smoothing parameter}. We can also
 the average function to the median to obtain the \textit{moving median}. For now, we will stick
 to faster smoothing techniques.
 
-The next difference that was visible from the comparison of real signal level string
+Another difference between the real signal level string
 and the simulated signal level string is that the real signal is more continuous instead
 of a simulated signal that jumps. Again, we can use the moving average. Instead of
 the moving median, it has a nice advantage that it causes signal not to jump from
@@ -190,50 +191,46 @@ that we could observe in the events. With the median smoothing, the outcome is q
 similar but lacks the quality of smoothing the simulated signal.
 
 \section{Identification of Reads Based on Shared k-mers}
+\label{section:readIdentification}
 
-Now we will propose, how we will distinguish if the two squiggles are similar or not.
-What we will do is that we take the real squiggle, the reference squiggle corresponding to it, and
-some other real squiggle. We will then try to tell which squiggle is from the reference
-and which is not based only on the level strings of the respective squiggles. We
+In this section, we will demonstrate how to distinguish between the cases when two squiggles
+originate from the same sequence and cases when we are comparing unrelated squiggles.
+We take the real squiggle, the squiggle simulated from it and unrelated real squiggle.
+We will then try to distinguish which squiggle is from the reference
+and which is not based only on the level strings derivated from the respective squiggles. We
 emphasized the speed many times, so we will try to come up with a fast test.
-What we will do is that we will split the individual level strings into overlapping k-mers.
-When we use the term k-mer in the context of the level string we mean any $k$ subsequent
-characters from this string. We will then find what is the overlap
-between k-mers from the reference squiggle and the sample squiggles. From the number of the overlaps, we will try
-to predict, which sample squiggle is from the reference and which is not. This is very
-simple heuristics but we think that this method could work well and also enables us
-to only query for the individual k-mers in some index which is something that can be done really fast.
-Besides the windows count, k-mer length is another useful parameter. We can estimate
-that there will be a lot of shared k-mers of length less than 10 even between two unrelated
-squiggles. As we gradually increase the length of the k-mer, we expect that the number
-of random hits will decrease. On the other hand, we cannot increase the length of k-mer
-too much as there is an increasing probability that some random noise or other anomalies
-in the real squiggle causes the failure of finding the k-mer in the index.
+We split the individual level strings into overlapping $k$-mers (any $k$ subsequent
+characters from the string). The size of the overlap between $k$-mers from the reference
+squiggle and the sample squiggles should distinguish which squiggle is from the reference and which is not.
 
-\section{Experimental evaluation}
+\section{Experimental Evaluation}
 
-Now we will test our method. We are interested in how accurately the level string represents the squiggle
-and how informative this level string is. We will look at how the level string
-from the simulated reference squiggle compares to the level string of the real squiggle
-corresponding to this reference and random real squiggle from the sequencing of
-another organism. We will not evaluate the level strings only based on shared k-mers as this metric can be misleading.
+In this section we have two goals:
 
-\subsection{Experimental data}
+\begin{itemize}
+    \item We are interested in how accurately the discretization method that we proposed in Section \ref{section:squigglesAsDiscrete} represents the squiggle.
+    \item We want to test how the proposed identification from Section \ref{section:readIdentification} works on real data
+\end{itemize}
 
-Our data come from two organisms, one is Saprochaete ingens and the other one is
-Saprochaete fungicola. Both of these organisms are yeasts. We choose these
-organisms as they are sequenced by bioinformatics department of
+In both of these cases we are interested in the results for the different parameters
+as the number of levels, length of the $k$-mers and impact of the methods that we
+discussed in Section \ref{subsection:oscillations}.
+
+\subsection{Experimental Data}
+
+Data that we use for these experiments come from two organisms. One is \emph{Saprochaete ingens} and
+the other one is \emph{Saprochaete fungicola}. We choose these
+organisms as they were sequenced by Bioinformatics department of
 FMPH so we have all the data from the sequencing easily available.
-We have available the reference sequences of both these organisms as well as the
-individual squiggles. We base-called these reads using the Albacore basecaller.
-This basecaller develobed by Oxford Nanopore Technologies, company that develops also the MinION sequencer.
+We have also obtained the reference sequences of both of these organisms \cite{hodorova2019genome} \cite{brejova2019genome}.
+We base-called the raw reads using the Albacore basecaller provided by Oxford Nanopore Technologies, company that also develops the MinION sequencer.
 
-To see if these two organism do not share some big similarities, we tried to align the reads from
-Saprochaete fungicola to the reference sequence of Saprochaete ingens using the Minimap2
-algorithm. We run this test on the 500 reads from each of these organism. We studied
-the ratio of the read that was successfully matched in the reference sequence. In Figure \ref{obr:align_stat}
-we can see the number of reads that were alligned with the respective percentage.
-Note that 50\% of read was aligned only in 12 reads out of 500 from the Saprochaete fungicola.
+To see if these two organism do not share some big similarities, we align the reads from
+\emph{Saprochaete fungicola} to the reference sequence of \emph{Saprochaete ingens} using the Minimap2
+algorithm. We run this test on the 500 randomly selected reads from each of these organism. We studied
+the ratio of the reads that were successfully matched in the reference sequence. Figure \ref{obr:align_stat}
+shows the number of reads that were alligned with the respective percentage of their length that was successfully aligned.
+Note that only 12 reads out of 500 in case of the \emph{Saprochaete fungicola} had more than 50\% of their length aligned.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/align_stat}}
@@ -250,9 +247,9 @@ We run this cycle many times over.
 \subsection{ROC curve}
 
 A receiver operating characteristic curve is a graphical illustration of how well
-the binary classificator performs on the data for particular threshold. The binary
+the \textit{binary classificator} performs on the data for a particular threshold. The binary
 classifier system is a system that tries to predict the binary output from the inputs.
-We can predict based on the number of hits, if the squiggle is from the
+We can look at our experiment as predictor that predicts based on the number of hits, if the squiggle is from the
 simulated reference squiggle or not. We can choose some threshold $t$ and say that
 our classificator predict all the squiggles with the number of hits bigger or equal
 than $t$ as from the reference squiggle. When working with binary predictor there
@@ -260,16 +257,19 @@ are two important rates \textit{true positive rate} TPR and \textit{false positi
 
 TPR is a ratio of the correctly classified positive squiggles to the number of the all squiggles.
 
-FPR is a ratio of the squiggles that we incorrectly classified as positive.
+FPR is a ratio of the squiggles that we incorrectly classified as a belonging to the reference squiggle.
 
-The ROC works by ploting the dependency of FPR on TPR for various threshold values $t$.
+The ROC works by ploting the dependency of TPR on FPR for various threshold values $t$.
 If the binary classificator was random generator the ROC curve would be roughly
 linear. Very good classificator obtains the curve that is very close to the point
-$FPR = 0, TPR = 1$. We can see the example of very good curve on Figure \ref{obr:roc}.
+$FPR = 0, TPR = 1$. We can see the example of a curve that represents very good
+binary classificator on Figure \ref{obr:roc}. The binary classificator that randomly
+guesses his output is expected to have an ROC curve somewhere around the green line.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/roc}}
-\caption[TODO]{TODO}
+\caption[TODO]{In this picture we see the example of a curve(green) that represents very good
+binary estimator.}
 \label{obr:roc}
 \end{figure}
 
