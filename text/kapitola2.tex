@@ -3,10 +3,10 @@
 \label{kap:proposedMethod}
 
 As we stated in the previous chapter, we will work directly with the squiggles instead
-of the basecalled sequence. However, for this to be possible we need to simulate
+of the basecalled sequences. However, for this to be possible we need to simulate
 the reference squiggle from the reference DNA sequence and also represent the signal
-in some other way to be easily searchable. This will allows us to create some form
-of the index over the simulated reference squiggle that we can then use for fast searching
+in different way so that signal can be easily searchable. This will allows us to create
+a special index over the simulated reference squiggle that we can then use for fast searching
 during the selective sequencing.
 
 \section{Squiggles as Sequences of Discrete Observations}
@@ -18,7 +18,7 @@ can be reformulated as finding if the current squiggle is similar to a segment o
 We propose to discretize the squiggles to facilitate their better representation
 and also provide easy searching capabilities in this representation. Note that, we are
 not very limited by the preprocessing time, but very fast processing is required during
-sequencing the DNA. This puts some speed limitations on our discretizing
+the sequencing of DNA. This puts certain speed limitations on our discretizing
 process during the actual sequencing of the DNA.
 
 We will represent the squiggle as a string of characters. We split the squiggle
@@ -34,14 +34,16 @@ $min_a + j\cdot \frac{max_a-min_a}{m} \leq a_i < min_a + (j+1)\cdot \frac{max_a-
 \end{center}
 
 Let the readouts $a_0, a_1, \cdots, a_n$ correspond to the windows $w_0, w_1, \cdots ,w_n$
-respectively. If $ls=w_1w_2\cdots w_n$ then $ls$ where the subsequent characters are substited
-is called the \textit{level string} of the squiggle $s$. So if the $ls=aabccaa$
-then the level string from this level sequence is "abca". An example of the transformation
-of the squiggle to the level string for $w=6$ is shown in Fig. \ref{obr:levelsCreation}.
+respectively. $ls$ such that $ls=w_1w_2\cdots w_n$ is called \textit{level sequence}.
+Level sequence in which the subsequent appearances of the same character are substituted
+by the single apperance of that character is called the \textit{level string} of the squiggle $s$.
+We will call the transformation from the level sequence to the level string a \textit{contraction}.
+So if the $ls=aabccaa$ then the level string from this level sequence is "abca". An example of the transformation
+of the squiggle to the level string for $w=6$ is shown in Figure \ref{obr:levelsCreation}.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.8\textwidth, height=0.4\textheight]{images/levelsCreation}}
-\caption[TODO]{Squiggle with the level string on the x-axis}
+\caption[TODO]{Squiggle with the level string displayed on the x-axis}
 \label{obr:levelsCreation}
 \end{figure}
 
@@ -68,8 +70,8 @@ a too much noise present in one of them.
 Consider two scenarios when the number of levels is small and high.
 Figure \ref{obr:levelDiff} shows that for the small number of levels, a lot of
 different events stay in the same center window even if the higher number of levels
-can distinguish between these individual events. With a high number of levels,
-like we see in Figure \ref{obr:levelDiff} one event is less likely to within the same window.
+could distinguish between these individual events. With a high number of levels,
+like we see in Figure \ref{obr:levelDiff} one event is less likely to remain within the same window.
 We will address the signal oscillations in more detail in Section \ref{subsection:oscillations}.
 
 \section{Simulating Squiggles from the Reference}
@@ -78,11 +80,11 @@ We stated that we need to obtain reference squiggle that we can sample and use
 later to split squiggles between that we are interested in and not interested in.
 
 We are given the reference in the form of a DNA sequence and our goal is to create
-the reference squiggle. We create a simulated squiggle based on the 6-mer model.
-Where each subsequent 6-mer in our reference DNA will generate a signal (event) equal to
+the reference squiggle. We create a simulated squiggle based on the 6-mer model,
+where each subsequent 6-mer in our reference DNA will generate a signal (event) equal to
 the mean of the gaussian distribution for that particular 6-mer. This mean value
 is the information provided for us by the manufacturer of MinION through the kmer model
-that we already mentioned in TODO.
+that we already mentioned in Section \ref{section:dnaSequencing}.
 
 Our simplistic approach to signal simulation does not take into account that the
 signal from one nucleotide is measured several times. Thus, we replicate every entry in the simulated signal
@@ -92,7 +94,8 @@ We now compare the simulated squiggle to some real squiggle that arose from the 
 sequencing. Moreover, we do not want to compare our simulated squiggle with some unrelated squiggle
 but with the squiggle that corresponds to the same DNA region. Most of the time we
 compare the real signal and simulated signal such that we take some real squiggle.
-Find the part of the DNA reference that this squiggle corresponds to and then simulate
+Then we find the part of the DNA reference that this squiggle corresponds to only
+after successfully finding this part of the DNA reference we simulate
 the squiggle from it. There are two
 ways how we do this in our work. The first, more accurate method is to
 use Nadavca. This tool, already introduced in Section \ref{section:currState} takes

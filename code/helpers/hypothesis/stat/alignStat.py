@@ -18,6 +18,8 @@ from signalHelper import getSeqfromRead, getReadsInFolder
 import matplotlib
 import matplotlib.pyplot as plt
 
+plt.rcParams.update({'font.size': 18})
+
 ################################################################################
 
 referenceIdx = mp.Aligner(refFilePath)
@@ -82,7 +84,7 @@ print(negHitsByRatios)
 
 #taken from https://matplotlib.org/3.2.1/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py
 
-labels = [">" + str(i*100) + "%" for i in ratios]
+labels = [">=" + str(i*100) + "%" for i in ratios]
 
 x = np.arange(len(labels))  # the label locations
 width = 0.35  # the width of the bars
@@ -99,7 +101,6 @@ ax.set_xticks(x)
 ax.set_xticklabels(labels)
 ax.legend()
 
-
 def autolabel(rects):
     """Attach a text label above each bar in *rects*, displaying its height."""
     for rect in rects:
@@ -114,6 +115,6 @@ def autolabel(rects):
 autolabel(rects1)
 autolabel(rects2)
 
-fig.tight_layout()
+#fig.tight_layout()
 
 plt.show()
