@@ -164,16 +164,14 @@ real squiggles is the noise which can be seen as small oscillations of the signa
 one of the reasons that we use windows - so small oscillations within the window
 are dealt with. We can also pretty easily adapt the number of windows.
 However, when our method is used without any modifications it
-produces much longer level string for real squiggles than for simulated squiggles.
+produces much longer level strings for the real squiggles than for simulated squiggles.
 The problem arises when the oscillations are located on the borders of the windows.
-This is something that unfortunately happens too often. There are several
-possibilities to deal with this behavior not affecting speed too
-much. We tried several smoothing techniques to reduce noise. \textit{Moving average} is the
-smoothing technique that for every entry $s_i$ in some signal $s$ count its new value
-$snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We will call the
-$k$ the size of the window or also the \textit{smoothing parameter}. We can also simply change
+To address this problem, we tried several smoothing techniques to reduce noise. \textit{Moving average} is the
+smoothing technique that for every readout $s_i$ in some signal $s$ calculate its new value
+$snew_i$ as $snew_i = avg(s_{i}, s_{i-1}, s_{i-2}, \dots , s_{i-k+1})$. We will call
+$k$ the \textit{smoothing parameter}. We can also simply change
 the average function to the median to obtain the \textit{moving median}. For now, we will stick
-to faster smoothing techniques.
+to faster yet simpler smoothing techniques.
 
 Another difference between the real signal level string
 and the simulated signal level string is that the real signal is more continuous instead
@@ -187,9 +185,9 @@ one level to another but rather move continuously.
 \label{obr:testSmooth}
 \end{figure}
 
-In Figure \ref{obr:testSmooth} we can see the part of the simulated and corresponding real squiggle.
-Then, in the subsequent two graphs, we apply the moving average with a window length
-of 5. We can see that this smoothed the simulated squiggle but also smoothed the noise
+In Figure \ref{obr:testSmooth} we can see part of the simulated and corresponding real squiggle.
+Then, in the subsequent two graphs, we apply the moving average with a smoothing parameter
+equal 5. We can see that this smoothed the simulated squiggle but also smoothed the noise
 that we could observe in the events. With the median smoothing, the outcome is quite
 similar but lacks the quality of smoothing the simulated signal.
 
@@ -198,8 +196,8 @@ similar but lacks the quality of smoothing the simulated signal.
 
 In this section, we will demonstrate how to distinguish between the cases when two squiggles
 originate from the same sequence and cases when we are comparing unrelated squiggles.
-We take the real squiggle, the squiggle simulated from it and unrelated real squiggle.
-We will then try to distinguish which squiggle is from the reference
+We take the pair real squiggle - simulated reference squiggle from the same DNA region and one unrelated real squiggle.
+We will then try to distinguish which of the two real squiggles is from the same region as the simulated squiggle
 and which is not based only on the level strings derivated from the respective squiggles. We
 emphasized the speed many times, so we will try to come up with a fast test.
 We split the individual level strings into overlapping $k$-mers (any $k$ subsequent
