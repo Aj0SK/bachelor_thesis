@@ -3,11 +3,13 @@
 \label{kap:proposedMethod}
 
 As we stated in the previous chapter, we will work directly with the squiggles instead
-of the basecalled sequences. However, for this to be possible we need to simulate
-the reference squiggle from the reference DNA sequence and also represent the signal
-in different way so that signal can be easily searchable. This will allows us to create
-a special index over the simulated reference squiggle that we can then use for fast searching
-during the selective sequencing.
+of the basecalled sequences. However, for this to be possible we need to have 
+some reference squiggle that we can sample and use as an index in which
+we will search for the squiggles once we are sequencing.
+Unfortunately, we are given the reference only in the form of a DNA sequence.
+In this chapter we will show how to create the reference squiggle from the reference DNA sequence and also
+introduce more suitable representation of the signal that enables easy searching of the
+query signal in the reference.
 
 \section{Squiggles as Sequences of Discrete Observations}
 
@@ -76,11 +78,11 @@ We will address the signal oscillations in more detail in Section \ref{subsectio
 
 \section{Simulating Squiggles from the Reference}
 
-We stated that we need to obtain reference squiggle that we can sample and use
-later to split squiggles between that we are interested in and not interested in.
+We stated that we need to obtain the reference squiggle. We need this reference squiggle
+so that we have some reference wchich we can sample and use later to split squiggles
+between that we are interested in and not interested in.
 
-We are given the reference in the form of a DNA sequence and our goal is to create
-the reference squiggle. We create a simulated squiggle based on the 6-mer model,
+We create a simulated squiggle based on the 6-mer model,
 where each subsequent 6-mer in our reference DNA will generate a signal (event) equal to
 the mean of the gaussian distribution for that particular 6-mer. This mean value
 is the information provided for us by the manufacturer of MinION through the kmer model
@@ -114,12 +116,11 @@ process as the solution using Nadavca and we will use this option anytime when w
 speed and do not need any additional information that Nadavca provides.
 
 Figure \ref{obr:simVsReal} compares the simulated squiggle to the squiggle obtained
-by sequencing the same region of the DNA. Both signals were normalized by subtracting
-mean and dividing by standard deviation to put them on the same scale.
+by sequencing the same region of the DNA.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}
-\caption[TODO]{Simulated signal vs real signal, normalized}
+\caption[TODO]{Simulated signal vs real signal}
 \label{obr:simVsReal}
 \end{figure}
 
@@ -134,7 +135,7 @@ be clamped to the target range. Most of the time this will be -2 for the lower b
 and 2 for the upper bound.
 
 Another visible problem can be seen when we compare events in the simulated and real squiggle.
-The events in the simulated signal are perfectly straight. In the real signal, we can sometimes see
+The events in the simulated signal are perfect repeats of the same value. In the real signal, we can sometimes see
 the phenomenon called \textit{drift}. This is a fact that real event tends to slide
 up or down over time. Another difference is that real squiggle
 is sometimes contracted in some places. This is caused by the fact that the DNA
@@ -188,7 +189,7 @@ similar but lacks the quality of smoothing the simulated signal.
 
 \section{Identification of Reads Based on Shared k-mers}
 
-Now we want to show how we will distinguish if the two squiggles are similar or not.
+Now we will propose, how we will distinguish if the two squiggles are similar or not.
 What we will do is that we take the real squiggle, the reference squiggle corresponding to it, and
 some other real squiggle. We will then try to tell which squiggle is from the reference
 and which is not based only on the level strings of the respective squiggles. We
@@ -209,12 +210,11 @@ in the real squiggle causes the failure of finding the k-mer in the index.
 
 \section{Experimental evaluation}
 
-Now we will want to test our method in how accurately it represents the squiggle
-through the level string and how informative this level string is. We will
-look at how the level string from the simulated reference squiggle compares to the
-level string of the real squiggle corresponding to this reference and random real squiggle
-from the sequencing of another organism. We will not evaluate the level strings
-only based on shared k-mers as this metric can be misleading.
+Now we will test our method. We are interested in how accurately the level string represents the squiggle
+and how informative this level string is. We will look at how the level string
+from the simulated reference squiggle compares to the level string of the real squiggle
+corresponding to this reference and random real squiggle from the sequencing of
+another organism. We will not evaluate the level strings only based on shared k-mers as this metric can be misleading.
 
 \subsection{Experimental data}
 
@@ -227,7 +227,11 @@ individual squiggles. We base-called these reads using the Albacore basecaller.
 This basecaller develobed by Oxford Nanopore Technologies, company that develops also the MinION sequencer.
 
 To see if these two organism do not share some big similarities, we tried to align the reads from
-Saprochaete fungicola to the reference sequence of Saprochaete ingens.
+Saprochaete fungicola to the reference sequence of Saprochaete ingens using the Minimap2
+algorithm. We run this test on the 500 reads from each of these organism. We studied
+the ratio of the read that was successfully matched in the reference sequence. In Figure \ref{obr:align_stat}
+we can see the number of reads that were alligned with the respective percentage.
+Note that 50\% of read was aligned only in 12 reads out of 500 from the Saprochaete fungicola.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/align_stat}}
@@ -235,11 +239,11 @@ Saprochaete fungicola to the reference sequence of Saprochaete ingens.
 \label{obr:align_stat}
 \end{figure}
 
-For our experiment, we use only the squiggles from the Saprochaete fungicola if they
+For our experiment, we use only the squiggles from the Saprochaete ingens if they
 are successfully aligned into the reference using the Nadavca. We then create the
 simulated reference signal from the reference part that Nadavca identified, pick
-some random read from the sequencing of the Saprochaete ingens and run our analysis
-and run this cycle many times over.
+some random read from the sequencing of the Saprochaete ingens and run our analysis.
+We run this cycle many times over.
 
 \subsection{ROC curve}
 
