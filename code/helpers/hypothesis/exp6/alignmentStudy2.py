@@ -7,14 +7,15 @@
 
 readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
-kmerModelFilePath = "../../../data/kmer_model.hdf5"
+kmerModelFilePath = "../../../data/kmer_model.hdf5" looked more closely at
 refFilePath = "../../../data/sapIngB1.fa"
+alignedSquiggles = "../prepareData/alignedSquiggles.txt"
 
 smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 150
+readNum = 200
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -22,6 +23,7 @@ levels = list(range(4, 15, 1))
 plotLevels = [4, 5, 7, 9, 11, 13]  # range(4, 10)
 plotKmerLen = [4, 7, 13, 17, 21, 28]  # range(4, 40, 10)
 
+import os
 import sys
 import math
 import random
@@ -46,6 +48,7 @@ from signalHelper import (
     computeString,
     smoothSignal,
     countDashes,
+    getAlignedIndex
 )
 
 
@@ -69,6 +72,8 @@ def plotAOC(src):
 posReadsPaths = getReadsInFolder(readsPosFilePath, minSize=0)
 negReadsPaths = getReadsInFolder(readsNegFilePath, minSize=0)
 
+index = getAlignedIndex(alignedSquiggles)
+
 ref = Fasta(refFilePath)
 
 # load basecalled sequence and signal
@@ -88,13 +93,17 @@ for posRead in posReadsPaths:
     if readCounter == readNum:
         break
 
-    nadavca_align = nadavca.align_signal(refFilePath, [posRead])
-
-    if len(nadavca_align) != 1:
+    readName = os.path.basename(posRead)
+    
+    if readName not in index:
         continue
-
-    nadavca_align = nadavca_align[0]
-    fromSignal, toSignal = nadavca_align[0].signal_range
+    
+    print(f"Working on {posRead}")
+    
+    fromSignal, toSignal = index[readName][4], index[readName][5]
+    fromRef, toRef = index[readName][2], index[readName][3]
+    strand = index[readName][1]
+    ctg = index[readName][0]
 
     if (toSignal - fromSignal) < workingLen:
         continue
@@ -104,7 +113,11 @@ for posRead in posReadsPaths:
     print(f"So far done {readCounter} reads")
     readCounter += 1
 
-    refSeq = "".join(nadavca_align[0].reference_part)
+    if strand == 1:
+        refSeq = str(Fasta(refFilePath)[ctg][fromRef:toRef])
+    else:
+        refSeq = str(-Fasta(refFilePath)[ctg][fromRef:toRef])
+
     refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
     readSignal = np.array(getSignalFromRead(posRead), dtype=float)
     readSignal = readSignal[fromSignal:toSignal]

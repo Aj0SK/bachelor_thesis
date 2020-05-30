@@ -57,10 +57,10 @@ are unlikely to change the resulting level string most of the time. Note that th
 consists of events that are represented by a longer signal that is around the same level.
 With this method, we hope that each event will remain insde a single window over over its
 duration. Subsequent contraction of the level string thus results in one event being represented by
-a signle character of a level string in most cases.
+a single character of a level string in most cases.
 
-Change to the parameter $w$ balance specificity and informativness of our method.
-With the $w=2$ we can not say a lot about two squiggles that have the same level string.
+Changes to the parameter $w$ balance specificity and informativness of our method.
+With the $w=2$ we cannot say a lot about two squiggles that have the same level string.
 With larger $w$ we can miss two squiggles from the same DNA sequence if there is
 a too much noise present in one of them.
 
@@ -79,7 +79,9 @@ We will address the signal oscillations in more detail in Section \ref{subsectio
 
 \section{Simulating Squiggles from the Reference}
 
-We stated that we need to obtain the reference squiggle. We need this reference squiggle
+We already stated that before the process of the selective sequence we are most
+of the time only given the DNA sequence. If we want to work with the squiggles,
+we need to obtain the reference squiggle. We need this reference squiggle
 so that we have some reference which we can sample and use later to split squiggles
 between that we are interested in and not interested in.
 
@@ -93,14 +95,15 @@ Our simplistic approach to signal simulation does not take into account that the
 signal from one nucleotide is measured several times. Thus, we replicate every entry in the simulated signal
 10 times.
 
-We now compare the simulated squiggle to real squiggle that arose from the real
-sequencing. Moreover, we do not want to compare our simulated squiggle with unrelated squiggle
+We now compare the simulated squiggle to the real squiggle that arose from the real
+sequencing. Moreover, we do not want to compare the simulated squiggle with unrelated squiggle
 but with the squiggle that corresponds to the same DNA region.
 
-When we want to compare the real and simuleted signal, we first take some real squiggle.
-Then, we find the part of the DNA reference that this squiggle corresponds. After
-successfully finding this part of the DNA reference we simulate the squiggle from it. There are two
-ways how we do this in our work. The first, more accurate method is to
+We will look now how to obtain the pair of the simulated-real signal that originate
+from the same DNA region. First, we take some real squiggle.
+Then, we find the part of the DNA reference that this squiggle corresponds to. After
+successfully finding this part of the DNA, we take it and simulate the squiggle from it. There are two
+ways how we find the DNA region corresponding to our squiggle in our work. The first, more accurate method is to
 use Nadavca. This tool, already introduced in Section \ref{section:currState} takes
 as the input the reference DNA sequence and the particular squiggle we want to find in
 in it. It then returns the table that accurately maps the nucleotides to the individual
@@ -125,7 +128,7 @@ by sequencing the same region of the DNA.
 \label{obr:simVsReal}
 \end{figure}
 
-Now we have a simulated reference squiggle. We can see on \ref{obr:simVsReal} that the simulated and real
+Now we have a simulated reference squiggle. We can see on Figure \ref{obr:simVsReal} that the simulated and real
 squiggle are not identical. This poses a problem as we want to have these squiggles as
 similar as possible. The first thing that we want to consider is normalization.
 One of the most wide-spread ways of doing this is to subtract mean and dividing
@@ -261,7 +264,7 @@ To see if these two organism do not share some big similarities, we align the re
 algorithm. We run this test on the 500 randomly selected reads from each of these organism. We studied
 the ratio of the reads that were successfully matched in the reference sequence. Figure \ref{obr:align_stat}
 shows the number of reads that were alligned with the respective percentage of their length that was successfully aligned.
-Note that only 12 reads out of 500 in case of the \emph{Saprochaete fungicola} had more than 50\% of their length aligned.
+Observe that only 12 reads out of 500 in case of the \emph{Saprochaete fungicola} had more than 50\% of their length aligned.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/align_stat}}

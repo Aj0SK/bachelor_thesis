@@ -5,8 +5,8 @@
 # corresponding reference sequence we can try to create fake signal and see the
 # differences.
 
-refFilePath = "../../data/sapIngB1.fa"
-kmerModelFilePath = "../../data/kmer_model.hdf5"
+refFilePath = "../../../data/sapIngB1.fa"
+kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
 repeatSignal = 10
 overflow = 0.3

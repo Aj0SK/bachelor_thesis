@@ -31,6 +31,14 @@ def getReadsInFolder(path, minSize=1000000):
     fileNames = [i for i in fileNames if os.path.getsize(i) > minSize]
     return fileNames
 
+def getAlignedIndex(path):
+    index = {}
+    with open(path, "r") as f:
+        for line in f:
+            line = [l.strip() for l in line.split()]
+            readName, ctg, strand, fromRef, toRef, fromSignal, toSignal = line
+            index[readName] = ctg, int(strand), int(fromRef), int(toRef), int(fromSignal), int(toSignal) 
+    return index
 
 # return basecalling info from read
 def getSeqfromRead(filename):
@@ -251,7 +259,7 @@ def getLevelString(signal, smoothParam, levels, overflow):
     return signalString
 
 def computeNorm(signal, start, end):
-    med = np.mean(signal[start:end])
+    med = np.median(signal[start:end])
     std = np.std(signal[start:end] - med)
     return med, std
 
