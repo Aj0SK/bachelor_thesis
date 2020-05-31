@@ -9,13 +9,13 @@ readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 refFilePath = "../../../data/sapIngB1.fa"
-alignedSquiggles = "../prepareData/alignedSquiggles.txt"
+alignedSquiggles = "../prepareData/alignedSquiggles_1000.txt"
 
 smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 200
+readNum = 5
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -312,6 +312,11 @@ for i in range(len(plotLevels)):
     Y = np.array(Y)
     axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
     axs[i//dim2, i%dim2].set_aspect('equal', adjustable='box')
+    if i%dim2 == 0:
+        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases')
+    if i//dim2 == dim1-1:
+        axs[i//dim2, i%dim2].set_xlabel('XXX')
+
 #axs[dim1-1, dim2-1].legend(loc="lower right")
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
@@ -338,6 +343,10 @@ for i in range(len(plotLevels)):
         axs[i//dim2, i%dim2].plot(list(X), Y[-1], label=str(plotKmerLen[j]), linewidth=2)
     Y = np.array(Y)
     axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
+    if i%dim2 == 0:
+        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases')
+    if i//dim2 == dim1-1:
+        axs[i//dim2, i%dim2].set_xlabel('Individual ratios of hits')
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)

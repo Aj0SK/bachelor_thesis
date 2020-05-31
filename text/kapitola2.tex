@@ -233,6 +233,7 @@ such as the number of levels, length of the $k$-mers and impact of the methods t
 discussed in Section \ref{subsection:oscillations}.
 
 \subsection{Experimental Data}
+\label{section:data}
 
 Data that we use for these experiments come from two organisms. One is \emph{Saprochaete ingens} and
 the other one is \emph{Saprochaete fungicola}. We choose these
@@ -351,29 +352,35 @@ T[i][j] = \bigl.
 \subsection{Results}
 
 We performed three experiments that relate to the goals that we set at the start
-of this Chapter.
+of this Chapter. We use the squiggles from the datasets introduced in Section
+\ref{section:data}. We stated that the selective sequencing must be done using
+the information from the start of the squiggle. In this all three experiments, we always use
+the $5\,000$ readouts from the any squiggle mentioned. 
 
 The first experiment evaluate the number of shared $k$-mers between the simulated
 reference squiggle and real squiggle corresponding to it. To put the number of shared
 $k$-mers into perspective, we will also look at the number of shared $k$-mers between the
-simulated reference and the unrelated squiggle. For easier description, we will
+same simulated reference and the unrelated squiggle. For easier description, we will
 label the simulated reference squiggle the reference, real squiggle that corresponds
-to this reference the positive squiggle and the random squiggle the negative squiggle. 
-We look at what is the usual ratio of the hits of negative squiggle to the
-hits of the positive squiggle. We want this number to be as big as possible. We will
-track only up to ratio 1:2. If the number of hits of the positive squiggle is $0$
-then we will mark this as a ratio 1:2. The goal of this experiment is to see how informative
-is the number of shared $k$-mers regarding the underlying squiggles.
-The results of the experiment with using all the smoothing methods that we introduces are on Figure \ref{obr:res_3}.
+to this reference the positive squiggle and the random unrelated squiggle the negative squiggle.
+In all individual testcases we calculate the ratio of the hits of negative squiggle
+to the hits of the positive squiggle. We look at the distribution of these ratios.
+The ideal case is that most of the testcases will have the ratio as small as possible. We will
+track ratio only up to ratio 2:1. If the number of hits of the positive squiggle is $0$,
+then this ratio is undefined so we will mark this as a ratio 2:1. The goal of this
+experiment is to see how informative is the number of shared $k$-mers regarding the underlying squiggles.
+
+The results of the experiment with using all the smoothing methods that we introduce are on Figure \ref{obr:res_3}.
 In this figure, we see the cummulative ratio of the measured ratios.
-We see that there are parameters that obtain the 25\% ratio for more than 80\% of testcases. 
+We see that there are parameters that obtain the ratio $1/2$ for more than 80\% of testcases. 
 There is phenomenon of the lines that start with the perfect record and then quickly
-go to the left part of the graph. This happened to the curves representing
+go to the right part of the graph. This happenes to the curves representing
 the high $k$-mer number. That is because the number of hits in random squiggle is ussually zero
-high $k$ but it is also hard for the real squiggles to obtain
-high number of hits so for a lot of reads the number of hits of the positive squiggle is 0.
-In the Figure \ref{obr:res_3_nonorm} we see the results for the squiggles not processed
-by our smoothing techniques. We can clearly see that the results are way worse.
+for high $k$ but it is also hard for the real squiggles to obtain
+high number of hits so for a lot of positive squiggles, the number of hits is 0 which
+shifts the curve to the left. In the Figure \ref{obr:res_3_nonorm} we see the results
+for the squiggles not processed by our smoothing techniques. We can clearly see that
+the results are way worse.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3}}
@@ -387,7 +394,7 @@ by our smoothing techniques. We can clearly see that the results are way worse.
 \label{obr:res_3_nonorm}
 \end{figure}
 
-The second experiment is motivated by one drawback of the first experiment. Consider
+The second experiment is motivated by the hidden drawback of the first experiment. Consider
 two testcases in the first experiment. If the individual two positive squiggles have
 the bigger number of hits than their two negative counterparts in respective testcases,
 we consider it as a success in the first experiment. However, there can be problem
@@ -402,11 +409,14 @@ The second experiment look at how often this happens and if the number of hits i
 positive squiggles is globally bigger than number of hits in the negative squiggles.
 We will again take the reference squiggle, positive squiggle that comes from the
 reference segment and a randomly chosen negative squiggle from the other sequencing.
+We plot the data using the ROC curve. Note that if two squiggles have the same number
+of the hits, we favour the negative squiggle to present objective results.
+
 In Figure \ref{obr:res_2} we see the ROC curve that represents how overall number
 of hits in the positive squiggles compares to the number of hits of the negative
 squiggles. We can see very good results for the lower number of levels and higher
 length of $k$-mers. In Figure \ref{obr:res_2_nonorm} we can see that without smoothing
-techniques applied the lower lengths of $k$-mers have better results. We think that this is
+techniques applied the lower lengths of $k$-mers have better results. This is
 the case because it is very unlikely for the unsmoothed squiggle to obtain the longer
 match due to the reasons that we worked on in the Section \ref{subsection:oscillations}.
 
@@ -422,16 +432,36 @@ match due to the reasons that we worked on in the Section \ref{subsection:oscill
 \label{obr:res_2_nonorm}
 \end{figure}
 
-TODO: Third Experiment
+The third experiment will focus on mutual alignment of the level strings coming from
+the real squiggle and reference squiggle respectively. Again, as in previous experiments
+we will add random squiggle to see the differences between alignments.
+We will align them using the scoring scheme we already presented in Section \ref{section:alignment},
+minimizing the number of the gaps. The reason why we do this experiment is that the shared $k$-mer count only
+shows only the count of the shared $k$-mers but it does not take into account the relative positions of matched pairs.
+This means that we can easily count as the matching pair also two $k$-mers that
+do not correspond to the same signal but happened to be in the same level string.
+Hovewer, for a reasonable number of levels, this will not happen often for a short read.
+The big advantage of the alignment of the strings is that it tells us more accurately
+what is the overall similarity of the level strings. What we will measure is
+how often we can see the successive dashes called \textit{gaps}. We learned we need
+to distinguish between the length of the particular gaps. So we split
+them into two groups according to their length to the gaps shorter than 6 and longer than 9.
+We will count the individual count of these two groups of gaps.
 
-%The third experiment will focus on mutual alignment of the sample
-%level string and the reference level string. We will align them using the scoring
-%scheme we already presented. The problem with the shared $k$-mer count is that we only look
-%for the shared $k$-mers but we do not evaluate the relative positions of matched pairs.
-%This means that we can easily count as the matching pair also two $k$-mers that
-%do not correspond to the same signal. Hovewer, for a reasonable number of levels, this will
-%not happen often for a short read. The big advantage of the alignment of the strings
-%is that it tells us more accurately what is the overall similarity of the level strings.
+In the Figure \ref{obr:res_1} we present our findings for positive
+and negative squiggles. We present the ratio of the number of the gaps divided
+by the length of the level string of the respective squiggles. For better visualization,
+we show the gaps per 100 level string characters for gaps shorter than 6 and gaps
+per 1000 level string characters for longer gaps. We can see that the number of gaps
+shorter than six favors a lower number of levels and gradually increases with the number
+of levels. The number of longer gaps behaves in the completely opposite way. We think
+that the longer gaps are better indicator of the bad alignment as it is common for
+the good alignment that there is small gap because of noise in the underlying signal
+or our discretization method shortcomings. The bigger gaps are most of the time sign of the two
+unrelated level strings aligned or very uncommon unsimilarity between positive read
+and its reference. In the Figure \ref{obr:res_1_nonorm} we present results for the unsmoothed
+squiggles. We can see that for unsmoothed squiggles, the count of the longer gaps
+is significantly bigger.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.4\textheight]{images/res_1}}
