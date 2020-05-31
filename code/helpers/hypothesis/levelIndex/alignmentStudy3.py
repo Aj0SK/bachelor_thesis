@@ -167,7 +167,7 @@ for level in levels:
             readSignal = readSignal[readSignalBeg:readSignalEnd]
             readString = getLevelString(readSignal, smoothParam, level, overflow)
 
-            '''found = None
+            found = None
             print(f"Len of refstring is {len(refString)}")
             for i in range(len(storeContig[hit.ctg])-len(refString) + 1):
                 w = storeContig[hit.ctg][i:i+len(refString)]
@@ -177,7 +177,7 @@ for level in levels:
 
             if found == None:
                 print("Problem")
-                exit(0)'''
+                exit(0)
 
             refString = refString[:int(len(refString)*((readSignalEnd+2000)/readSignalLen))]
 

@@ -2,8 +2,10 @@
 
 \label{kap:methAdjust} % id kapitoly pre prikaz ref
 
-In this chapter, we look at how we can use our discretization algorithm and findings
-from the previous chapter to reach our goal of selective sequencing.
+In this chapter, we use the results from the previous chapter and try to use our
+discretization algorithm and findings to reach our goal of selective sequencing.
+We will focus on finding the real squiggle in our reference. Now, we can use our
+discretization method to help us with this task.
 
 \section{Index idea}
 
@@ -27,9 +29,9 @@ of hits will be considerably higher for the squiggle that belongs to the referen
 
 The important thing is that we need to use only the shortest part of the squiggle
 possible and also use only data from the beginning of the squiggle. Before tackling
-this way harder problem, we will look at easier task. We would want to see how
-our discretization works and how similar are two-level strings of reference and
-the real signal that corresponds to this reference. For this purpose, we will try to
+this way harder problem, we will look at an easier task. We would want to see how
+our discretization suits this usage and how similar is level string of the whole squiggle
+comparing it to the reference level string. For this purpose, we will try to
 find our query level string in the reference level string.
 
 \section{Aligning the squiggle level string}
@@ -70,9 +72,10 @@ in around 1 minute.
 
 Results from the Chapter \ref{kap:proposedMethod} and Section \ref{section:alignMinimap}
 encouraged us that it is possible to build the reasonable index over the reference
-DNA sequence. We will proceed by building the index in the form of the big hashtable
-that stores all the k-mers that are present in the reference simulated level string.
-We now choose one individual contig from the reference DNA sequence and we create.
+DNA sequence. We will proceed by building the index in the form of the hashtable
+that stores all the $k$-mers that are present in the reference simulated level string.
+
+We now choose two individual contigs from the reference DNA sequence.
 
 After looking at our index, we can see that some of the $k$-mers have very big
 number of occurences in the indexed reference level string. We suspect that these
@@ -87,3 +90,61 @@ reference is covered by the $k$-mers up to the certain multiplicity.
 denoted on the x-axis}
 \label{obr:kmerCoverage}
 \end{figure}
+
+
+The second approach that we tried is similar to how the alignment algorithms like
+Minimap2 work. The first approach of these algorithms is to find the pairs of the shorter
+exactly matching sequences. These are then used as the kernels of the alignment. We want
+to use kernels as the starting points, to see where are the places that could lead to the
+successful matching of the query level strings.
+
+In order to try this approach we need to know what is the ideal length of this short
+sequence. We need to find the maximum length of the $k$-mer for the particular level
+such that level string from most of the squiggles will have at least one $k$-mer
+of this length common with their corresponding simulated reference level string.
+So we run the experiment on the data used in the previous experiments in Section
+\ref{section:results}. Now, instead of working with the signal of the length
+$5\,000$ we will work with the slightly smaller number of $2\,000$ readouts so we
+simulate the conditions during the real DNA sequencing. In the table \ref{tab:sharedKmers}
+we can see the number of the squiggles with at least one shared $k$-mer with their reference
+level string. We bring the values for the multiple levels. Based on this table,
+we can expect what length of $k$-mer for the particular number of levels will be located
+in the reference at least one time. We want to find the good tradeof between number of
+squiggles that we will be able to find and the length of the $k$-mer which determines
+the number of hits in the index we have to investigate.
+
+\begin{table}
+% v tabulke sa popis zvykne davat nad tabulku
+\caption[TODO]{The number of squiggles with the at leas 1 one shared $k$-mer with their
+reference for particular number of levels}
+%id tabulky
+\label{tab:sharedKmers}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
+\hline
+level number & \multicolumn{10}{|c|}{$k$-mer lengts} \\
+\hline
+4 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 & 19 \\\cline{2-11}
+& 200 & 199 & 196 & 189 & 187 & 184 & 179 & 173 & 167 & 159 \\
+\hline
+5 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 \\\cline{2-11}
+& 200 & 199 & 199 & 198 & 197 & 196 & 192 & 187 & 180 & 174 \\
+\hline
+7 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 \\\cline{2-11}
+& 200 & 199 & 198 & 196 & 193 & 191 & 183 & 173 & 159 & 146 \\
+\hline
+9 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 \\\cline{2-11}
+& 200 & 199 & 196 & 189 & 173 & 156 & 141 & 118 & 99 & 79 \\
+\hline
+11 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 \\\cline{2-11}
+& 200 & 199 & 198 & 198 & 190 & 179 & 162 & 138 & 115 & 94 \\
+\hline
+13 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 \\\cline{2-11}
+& 200 & 194 & 183 & 174 & 159 & 138 & 119 & 97 & 71 & 47 \\
+\hline
+14 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\\cline{2-11}
+& 200 & 199 & 198 & 194 & 180 & 163 & 141 & 117 & 91 & 62 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}

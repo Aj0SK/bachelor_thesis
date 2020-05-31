@@ -189,7 +189,7 @@ for sample in posReadsPaths[:400]:
         refString = computeString(
             refSignal, 0, len(refSignal), refShift, refScale, level, overflow=overflow,
         )
-        refString = refString[2:-2]
+        refString = refString[5:-5]
 
         readSignal = getSignalFromRead(sample)
         readSignalLen = len(readSignal)
