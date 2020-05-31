@@ -14,7 +14,7 @@ smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 5
+readNum = 100
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -65,6 +65,16 @@ def plotAOC(src):
         Y.append(y)
     return X, Y
 
+
+def autolabel(ax, rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
 
 ################################################################################
 
@@ -150,25 +160,51 @@ for posRead in posReadsPaths:
         pomery[levels.index(l)].append(abs(refLen-readLen)/refLen)
         pomerySm[levels.index(l)].append(abs(refSmLen-readSmLen)/refSmLen)
 
-dim1, dim2 = 2, len(plotLevels)
+dim1, dim2 = 2, len(plotLevels)//2
 fig, axs = plt.subplots(dim1, dim2)
+
+labels = [0, 5, 10, 30, 50]
 
 for i in range(len(plotLevels)):
     X, Y = [], []
-    data = pomery[levels.index(plotLevels[i])]
-    X = range(0, 205)
-    y1 = [0] * 205
-    for k in data:
-        y1[math.floor(100*k)] += 1
+    data1 = pomerySm[levels.index(plotLevels[i])]
+    data2 = pomery[levels.index(plotLevels[i])]
     
-    y2 = [0] * 205
-    data = pomerySm[levels.index(plotLevels[i])]
-    for k in data:
-        y2[math.floor(100*k)] += 1
-    axs[0, i].scatter(list(X), y1, s = 1)
-    axs[1, i].scatter(list(X), y2, s = 1)
-    print(y1)
-    print(y2)
+    good = [0] * len(labels)
+    bad = [0] * len(labels)
+    
+    for x in data1:
+        for k in reversed(range(len(labels))):
+            if x*100 >= labels[k]:
+                good[k] += 1
+                break
+
+    for x in data2:
+        for k in reversed(range(len(labels))):
+            if x*100 >= labels[k]:
+                bad[k] += 1
+                break
+    
+    #good = [sum([1 for x in data1 if x*100>labels[k]]) 
+    #bad = [sum([1 for x in data2 if x*100>labels[k]]) for k in range(len(labels))]
+
+    x = np.arange(len(labels))  # the label locations
+    width = 0.35  # the width of the bars
+
+    ax = axs[i//dim2, i%dim2] 
+
+    rects1 = ax.bar(x - width/2, good, width, label='Smoothing')
+    rects2 = ax.bar(x + width/2, bad, width, label='Not smoothing')
+
+    ax.set_ylabel('Number of alignments')
+    ax.set_xlabel("Ratio of alignment length to read length")
+    ax.set_title('Alignment of reads to Saprochaete ingens reference')
+    ax.set_xticks(x)
+    ax.set_xticklabels([">=" + str(k) for k in labels])
+    ax.legend()
+
+    autolabel(ax, rects1)
+    autolabel(ax, rects2)
     #axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
 
 #handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
