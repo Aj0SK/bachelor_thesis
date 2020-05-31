@@ -12,7 +12,7 @@ alignedSquiggles = "../prepareData/alignedSquiggles2.txt"
 
 smoothParam = 5
 repeatSignal = 10
-workingLen = 5000
+workingLen = 10000
 
 readNum = 100
 
@@ -35,6 +35,8 @@ from nadavca.dtw import KmerModel
 
 import matplotlib
 import matplotlib.pyplot as plt
+
+plt.rcParams.update({'font.size': 14})
 
 sys.path.append("../")
 from signalHelper import (
@@ -196,19 +198,23 @@ for i in range(len(plotLevels)):
     rects1 = ax.bar(x - width/2, good, width, label='Smoothing')
     rects2 = ax.bar(x + width/2, bad, width, label='Not smoothing')
 
-    ax.set_ylabel('Number of alignments')
-    ax.set_xlabel("Ratio of alignment length to read length")
-    ax.set_title('Alignment of reads to Saprochaete ingens reference')
+    if i%dim2 == 0:
+        ax.set_ylabel('Frequency')
+    if i//dim2 == 1:
+        ax.set_xlabel("Ratio of level strings length (real vs simulated)")
     ax.set_xticks(x)
     ax.set_xticklabels([">=" + str(k) for k in labels])
-    ax.legend()
+    #ax.legend()
+    ax.set_ylim(top = readNum + 10)
+    ax.set_title(f"{plotLevels[i]} levels")
 
     autolabel(ax, rects1)
     autolabel(ax, rects2)
-    #axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
 
-#handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
-#fig.subplots_adjust(bottom=0.1, wspace=0.1)
-#fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+fig.suptitle(f'Length ratio of real squiggle level string to reference squiggle level string')
+
+handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
+fig.subplots_adjust(bottom=0.1, wspace=0.1)
+fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
 
 plt.show()

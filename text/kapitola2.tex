@@ -192,6 +192,20 @@ equal 5. We can see that this smoothed the simulated squiggle but also smoothed 
 that we could observe in the events. With the median smoothing, the outcome is quite
 similar but lacks the quality of smoothing the simulated signal.
 
+In Figure \ref{obr:anti_zigzag} we see the result of our smoothing techniques
+applied on the simulated reference squiggle and real squiggle of lengths $10\,000$. We can see how
+big impacts the smoothing techniques have on the lengths of the resulting level strings.
+In most of the cases, the majority of level strings from the real squiggles without smoothing
+are more than half time bigger in size. After the smoothing we can see big changes in
+the distribution of the length ratios.
+
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.35\textheight]{images/anti_zigzag}}
+\caption[Hehe]{The impacts of the smoothing on the underlying squiggles of length $10\,000$. We see the individual 
+frequency of reads level string length to reference level string length}
+\label{images/anti_zigzag}
+\end{figure}
+
 \section{Identification of Reads Based on Shared $k$-mers}
 \label{section:readIdentification}
 
