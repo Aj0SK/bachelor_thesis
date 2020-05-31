@@ -12,7 +12,7 @@ discretization method to help us with this task.
 We can transform the reference DNA sequence to signal using our simulation
 process, choose the size of the window - $w$, create the level string of the reference.
 Then, when the real signal from the squiggle arrives, we will perform the same process
-as with the simulated reference signal. Now we have one reference level string and
+as with the simulated reference signal. Now, we have one reference level string and
 one which we want to find in it. We see that this can be better formulated as an
 algorithmic problem. However, there is a minimal probability that the level string
 of the longer squiggle would match precisely to some area in the reference level string.
@@ -27,8 +27,8 @@ prepared hashtable. We call all the subsequences from our query squiggle that ar
 present in the hash table \textit{hits}. Our initial assumption is that the number
 of hits will be considerably higher for the squiggle that belongs to the reference.
 
-The important thing is that we need to use only the shortest part of the squiggle
-possible and also use only data from the beginning of the squiggle. Before tackling
+The important thing is that we need to use only the shortest possible part of the squiggle
+and also use only the readouts from the beginning of the squiggle. Before tackling
 this way harder problem, we will look at an easier task. We would want to see how
 our discretization suits this usage and how similar is level string of the whole squiggle
 comparing it to the reference level string. For this purpose, we will try to
@@ -99,12 +99,12 @@ to use kernels as the starting points, to see where are the places that could le
 successful matching of the query level strings.
 
 In order to try this approach we need to know what is the ideal length of this short
-sequence. We need to find the maximum length of the $k$-mer for the particular level
+sequence. We need to find the maximum length of the $k$ for the particular level
 such that level string from most of the squiggles will have at least one $k$-mer
 of this length common with their corresponding simulated reference level string.
 So we run the experiment on the data used in the previous experiments in Section
 \ref{section:results}. Now, instead of working with the signal of the length
-$5\,000$ we will work with the slightly smaller number of $2\,000$ readouts so we
+$5\,000$ we will work with the smaller number of $2\,000$ readouts so we
 simulate the conditions during the real DNA sequencing. In the table \ref{tab:sharedKmers}
 we can see the number of the squiggles with at least one shared $k$-mer with their reference
 level string. We bring the values for the multiple levels. Based on this table,
@@ -115,36 +115,37 @@ the number of hits in the index we have to investigate.
 
 \begin{table}
 % v tabulke sa popis zvykne davat nad tabulku
-\caption[TODO]{The number of squiggles with the at leas 1 one shared $k$-mer with their
+\caption[TODO]{The number of squiggles with the at least 1 one shared $k$-mer with their
 reference for particular number of levels}
 %id tabulky
 \label{tab:sharedKmers}
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
 \hline
-level number & \multicolumn{10}{|c|}{$k$-mer lengts} \\
+level number & \multicolumn{10}{|c|}{$k$-mer lengths} \\
 \hline
-4 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 & 19 \\\cline{2-11}
-& 200 & 199 & 196 & 189 & 187 & 184 & 179 & 173 & 167 & 159 \\
+4 & 16 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 & 25 \\\cline{2-11}
+& 200 & 199 & 198 & 196 & 195 & 186 & 180 & 174 & 163 & 148 \\\cline{2-11}
 \hline
-5 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 \\\cline{2-11}
-& 200 & 199 & 199 & 198 & 197 & 196 & 192 & 187 & 180 & 174 \\
+5 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 & 25 & 26 \\\cline{2-11}
+& 200 & 199 & 199 & 197 & 190 & 184 & 176 & 163 & 158 & 148 \\\cline{2-11}
 \hline
-7 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 \\\cline{2-11}
-& 200 & 199 & 198 & 196 & 193 & 191 & 183 & 173 & 159 & 146 \\
+7 & 15 & 16 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 \\\cline{2-11}
+& 200 & 199 & 198 & 195 & 183 & 167 & 157 & 132 & 119 & 100 \\\cline{2-11}
 \hline
-9 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 \\\cline{2-11}
-& 200 & 199 & 196 & 189 & 173 & 156 & 141 & 118 & 99 & 79 \\
+9 & 13 & 14 & 15 & 16 & 17 & 18 & 19 & 20 & 21 & 22 \\\cline{2-11}
+& 200 & 199 & 191 & 184 & 160 & 134 & 108 & 86 & 71 & 49 \\\cline{2-11}
 \hline
-11 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 \\\cline{2-11}
-& 200 & 199 & 198 & 198 & 190 & 179 & 162 & 138 & 115 & 94 \\
+11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 & 19 & 20 & 21 \\\cline{2-11}
+& 200 & 199 & 192 & 175 & 153 & 124 & 95 & 72 & 54 & 41 \\\cline{2-11}
 \hline
-13 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 \\\cline{2-11}
-& 200 & 194 & 183 & 174 & 159 & 138 & 119 & 97 & 71 & 47 \\
-\hline
-14 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\\cline{2-11}
-& 200 & 199 & 198 & 194 & 180 & 163 & 141 & 117 & 91 & 62 \\
+13 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 & 19 & 20 \\\cline{2-11}
+& 200 & 196 & 190 & 176 & 152 & 122 & 82 & 63 & 44 & 28 \\\cline{2-11}
 \hline
 \end{tabular}
 \end{center}
 \end{table}
+
+Now, when we have for all the levels the particular number of $k$ that
+has the minimal number of hits for most of the reads we can proceed to use
+this information.

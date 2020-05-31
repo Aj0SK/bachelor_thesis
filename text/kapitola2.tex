@@ -50,7 +50,7 @@ of the squiggle to the level string for $w=6$ is shown in Figure \ref{obr:levels
 \label{obr:levelsCreation}
 \end{figure}
 
-Discretization has several important properties that we will later use.
+Discretization has several important properties that will be later used.
 First, it is deterministic and the same squiggle has the same level
 string each time for the unchanged $w$. Second, small changes and variance in the signal readouts
 are unlikely to change the resulting level string most of the time. Note that the squiggle
@@ -88,7 +88,7 @@ between that we are interested in and not interested in.
 We create a simulated squiggle based on the 6-mer model,
 where each subsequent 6-mer in our reference DNA will generate a signal (event) equal to
 the mean of the gaussian distribution for that particular 6-mer. This mean value
-is the information provided for us by the manufacturer of MinION through the kmer model
+is the information provided by the manufacturer of MinION through the $k$-mer model
 that we mentioned in Section \ref{section:dnaSequencing}.
 
 Our simplistic approach to signal simulation does not take into account that the
@@ -102,10 +102,10 @@ but with the squiggle that corresponds to the same DNA region.
 We will look now how to obtain the pair of the simulated-real signal that originate
 from the same DNA region. First, we take some real squiggle.
 Then, we find the part of the DNA reference that this squiggle corresponds to. After
-successfully finding this part of the DNA, we take it and simulate the squiggle from it. There are two
-ways how we find the DNA region corresponding to our squiggle in our work. The first, more accurate method is to
+successfully finding this part of the DNA, we take it and simulate the squiggle from it. We will use
+two ways how of finding the DNA region corresponding to the squiggle in this work. The first, more accurate method is to
 use Nadavca. This tool, introduced in Section \ref{section:currState} takes
-as the input the reference DNA sequence and the particular squiggle we want to find in
+as the input the reference DNA sequence and the particular squiggle we want to find
 in it. It then returns the table that accurately maps the nucleotides to the individual
 events in the squiggle. This possibility is very accurate and gives a lot of information
 that we do not need most of the time such as the mapping between the nucleotides
