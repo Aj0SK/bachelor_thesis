@@ -206,15 +206,15 @@ squiggle and the sample squiggles should distinguish which squiggle is from the 
 
 \section{Experimental Evaluation}
 
-In this section we have two goals:
+In our experiments, we want to test:
 
 \begin{itemize}
-    \item We are interested in how accurately the discretization method that we proposed in Section \ref{section:squigglesAsDiscrete} represents the squiggle.
-    \item We want to test how the proposed identification from Section \ref{section:readIdentification} works on real data
+    \item How accurately the discretization method that we proposed in Section \ref{section:squigglesAsDiscrete} represents the squiggle.
+    \item How the proposed identification from Section \ref{section:readIdentification} works on real data
 \end{itemize}
 
-In both of these cases we are interested in the results for the different parameters
-as the number of levels, length of the $k$-mers and impact of the methods that we
+In both of these cases we are interested in the results for the different set of parameters
+such as the number of levels, length of the $k$-mers and impact of the methods that we
 discussed in Section \ref{subsection:oscillations}.
 
 We will perform these three experiments:
@@ -256,6 +256,23 @@ organisms as they were sequenced by Bioinformatics department of
 FMPH so we have all the data from the sequencing easily available.
 We have also obtained the reference sequences of both of these organisms \cite{hodorova2019genome} \cite{brejova2019genome}.
 We base-called the raw reads using the Albacore basecaller provided by Oxford Nanopore Technologies, company that also develops the MinION sequencer.
+
+\begin{table}
+% v tabulke sa popis zvykne davat nad tabulku
+\caption[TODO]{Basic characteristic of the used datasets}
+%id tabulky
+\label{tab:datasetChar}
+\begin{center}
+\begin{tabular}{lccccc}
+\hline 
+Name & \# reads & \specialcell{mean read\\length} & \specialcell{median read\\length} & \specialcell{mean squiggle\\length} &  \specialcell{median squiggle\\length}\\
+\hline
+sapFun & $1\,000$ & $14\,663$ & $6\,965$ & $151\,002$ & $71\,964$ \\
+sapIng & $1\,000$ & $10\,912$ & $4\,775$ & $113\,550$ & $51\,266$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
 
 To see if these two organism do not share some big similarities, we align the reads from
 \emph{Saprochaete fungicola} to the reference sequence of \emph{Saprochaete ingens} using the Minimap2

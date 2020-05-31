@@ -74,10 +74,16 @@ DNA sequence. We will proceed by building the index in the form of the big hasht
 that stores all the k-mers that are present in the reference simulated level string.
 We now choose one individual contig from the reference DNA sequence and we create.
 
-Lorem ipsum \ref{obr:kmerCoverage}.
+After looking at our index, we can see that some of the $k$-mers have very big
+number of occurences in the indexed reference level string. We suspect that these
+$k$-mers are not that informative because they are very common and they carry more
+information about the specific properties of the level string rather than information
+about the underlying signal. In Figure \ref{obr:kmerCoverage} we look at what part of the
+reference is covered by the $k$-mers up to the certain multiplicity.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.45\textheight]{images/kmerCoverage}}
-\caption[TODO]{TODO}
+\caption[TODO]{the percentage of the reference covered by the $k$-mers up to specific multiplicity
+denoted on the x-axis}
 \label{obr:kmerCoverage}
 \end{figure}

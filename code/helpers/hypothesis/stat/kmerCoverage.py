@@ -2,19 +2,17 @@ refFilePath = "../../../data/sapIngB1.fa"
 refIndex = "../../../data/ref.index"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
-targetBeg, targetEnd = 0, 1000000000#1000000#50000
+targetBeg, targetEnd = 0, 1000000000  # 1000000#50000
 
-kmerLens = [4, 7, 13, 17, 21, 28] # list(range(4, 36, 1))
-levels = [4, 5, 7, 9, 11, 13] # list(range(4, 15, 1))
-maxCount = 1000000
+kmerLens = [4, 7, 13, 17, 21, 28]  # list(range(4, 36, 1))
+levels = [4, 5, 7, 9, 11, 13]  # list(range(4, 15, 1))
+maxCount = 1000
 
 ################################################################################
 
 import sys
 import copy
 import numpy as np
-from pyfaidx import Fasta
-from nadavca.dtw import KmerModel
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -26,8 +24,9 @@ from signalHelper import (
     smoothSignal,
 )
 
+
 def helper(hashTable):
-    pocty = [0] * (maxCount+1)
+    pocty = [0] * (maxCount + 1)
     totalNum = 0
 
     for k, v in hashTable.items():
@@ -35,23 +34,21 @@ def helper(hashTable):
         if v >= maxCount:
             continue
         pocty[v] += 1
-        
+
     sumUpTo = []
     suma = 0
     for i in range(maxCount):
-        suma += pocty[i] * (i+1)
-        if abs(suma/totalNum-1.0) < 0.01:
+        suma += pocty[i] * i
+        if abs(suma / totalNum - 1.0) < 0.01:
             break
-        sumUpTo.append(suma/totalNum)
+        sumUpTo.append(suma / totalNum)
 
     return sumUpTo
 
+
 ################################################################################
 
-mod = KmerModel.load_from_hdf5(kmerModelFilePath)
-
 hashTable = {}
-
 storeContig = {}
 contigs = []
 
@@ -74,10 +71,10 @@ for l in levels:
         h = {}
         for contig in contigs:
             levelStr = storeContig[(l, contig)]
-            for i in range(len(levelStr)-k+1):
-                kmer = levelStr[i:i+k]
+            for i in range(len(levelStr) - k + 1):
+                kmer = levelStr[i : i + k]
                 h[kmer] = h.get(kmer, 0) + 1
-            #hashTable[(l, k)] = h
+            # hashTable[(l, k)] = h
         results[(l, k)] = helper(h)
         print(f"l: {l} k: {k}")
 
@@ -85,11 +82,17 @@ dim1, dim2 = 2, 3
 fig, axs = plt.subplots(dim1, dim2)
 
 for i in range(len(levels)):
-    axs[i//dim2, i%dim2].axhline(y = 0)
-    axs[i//dim2, i%dim2].axhline(y = 1)
+    axs[i // dim2, i % dim2].axhline(y=0, color='r', linestyle='--')
+    axs[i // dim2, i % dim2].axhline(y=1, color='r', linestyle='--')
     for k in kmerLens:
         ee = results[(levels[i], k)]
-        #plt.xlabel("Početnosť kmerov")
-        #plt.ylabel("Agregované pokrytie referencie")
-        axs[i//dim2, i%dim2].plot(list(range(1, len(ee)+1)), ee)
+        axs[i // dim2, i % dim2].plot(
+            list(range(1, len(ee) + 1)), ee, label=str(k), linewidth=2
+        )
+    axs[i // dim2, i % dim2].set_title(f"Level {levels[i]}")
+
+handles, labels = axs[dim1 - 1, dim2 - 1].get_legend_handles_labels()
+fig.subplots_adjust(bottom=0.1, wspace=0.1)
+fig.legend(handles, labels, loc="lower center", ncol=dim1 * dim2)
+
 plt.show()
