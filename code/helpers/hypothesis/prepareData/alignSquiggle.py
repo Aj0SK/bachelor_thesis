@@ -2,7 +2,7 @@ refFilePath = "../../../data/sapIngB1.fa"
 readsFilePath = "../../../data/pos-basecalled"
 outFilePath = "./alignedSquiggles.txt"
 
-maxReads = 500
+maxReads = 1000
 
 import os
 import sys

@@ -7,7 +7,7 @@
 
 readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
-kmerModelFilePath = "../../../data/kmer_model.hdf5" looked more closely at
+kmerModelFilePath = "../../../data/kmer_model.hdf5"
 refFilePath = "../../../data/sapIngB1.fa"
 alignedSquiggles = "../prepareData/alignedSquiggles.txt"
 
