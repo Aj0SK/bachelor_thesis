@@ -14,8 +14,6 @@ overflow = 0.3
 smoothParam = 5
 refWindowSize = 5000
 refWindowJump = 3000
-hashWinSize = 10000
-hashWinJump =  7500
 fromRead, toRead = 5000, 7000
 workingContig = "contig3"
 
@@ -93,25 +91,17 @@ def plotAOC(src):
         Y.append(y)
     return X, Y
 
-hashTables = {}
+hashTable = {}
 processed = []
-lengths = {}
 
 for contig in Fasta(refFilePath):
     if contig.name != workingContig:
         continue
     processed.append(contig.name)
-    hashTables[contig.name] = []
+    
     contigStr = str(contig)
     contigSignal = stringToSignal(contigStr, mod, repeatSignal=repeatSignal)
-    lengths[contig.name] = len(contigSignal)
-    for i in range(0, len(contigSignal) - hashWinSize + 1, hashWinJump):
-        hashTables[contig.name].append(
-            getDictFromSequence(contigSignal[i:i+hashWinSize],
-                                refWindowSize,
-                                refWindowJump))
-
-print(f"The signals per hashTable are {lengths[workingContig]/hashWinJump}")
+    hashTable = getDictFromSequence(contigSignal, refWindowSize, refWindowJump)
 
 #print("Hashtable readyfor {0} nums!".format(contigNum))
 #######################################
@@ -128,10 +118,6 @@ for i in range(len(hashTables)):
 '''
 
 #######################################
-good, total = 0, 0
-totalHashTables = 0
-mean = 0
-goodMean = 0
 
 def processRead(path, contigName):
     readSignal = np.array(getSignalFromRead(path), dtype=float)
@@ -139,11 +125,7 @@ def processRead(path, contigName):
 
     readString = getLevelString(readSignal, smoothParam, levels, overflow)
     readDict = buildDictionary(readString, kmerLength)
-    hits = [
-        overlap(readDict, hashTable) for hashTable in hashTables[contigName]
-    ]
-    
-    return sum(hits)
+    return overlap(readDict, hashTable)
 
 ########################################
 
@@ -164,7 +146,7 @@ for filePath in posFast5:
         if aln.q_en - aln.q_st > 0.95 * len(readSeq) and
         aln.strand == 1 and aln.ctg == workingContig
     ]
-    if len(hits) != 1:
+    if len(hits) == 0:
         continue
     hit = hits[0]
     
@@ -189,14 +171,14 @@ for filePath in negFast5:
     ]
     if len(hits) != 0:
         continue
-    
+
     negTestCases -= 1
     lvlStringHits = processRead(filePath, workingContig)
     data.append((lvlStringHits, 0))
     
 data.sort()
-print(data)
-x, y = plotAOC(data)
-plt.plot(x, y)
-plt.plot(x, x)
-plt.show()
+
+print(f"Levels: {levels} kmerLength: {kmerLength} #", end="")
+for i in data:
+    print(f" {i[0]} {i[1]}", end = "")
+print()
