@@ -371,29 +371,28 @@ to this reference the positive squiggle and the random unrelated squiggle the ne
 In all individual test cases, we calculate the ratio of the number of hits in negative squiggle
 to the number of hits in the positive squiggle.
 The ideal case is that most of the test cases will have the ratio as small as possible.
-If the number of hits of the positive squiggle is $0$ or the ratio exceeds 2:1, then this ratio is undefined
-so we mark this ratio as a 2:1.
+If the number of hits of the positive squiggle is $0$ or the ratio exceeds 2:1, we mark this ratio as a 2:1.
 
-Figure \ref{obr:res_3} shows the results of the experiment with using all the smoothing
+Figure \ref{obr:res_3} shows the results of the experiment using all smoothing
 methods introduced in Section \ref{subsection:oscillations}.
-In this figure, we see the cummulative ratio of the measured ratios.
-We see that there are parameters that obtain the ratio at most $1/2$ for more than 80\% of test cases
+There are parameters that obtain the ratio at most $1/2$ in more than 80\% of test cases
 (for example 4 levels, 28 $k$-mer length). 
 There is phenomenon of the lines that start with the perfect record and then quickly
 go to the right part of the graph (for example 9 levels, 28 $k$-mer length). This happenes to the curves representing
-the high $k$-mer number. That is because the number of hits in random squiggle is ussually zero
-for high $k$ but it is also hard for the real squiggles to obtain
+the high $k$-mer number. That is because the number of hits in random squiggle is usually zero
+for high $k$-mer number but it is also hard for the real squiggles to obtain
 high number of hits so for a lot of positive squiggles, the number of hits is 0 which
-shifts the curve to the left. In the Figure \ref{obr:res_3_nonorm} we see the results
+shifts the curve to the right quickly. For comparison, Figure \ref{obr:res_3_nonorm} shows the results
 for the squiggles not processed by our smoothing techniques. We can clearly see that
-the results are way worse.
+with no smoothing there are no parameters usable for the effective discrimination
+between positive and negative squiggles.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3}}
 \caption[TODO]{Cummulative distribution of ratios of hits in positive and negative
 squiggles, smoothed. The $y$ axis shows cummulative count of the ratios up to the ratio $x$. Individual figures represent
-results for the different number of levels. Individual curve represent different
-number of $k$-mers.}
+results for the different number of levels. Individual curves represent different
+length of $k$-mer.}
 \label{obr:res_3}
 \end{figure}
 
@@ -401,22 +400,22 @@ number of $k$-mers.}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_3_nonorm}}
 \caption[TODO]{Cummulative distribution of ratios of hits in positive and negative
 squiggles, unsmoothed. The $y$ axis shows cummulative count of the ratios up to the ratio $x$. Individual figures represent
-results for the different number of levels. Individual curve represent different
-number of $k$-mers.}
+results for the different number of levels. Individual curves represent different
+length of $k$-mer.}
 \label{obr:res_3_nonorm}
 \end{figure}
 
 The second experiment is motivated by a hidden drawback of the first experiment.
-If the two positive squiggles have
+If two positive squiggles have
 the bigger number of hits than their two negative counterparts in their respective test cases,
 we consider it as a success in the first experiment. However, there can be problem
 that even if the both of these test cases are considered successful
 the number of hits of the negative squiggle in the second test case can be bigger than
 the number of hits of the positive squiggle in the first testcase. This will cause that
 even if we have two successful, test cases in the first scenario, we cannot predict
-if the squiggle is from the reference based on some threshold value of hits. This
-can happen for example if a lot of squiggles have considerably lower number of hits
-due to some properties of the discretization algorithm. 
+if the squiggle is from the reference based on some threshold number of hits. This
+can happen for example, if a lot of squiggles have considerably lower number of hits
+due to the discretization algorithm.
 The second experiment examine how often this happens and if the number of hits in
 positive squiggles is globally larger than the number of hits in the negative squiggles.
 We will again take the reference squiggle, positive squiggle that comes from the
@@ -428,10 +427,10 @@ The ROC curves in Figure \ref{obr:res_2} represent how overall number
 of hits in the positive squiggles compares to the number of hits of the negative
 squiggles. We can see very good results for low numbers of levels and higher
 length of $k$-mers (4 levels, $k$-mer length $\geq 17$). Figure \ref{obr:res_2_nonorm} shows that without smoothing
-techniques applied, only the lower lengths of $k$-mers have meaningful results ($k$-mer length $\geq 17$)
+techniques applied, only the lower lengths of $k$-mers ($k$-mer length $\geq 17$) have meaningful results
 but the results with the use of smoothing techniques are much more successful. This is
 the case because it is unlikely for the unsmoothed squiggle to obtain the longer
-match due to the reasons outlined in the Section \ref{subsection:oscillations}.
+match due to the reasons outlined in Section \ref{subsection:oscillations}.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}
@@ -449,21 +448,21 @@ The third experiment will focus on mutual alignment of the level strings coming 
 the real squiggle and the reference squiggle respectively. Again, as in previous experiments,
 we add randomly chosen squiggles to highlight the differences between alignments.
 We align the level strings using the scoring scheme presented in Section \ref{section:alignment},
-minimizing the number of the gaps. While in previous experiments we focus on
+minimizing the number of the gaps. While in previous experiments we focused on
 the shared $k$-mer counts, such measure
 does not take into account the relative positions of matched pairs. This means
 that we can easily count as the matching pair also two $k$-mers that
 do not correspond to the same signal but happened to be in the same level string.
 For a reasonable number of levels, this is unlikely to happen often for a short read.
-The big advantage of the alignment of the strings is that it tells us more accurately
+The big advantage of the alignment of the level strings is that it tells us more accurately
 what is the overall similarity of the level strings. We found, that the distribution
 of lengths of the successive gaps in the alignments (gap lengths) particularly highlights
 the difference between positive and negative squiggles.
 
 We split the gaps into two groups, those with gap length shorter than 5 (short gaps) and those
-longer than 9 (long gaps). For each alignment, we count the number of gaps in these two groups.
+longer than 8 (long gaps). For each alignment, we count the number of gaps in these two groups.
 
-\ref{obr:res_1} shows the ratio between the number of the gaps of given length divided
+Figure \ref{obr:res_1} shows the ratio between the number of the gaps of given length divided
 by the length of the level string for both positive and negative squiggles. For better visualization,
 we show number of short gaps per 100 level string characters and number of long gaps
 per $1\,000$ level string characters. We can see that the number of short gaps
@@ -471,12 +470,12 @@ favors a lower number of levels and gradually increases with the number
 of levels. The number of long gaps behaves in the opposite way. As the number
 of levels is increasing, the number of gaps in the negative reads rises faster that the number
 of the gaps in the positive reads. The longer gaps are better indicator of the alignment of a bad squiggle as it is common for
-both positive and negative alignments that there are small gaps because due to the noise in the underlying signal.
-Most of the time, the bigger gaps are a sign of the two
+both positive and negative alignments that there are small gaps due to the noise in the underlying signal.
+Most of the time, the large gaps are a sign of the two
 unrelated level strings aligned or very uncommon unsimilarity between positive read
 and its reference. Figure \ref{obr:res_1_nonorm} present results for the unsmoothed
 squiggles. We can see that for unsmoothed squiggles, there are more larger gaps even
-in the case of the positive squiggles and the difference between positive and negative
+in the case of the positive squiggles and the differences between the positive and negative
 squiggles are much less pronounced.
 
 \begin{figure}
@@ -488,7 +487,7 @@ squiggles are much less pronounced.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.4\textheight]{images/res_1_nonorm}}
-\caption[TODO]{We can see the number of gaps smaller than 6 and bigger than 9 per 100 and $1\,000$ characters of unsmoothed level
-string respectively. Both of these number are stated for positive as well as negative squiggles}
+\caption[TODO]{(top): The number of short gaps per 100 level string characters of unsmoothed signal.\\
+(bottom): The number of long gaps per $1\,000$ level string characters of for unsmoothed signal.}
 \label{obr:res_1_nonorm}
 \end{figure}

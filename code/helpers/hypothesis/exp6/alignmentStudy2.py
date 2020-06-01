@@ -235,13 +235,13 @@ axs[0].imshow(a.T[:2])
 axs[0].set_xticks(np.arange(len(plotLevels)))
 axs[0].set_xticklabels(plotLevels)
 axs[0].set_yticks(np.arange(2))
-axs[0].set_yticklabels(["<6;pos", "<6;neg"])
+axs[0].set_yticklabels(["<5;positive squiggles", "<5;negative squiggles"])
 
 axs[1].imshow(a.T[2:])
 axs[1].set_xticks(np.arange(len(plotLevels)))
 axs[1].set_xticklabels(plotLevels)
 axs[1].set_yticks(np.arange(2))
-axs[1].set_yticklabels([">11;pos", ">11;neg"])
+axs[1].set_yticklabels([">8;positive squiggles", ">8;negative squiggles"])
 
 for i in range(len(plotLevels)):
     for j in range(2):
