@@ -2,35 +2,41 @@
 \addcontentsline{toc}{chapter}{Introduction} % rucne pridanie do obsahu
 \markboth{Introduction}{Introduction} % vyriesenie hlaviciek
 
-The DNA is one of the most important molecules in the living organisms. It consists
-of the nucleotides A, C, G, T. The MinION sequencer is one of the tools that enable
-us to read this DNA so we can study numerous secrets of the DNA molecule and its
-implications on our lives. The MinION sequencer however does not produce the DNA
-sequence directly. Instead, it produces noisy signal that was created when the DNA
-molecule passed through one of the MinIONs nanopores. Due to the nature of the
+The sequence of DNA is one of the most important molecules in the living organisms. It consists
+of the nucleotides adenine (A), cytosine (C), guanine (G), and thymine (T).
+The MinION sequencer enables us to read this DNA so we can study numerous secrets
+of the DNA molecule and its
+implications in our lives. The MinION sequencer, however, does not produce the DNA
+sequence directly. Instead, it produces a noisy signal created as the DNA
+passes through one of the MinIONs nanopores. Due to the nature of the
 nanopores, we are able to reconstruct the DNA sequence from this noisy signal
-using the using the process called base-calling. The another advantage of the MinION
-sequencer is that it is able to throw back the DNA fragment that is currently passing
-through one of his nanopores. The selective sequencing is the idea, that based on the
-signal currently produced by the MinION, we decide if we want to continue in sequencing
-this DNA fragment. This enables us to process more of a fragments, we are interested in.
-To this day, the base-calling algorithms are too slow for us, to turn signal into DNA
-sequence and decide afterwards. During the time, we are sequencing the signal we obtained
-from the beginning of the DNA fragment, the fragment could already passed the phase of
-sequencing. This is why, we have to work with the raw signal. This is quite hard as the
-signal is very noisy. We propose a method that discretize a raw signal and then subsequently
-tries to find it in a longer reference discretized signal. The problem of this method is, that
+using the process called base-calling.
+
+Another advantage of the MinION sequencer is that it is able to release the DNA fragment that is currently passing
+through one of his nanopores without further sequencing. Selective sequencing is an idea that based on the
+signal currently produced by the MinION, we can decide if we continue the sequencing
+or release the DNA fragment. Selective sequencing enables us to enrich sequencing for the
+fragments, we are interested in.
+
+To this day, base-calling algorithms are too slow to apply this idea in practice.
+During the time, we are base-calling the signal obtained
+from the beginning of the DNA fragment, the fragment could have already passed
+through the pore and could been already sequenced in its entirity.
+
+This is why, we have to work with the raw signal. This is quite hard as the
+signal is very noisy. We propose a method to discretize the raw signal and then subsequently
+attempt to find it in a longer reference discretized signal. The problem of this method is that
 most of the time we are only given the reference in the form of the DNA so we need to create a simulated signal.
 
-In the first chapter, we are looking at the necessary background to understand what
-are the main problems in this area and what are the solutions that already exist.
+In the first chapter, we present the necessary background needed to understand
+the main challenges in this area and existing solutions.
 
-In the second chapter, we propose a discretizing method and method for simulating the signal.
-We then look at the different aspects of the real and simulated signal and we try several
-methods to make them have the similar properties. At the end of the second chapter,
-we show the summary results of our effort.
+In the second chapter, we propose a discretization method and a method for simulating the signal
+from the reference sequence. We look at different properties of the real and simulated signal and we test several
+methods to make them to have similar properties. At the end of the second chapter,
+we summarize experimental results of our efforts in this area.
 
-In the third chapter, we are looking at the aspects of our discretizing method and
-its usage in building the index data structure that is able to respond to fast
-request of finding if the query signal is present in the index.
+In the third chapter, we use the methods developed and tested for signal discretization
+to build the index data structure that is able to respond fast to
+requests whether the query signal is present in the index.
 

@@ -15,7 +15,7 @@ smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 5
+readNum = 200
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -235,13 +235,21 @@ axs[0].imshow(a.T[:2])
 axs[0].set_xticks(np.arange(len(plotLevels)))
 axs[0].set_xticklabels(plotLevels)
 axs[0].set_yticks(np.arange(2))
-axs[0].set_yticklabels(["<5;positive squiggles", "<5;negative squiggles"])
+axs[0].set_yticklabels(["positive squiggles", "negative squiggles"])
+axs[0].set_title("Small gaps")
 
 axs[1].imshow(a.T[2:])
 axs[1].set_xticks(np.arange(len(plotLevels)))
 axs[1].set_xticklabels(plotLevels)
 axs[1].set_yticks(np.arange(2))
-axs[1].set_yticklabels([">8;positive squiggles", ">8;negative squiggles"])
+axs[1].set_yticklabels(["positive squiggles", "negative squiggles"])
+axs[1].set_title("Large gaps")
+
+plt.setp(axs[0].get_yticklabels(), rotation=90, ha="center",
+         rotation_mode="anchor")
+
+plt.setp(axs[1].get_yticklabels(), rotation=90, ha="center",
+         rotation_mode="anchor")
 
 for i in range(len(plotLevels)):
     for j in range(2):
@@ -251,9 +259,9 @@ for i in range(len(plotLevels)):
         text = axs[1].text(i, j-2, str(a[i, j])[:7],
                        ha="center", va="center", color="w")
 
-axs[0].set_ylabel("Gap lenth; squiggle class")
+#axs[0].set_ylabel("Gap lenth; squiggle class")
 axs[0].set_xlabel("Level number")
-axs[1].set_ylabel("Gap length; squiggle class")
+#axs[1].set_ylabel("Gap length; squiggle class")
 axs[1].set_xlabel("Level number")
 fig.tight_layout()
 plt.show()
@@ -347,9 +355,9 @@ for i in range(len(plotLevels)):
     Y = np.array(Y)
     axs[i//dim2, i%dim2].set_title(f"{plotLevels[i]} levels")
     if i%dim2 == 0:
-        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases')
+        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of test cases')
     if i//dim2 == dim1-1:
-        axs[i//dim2, i%dim2].set_xlabel('Individual ratios of hits')
+        axs[i//dim2, i%dim2].set_xlabel('Individual ratio of hits')
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)
