@@ -124,7 +124,7 @@ by sequencing the same region of the DNA.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/simulateRef}}
-\caption[TODO]{Comparison of the real and simulated signal with the corresponding nucleotid sequence on x-axis}
+\caption[TODO]{Comparison of the real (upper graph) and simulated (bottom graph) signal with the corresponding nucleotid sequence on $x$-axis}
 \label{obr:simVsReal}
 \end{figure}
 
@@ -203,7 +203,7 @@ the distribution of the length ratios.
 \centerline{\includegraphics[width=1.0\textwidth, height=0.35\textheight]{images/anti_zigzag}}
 \caption[Hehe]{The impacts of the smoothing on the underlying squiggles of length $10\,000$. We see the individual 
 frequency of reads level string length to reference level string length}
-\label{images/anti_zigzag}
+\label{obr:anti_zigzag}
 \end{figure}
 
 \section{Identification of Reads Based on Shared $k$-mers}
@@ -373,7 +373,7 @@ track ratio only up to ratio 2:1. If the number of hits of the positive squiggle
 then this ratio is undefined so we will mark this as a ratio 2:1. The goal of this
 experiment is to see how informative is the number of shared $k$-mers regarding the underlying squiggles.
 
-The results of the experiment with using all the smoothing methods that we introduce are on Figure \ref{obr:res_3}.
+The results of the experiment with using all the smoothing methods that we introduced are on Figure \ref{obr:res_3}.
 In this figure, we see the cummulative ratio of the measured ratios.
 We see that there are parameters that obtain the ratio $1/2$ for more than 80\% of testcases. 
 There is phenomenon of the lines that start with the perfect record and then quickly
@@ -425,7 +425,7 @@ match due to the reasons that we worked on in the Section \ref{subsection:oscill
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.4\textheight]{images/res_2}}
-\caption[TODO]{ROC curve of the hits}
+\caption[TODO]{ROC curve of the hits with smoothing}
 \label{obr:res_2}
 \end{figure}
 
@@ -439,23 +439,25 @@ The third experiment will focus on mutual alignment of the level strings coming 
 the real squiggle and reference squiggle respectively. Again, as in previous experiments
 we will add random squiggle to see the differences between alignments.
 We will align them using the scoring scheme we already presented in Section \ref{section:alignment},
-minimizing the number of the gaps. The reason why we do this experiment is that the shared $k$-mer count only
-shows only the count of the shared $k$-mers but it does not take into account the relative positions of matched pairs.
-This means that we can easily count as the matching pair also two $k$-mers that
+minimizing the number of the dashes. The reason why we do this experiment is that
+the shared $k$-mer count only shows the (total) number of shared $k$-mers but it
+does not take into account the relative positions of matched pairs. This means
+that we can easily count as the matching pair also two $k$-mers that
 do not correspond to the same signal but happened to be in the same level string.
 Hovewer, for a reasonable number of levels, this will not happen often for a short read.
 The big advantage of the alignment of the strings is that it tells us more accurately
 what is the overall similarity of the level strings. What we will measure is
-how often we can see the successive dashes called \textit{gaps}. We learned we need
-to distinguish between the length of the particular gaps. So we split
-them into two groups according to their length to the gaps shorter than 6 and longer than 9.
-We will count the individual count of these two groups of gaps.
+how often we can see the successive number of dashes called \textit{gaps}. From
+various experiments, we learned we need to distinguish between the length of the particular gaps. We will call the number
+of succesive dashes a \textit{gap length}. We split the gaps into the two groups according
+to their length. We will create group with the gaps shorter than 6 and the other with
+gaps longer than 9. We will count the individual number of gaps in these two groups.
 
 In the Figure \ref{obr:res_1} we present our findings for positive
-and negative squiggles. We present the ratio of the number of the gaps divided
+and negative squiggles. We present the ratio of the number of the gaps of given length divided
 by the length of the level string of the respective squiggles. For better visualization,
 we show the gaps per 100 level string characters for gaps shorter than 6 and gaps
-per 1000 level string characters for longer gaps. We can see that the number of gaps
+per $1\,000$ level string characters for longer gaps. We can see that the number of gaps
 shorter than six favors a lower number of levels and gradually increases with the number
 of levels. The number of longer gaps behaves in the completely opposite way. We think
 that the longer gaps are better indicator of the bad alignment as it is common for
@@ -468,12 +470,14 @@ is significantly bigger.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.4\textheight]{images/res_1}}
-\caption[TODO]{TODO}
+\caption[TODO]{We can see the number of gaps smaller than 6 and bigger than 9 per 100 and $1\,000$ characters of smoothed level
+string respectively. Both of these number are stated for positive as well as negative squiggles}
 \label{obr:res_1}
 \end{figure}
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.4\textheight]{images/res_1_nonorm}}
-\caption[TODO]{TODO}
+\caption[TODO]{We can see the number of gaps smaller than 6 and bigger than 9 per 100 and $1\,000$ characters of unsmoothed level
+string respectively. Both of these number are stated for positive as well as negative squiggles}
 \label{obr:res_1_nonorm}
 \end{figure}

@@ -1,22 +1,24 @@
 refFilePath = "../../../data/sapIngB1.fa"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
-readsPosFilePath = "../../../data/pos-basecalled"
+readsPosFilePath = "../../../data/pos-15"
 readsNegFilePath = "../../../data/neg-basecalled"
 
-posTestCases, negTestCases = 50, 50
+posTestCases, negTestCases = 100, 5
 levels = 4
 repeatSignal = 10
-kmerLength = 25
+kmerLength = 15
 overflow = 0.3
 smoothParam = 5
 refWindowSize = 5000
-refWindowJump = 4000
+refWindowJump = 3000
 hashWinSize = 1000000
 hashWinJump =  750000
 fromRead, toRead = 5000, 7000
 contigNum = 1
-contigPrefix = 100000000
+contigPrefix = 1000000
+
+workingContig = "contig3"
 
 ################################################################################
 
@@ -30,7 +32,7 @@ from nadavca.dtw import KmerModel
 
 sys.path.append("../")
 from signalHelper import stringToSignal, getLevels, getSignalFromRead, getSeqfromRead, produceRandom
-from signalHelper import computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
+from signalHelper import getLevelString, computeNorm, computeString, smoothSignal, buildDictionary, overlappingKmers
 
 def overlap(dict1, dict2):
     intersect = 0
@@ -79,20 +81,19 @@ hashTables = {}
 processed = []
 
 for contig in Fasta(refFilePath):
+    if contig.name != workingContig:
+        continue
     processed.append(contig.name)
     hashTables[contig.name] = []
-    contigStr = str(contig)[:contigPrefix]
+    contigStr = str(contig)
     contigSignal = stringToSignal(contigStr, mod, repeatSignal=repeatSignal)
     for i in range(0, len(contigSignal) - hashWinSize + 1, hashWinJump):
         hashTables[contig.name].append(
             getDictFromSequence(contigSignal[i:i+hashWinSize],
                                 refWindowSize,
                                 refWindowJump))
-    contigNum -= 1
-    if contigNum == 0:
-        break
 
-print("Hashtable readyfor {0} nums!".format(contigNum))
+#print("Hashtable readyfor {0} nums!".format(contigNum))
 #######################################
 '''
 print("Overlap is:")
@@ -113,7 +114,8 @@ def processRead(path, contigName, goodTable=-1):
     readSignal = np.array(getSignalFromRead(path), dtype=float)
     readSignal = readSignal[fromRead:toRead]
 
-    readDict = getDictFromSequence(readSignal, refWindowSize, refWindowJump)
+    readString = getLevelString(readSignal, smoothParam, levels, overflow)
+    readDict = buildDictionary(readString, kmerLength)
     hits = [
         overlap(readDict, hashTable) for hashTable in hashTables[contigName]
     ]
@@ -128,6 +130,7 @@ def processRead(path, contigName, goodTable=-1):
             max_i = i
         print(hits[i], end=' ')
     print()
+    
     global good, bad
     if goodTable != -1 and max_i == goodTable:
         print("Good match!")
@@ -136,10 +139,12 @@ def processRead(path, contigName, goodTable=-1):
         bad += 1
     return
 
-
 ########################################
-'''
+
 for filePath in posFast5:
+    if posTestCases == 0:
+        break
+
     try:
         readSeq, basecallTable = getSeqfromRead(filePath)
     except:
@@ -148,13 +153,15 @@ for filePath in posFast5:
         continue
     hits = [
         aln for aln in referenceIdx.map(readSeq)
-        if (aln.q_en - aln.q_st > 0.95 *
-            len(readSeq)) and aln.q_en < contigPrefix and aln.strand == 1 and aln.ctg in processed
+        if aln.q_en - aln.q_st > 0.95 * len(readSeq) and
+        aln.strand == 1 and aln.ctg in processed
     ]
     if len(hits) != 1:
         continue
+    hit = hits[0]
     
     posTestCases -= 1
-    table_num = (repeatSignal * hits[0].r_st) // hashWinJump
-    processRead(filePath, hits[0].ctg, table_num)
-'''
+    table_num = (repeatSignal * hit.r_st) // hashWinJump
+    processRead(filePath, hit.ctg, table_num)
+
+print(f"Dobre ku zlym {good}/{good+bad}")
