@@ -235,12 +235,14 @@ discussed in Section \ref{subsection:oscillations}.
 \subsection{Experimental Data}
 \label{section:data}
 
-Data that we use for these experiments come from two organisms. One is \emph{Saprochaete ingens} and
-the other one is \emph{Saprochaete fungicola}. We choose these
-organisms as they were sequenced by Bioinformatics department of
-FMPH so we have all the data from the sequencing easily available.
-We have also obtained the reference sequences of both of these organisms \cite{hodorova2019genome} \cite{brejova2019genome}.
-We base-called the raw reads using the Albacore basecaller provided by Oxford Nanopore Technologies, company that also develops the MinION sequencer.
+Data that we use for these experiments come from two organisms.
+One is \emph{Saprochaete ingens} (dataset sapIng) and
+the other one is \emph{Saprochaete fungicola} (dataset sapFun). These
+organisms were sequenced using R9.4.1 MinION flow cells at the Department of Biochemistry
+of the Faculty of Natural Sciences. We have also obtained the reference sequences of
+both of these organisms that were previously published \cite{hodorova2019genome} \cite{brejova2019genome}.
+We base-called the raw squiggles using the Albacore basecaller provided by Oxford Nanopore Technologies,
+company that also develops the MinION sequencer.
 
 \begin{table}
 % v tabulke sa popis zvykne davat nad tabulku
@@ -252,8 +254,8 @@ We base-called the raw reads using the Albacore basecaller provided by Oxford Na
 \hline 
 Name & \# reads & \specialcell{mean read\\length} & \specialcell{median read\\length} & \specialcell{mean squiggle\\length} &  \specialcell{median squiggle\\length}\\
 \hline
-sapIng & $1\,000$ & $14\,663$ & $6\,965$ & $151\,002$ & $71\,964$ \\
-sapFun & $1\,000$ & $10\,912$ & $4\,775$ & $113\,550$ & $51\,266$ \\
+sapIng & $3\,000$ & $14\,663$ & $6\,965$ & $151\,002$ & $71\,964$ \\
+sapFun & $3\,000$ & $10\,912$ & $4\,775$ & $113\,550$ & $51\,266$ \\
 \hline
 \end{tabular}
 \end{center}

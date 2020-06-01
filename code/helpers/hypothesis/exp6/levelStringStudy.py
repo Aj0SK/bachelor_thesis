@@ -201,9 +201,9 @@ for i in range(len(plotLevels)):
     if i%dim2 == 0:
         ax.set_ylabel('Frequency')
     if i//dim2 == 1:
-        ax.set_xlabel("Ratio of level strings length (real vs simulated)")
+        ax.set_xlabel("Percentage relative error (real to simulated)")
     ax.set_xticks(x)
-    ax.set_xticklabels([">=" + str(k) for k in labels])
+    ax.set_xticklabels([">=" + str(k) + "%" for k in labels])
     #ax.legend()
     ax.set_ylim(top = readNum + 10)
     ax.set_title(f"{plotLevels[i]} levels")
@@ -211,7 +211,7 @@ for i in range(len(plotLevels)):
     autolabel(ax, rects1)
     autolabel(ax, rects2)
 
-fig.suptitle(f'Length ratio of real squiggle level string to reference squiggle level string')
+#fig.suptitle(f'Length ratio of real squiggle level string to reference squiggle level string')
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)
