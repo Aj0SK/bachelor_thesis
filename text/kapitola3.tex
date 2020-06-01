@@ -1,15 +1,16 @@
 \chapter{Towards Building a Squiggle Index}
 
-\label{kap:methAdjust} % id kapitoly pre prikaz ref
+\label{kap:methAdjust}
 
-In this chapter, we use the results from the previous chapter and we try to use our
-discretization algorithm and previous findings to reach our goal of building the
-data structure or algorithm that can find the query squiggle in the simulated
-reference squiggle. Now, we can use our discretization method to help us with this task.
+In this chapter, we use the results and findings from the previous chapter. We will
+use our discretization algorithm to build the index data structure that can
+find the query squiggle in the simulated reference squiggle.
 
 \section{Index idea}
 \label{section:indexIdea}
 
+As we mentioned in Section \ref{section:selectiveSequencing}, before selective sequencing
+we are usually only provided the reference DNA sequence.
 When we obtain the reference DNA sequence, we transform it to signal using our simulation
 process from Section \ref{section:simulateSquiggle}. We choose the number of the windows - $w$ -
 as a parameter for our discretization algorithm and create the reference level string.
@@ -42,40 +43,44 @@ based on the number of hits that squiggle shares with our reference, if the read
 or not. We will build the index in the slightly different way than we described in \ref{section:indexIdea}.
 At first, we will simulate the signal from the whole contig creating one, very long simulated contig squiggle.
 Then we use the sliding window of size $5\,000$ with the window step equal to $3\,000$.
-We will be working with the squiggle segment of the length $2\,000$ so it is guaranteed that the
-whole this segment will have one corresponding window, where must be his entire
-reference simulated squiggle. For every of this small windows, we will normalize the signal, smooth
+For this every small window, we will normalize the signal that is contained in it, smooth
 it using the techniques we described and then create the level string from this signal.
-We will cut this level string into overlapping $k$-mers that we insert into the
-hashtable.
+We will cut this smaller level string into overlapping $k$-mers that we insert into the
+hashtable. We will be working with the $2\,000$ readouts from our query squiggle. If this
+query squiggle matches somewhere in our contig, it will be cover by one of our windows.
 
 As a reference contig we will take one of the contigs of the \textit{sapIng} reference.
 Besides this, we will have two sets of reads, one containing reads from the \textit{sapIng}
 dataset and the other one containing reads from the \textit{sapFun} dataset. Both of these datasets
-are described in Section \ref{section:data}. We will call the reads from the first set the
-positive reads and the other negative reads. We will use $TODO$ reads from the both datasets.
+are described in Section \ref{section:data}. We call the reads from the first set the
+positive reads and the other negative reads. We use 190 reads from the both datasets.
+We are interested in finding if our index can work as a good predictor. It will be
+deciding if the squiggle is from the reference based only on the number of hits.
+Figure \ref{obr:roc_index} shows what is the ROC curve of our index as a classificator.
 
-TODO: Tu bude ROC krivka.
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/roc_index}}
+\caption[TODO]{ROC curve describing how good predictor is our index. Its decisions
+are based on the number of hits of the respective squiggle}
+\label{obr:roc_index}
+\end{figure}
 
 We see that our index is not performing good. After looking at our index, we can
 see that some of the $k$-mers have very big number of occurences in the indexed
 reference level string. We suspect that these $k$-mers are not that informative
 because they are very common and they carry more information about the specific
 properties of the level string rather than information about the underlying signal.
-Figure \ref{obr:kmerCoverage} shows what part of the reference is covered by the $k$-mers with
-up to a certain multiplicity.
-
-TODO: Tu bude lepsi graf
+Figure \ref{obr:kmerCoverage} shows what part of the reference is covered by the $k$-mers
+up to a certain frequency.
 
 \begin{figure}
-\centerline{\includegraphics[width=1.0\textwidth, height=0.45\textheight]{images/kmerCoverage}}
-\caption[TODO]{The percentage of the reference covered by the $k$-mers up to specific multiplicity
-denoted on the x-axis}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/kmerCoverage}}
+\caption[TODO]{On $y$ axis is the percentage of the reference covered by the $k$-mers up to specific frequency
+denoted on the $x$-axis.}
 \label{obr:kmerCoverage}
 \end{figure}
 
-
-Tu bude to iste pre rozne cutoffy.
+TODO: Graf pre rozne cut-offy.
 
 \section{Aligning the squiggle level string}
 \label{section:alignMinimap}

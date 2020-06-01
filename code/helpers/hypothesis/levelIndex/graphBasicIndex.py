@@ -46,12 +46,18 @@ with open("imp.txt", "r") as f:
 levels = list(set(levels))
 kmerLens = list(set(kmerLens))
 
+levels.sort()
+kmerLens.sort()
+
 dim1, dim2 = 1, 3
 fig, axs = plt.subplots(dim1, dim2)
 counter = 0
 
+kmerColors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+
 for l in levels:
     ax = axs[counter]
+    ax.set_title(f"{l} levels", fontsize=18)
     for k in kmerLens:
         if (l, k) not in dataTable:
             continue
@@ -59,8 +65,9 @@ for l in levels:
         print(data)
         print(sum(1 for i in data if i[1] == 1))
         x, y = plotAOC(data)
-        ax.plot(x, y, linewidth = 2, label=str(k))
-        ax.plot(x, x, linestyle = '--')
+        ax.plot(x, y, linewidth = 2, label = "k-mer length " + str(k), c = kmerColors[kmerLens.index(k)])
+        ax.plot(x, x, linestyle = '--', c = "k")
+    ax.set_ylabel
     counter += 1
 
 handles, labels = axs[dim2-1].get_legend_handles_labels()

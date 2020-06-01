@@ -10,6 +10,7 @@ posTestCases, negTestCases = 190, 190
 levels = int(sys.argv[1]) # 4
 repeatSignal = 10
 kmerLength = int(sys.argv[2]) # 24
+cutOff = int(sys.argv[3])
 overflow = 0.3
 smoothParam = 5
 refWindowSize = 5000
@@ -103,6 +104,11 @@ for contig in Fasta(refFilePath):
     contigSignal = stringToSignal(contigStr, mod, repeatSignal=repeatSignal)
     hashTable = getDictFromSequence(contigSignal, refWindowSize, refWindowJump)
 
+for key in hashTable.keys():
+    if hashTable[key] < cutOff:
+        continue
+    del hashTable[key]
+
 #print("Hashtable readyfor {0} nums!".format(contigNum))
 #######################################
 '''
@@ -178,7 +184,7 @@ for filePath in negFast5:
     
 data.sort()
 
-print(f"Levels: {levels} kmerLength: {kmerLength} #", end="")
+print(f"Levels: {levels} kmerLength: {kmerLength} cutOff: {cutOff} #", end="")
 for i in data:
     print(f" {i[0]} {i[1]}", end = "")
 print()
