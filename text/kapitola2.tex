@@ -290,16 +290,16 @@ A receiver operating characteristic curve is a graphical illustration of how wel
 the \textit{binary classificator} performs on the data for a particular threshold. The binary
 classifier system is a system that tries to predict the binary output from the inputs.
 We can look at our experiment as predictor that predicts based on the number of hits, if the squiggle is from the
-simulated reference squiggle or not. We can choose some threshold $t$ and say that
-our classificator predict all the squiggles with the number of hits bigger or equal
-than $t$ as from the reference squiggle. When working with binary predictor there
+simulated reference squiggle or not. We can choose some threshold value $t$ and say that
+our classificator will predict all the squiggles with the number of hits bigger or equal
+than $t$ as coming from the reference squiggle. When working with binary predictor there
 are two important rates \textit{true positive rate} TPR and \textit{false positive rate} FPR. 
 
 TPR is a ratio of the correctly classified positive squiggles to the number of the all squiggles.
 
 FPR is a ratio of the squiggles that we incorrectly classified as a belonging to the reference squiggle.
 
-The ROC works by ploting the dependency of TPR on FPR for various threshold values $t$.
+The ROC is curve that represents the dependency of TPR on FPR for various threshold values $t$.
 If the binary classificator was random generator the ROC curve would be roughly
 linear. Very good classificator obtains the curve that is very close to the point
 $FPR = 0, TPR = 1$. We can see the example of a curve that represents very good
@@ -307,7 +307,7 @@ binary classificator on Figure \ref{obr:roc}. The binary classificator that rand
 guesses his output is expected to have an ROC curve somewhere around the green line.
 
 \begin{figure}
-\centerline{\includegraphics[width=0.7\textwidth, height=0.3\textheight]{images/roc}}
+\centerline{\includegraphics[width=0.5\textwidth, height=0.3\textheight]{images/roc}}
 \caption[TODO]{In this picture we see the example of a ROC curve. Green curve represents very good
 binary estimator.}
 \label{obr:roc}
@@ -353,6 +353,8 @@ T[i][j] = \bigl.
 
 \subsection{Results}
 \label{section:results}
+
+TODO: Pred odovzdanim nahodit nove pekne grafy.
 
 We performed three experiments that relate to the goals that we set at the start
 of this Chapter. We use the squiggles from the datasets introduced in Section
@@ -459,7 +461,9 @@ by the length of the level string of the respective squiggles. For better visual
 we show the gaps per 100 level string characters for gaps shorter than 6 and gaps
 per $1\,000$ level string characters for longer gaps. We can see that the number of gaps
 shorter than six favors a lower number of levels and gradually increases with the number
-of levels. The number of longer gaps behaves in the completely opposite way. We think
+of levels. The number of longer gaps behaves in the completely opposite way. As the number
+of levels is increasing, the number of gaps in the negative reads rises faster that the number
+of the gaps in the positive reads. We think
 that the longer gaps are better indicator of the bad alignment as it is common for
 the good alignment that there is small gap because of the noise in the underlying signal
 or our discretization method shortcomings. The bigger gaps are most of the time sign of the two

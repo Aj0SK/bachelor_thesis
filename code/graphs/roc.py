@@ -15,8 +15,8 @@ plt.plot(x, y)
 plt.plot(x, y1)
 plt.plot(x, np.linspace(0, -diff, 10000), linestyle = '--')
 
-plt.xlabel("FPR")
-plt.ylabel("TPR")
+plt.xlabel("FPR", fontsize=18)
+plt.ylabel("TPR", fontsize=18)
 
 plt.axes().set_aspect('equal', adjustable='box')
 

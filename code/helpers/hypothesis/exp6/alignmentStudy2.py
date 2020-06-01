@@ -235,13 +235,13 @@ axs[0].imshow(a.T[:2])
 axs[0].set_xticks(np.arange(len(plotLevels)))
 axs[0].set_xticklabels(plotLevels)
 axs[0].set_yticks(np.arange(2))
-axs[0].set_yticklabels(["<= 5 pos", "<= 5 neg"])
+axs[0].set_yticklabels(["<6;pos", "<6;neg"])
 
 axs[1].imshow(a.T[2:])
 axs[1].set_xticks(np.arange(len(plotLevels)))
 axs[1].set_xticklabels(plotLevels)
 axs[1].set_yticks(np.arange(2))
-axs[1].set_yticklabels(["<= 10 pos", "<= 10 neg"])
+axs[1].set_yticklabels([">11;pos", ">11;neg"])
 
 for i in range(len(plotLevels)):
     for j in range(2):
@@ -251,9 +251,9 @@ for i in range(len(plotLevels)):
         text = axs[1].text(i, j-2, str(a[i, j])[:7],
                        ha="center", va="center", color="w")
 
-axs[0].set_ylabel("Gap len")
+axs[0].set_ylabel("Gap lenth; squiggle class")
 axs[0].set_xlabel("Level number")
-axs[1].set_ylabel("Gap len")
+axs[1].set_ylabel("Gap length; squiggle class")
 axs[1].set_xlabel("Level number")
 fig.tight_layout()
 plt.show()
@@ -310,18 +310,21 @@ for i in range(len(plotLevels)):
         axs[i//dim2, i%dim2].plot(X, y, label=str(plotKmerLen[k]), linewidth=2)
     # axs[i].legend(loc="lower right")
     Y = np.array(Y)
-    axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"{plotLevels[i]} levels")
     axs[i//dim2, i%dim2].set_aspect('equal', adjustable='box')
     if i%dim2 == 0:
-        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases')
+        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases (TP)')
     if i//dim2 == dim1-1:
-        axs[i//dim2, i%dim2].set_xlabel('XXX')
+        axs[i//dim2, i%dim2].set_xlabel('FP')
 
 #axs[dim1-1, dim2-1].legend(loc="lower right")
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)
-fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+leg = fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+
+for line in leg.get_lines():
+    line.set_linewidth(4.0)
 
 plt.show()
 
@@ -342,14 +345,17 @@ for i in range(len(plotLevels)):
         Y.append([sum(y[:k]) / len(data) for k in range(len(y))])
         axs[i//dim2, i%dim2].plot(list(X), Y[-1], label=str(plotKmerLen[j]), linewidth=2)
     Y = np.array(Y)
-    axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"{plotLevels[i]} levels")
     if i%dim2 == 0:
         axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases')
     if i//dim2 == dim1-1:
-        axs[i//dim2, i%dim2].set_xlabel('Individual ratios of hits')
+        axs[i//dim2, i%dim2].set_xlabel('Individual hit ratios')
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)
-fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+leg = fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+
+for line in leg.get_lines():
+    line.set_linewidth(4.0)
 
 plt.show()
