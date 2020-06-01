@@ -86,7 +86,7 @@ reference is covered by the $k$-mers up to the certain multiplicity.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.45\textheight]{images/kmerCoverage}}
-\caption[TODO]{the percentage of the reference covered by the $k$-mers up to specific multiplicity
+\caption[TODO]{The percentage of the reference covered by the $k$-mers up to specific multiplicity
 denoted on the x-axis}
 \label{obr:kmerCoverage}
 \end{figure}
@@ -148,4 +148,46 @@ level number & \multicolumn{10}{|c|}{$k$-mer lengths} \\
 
 Now, when we have for all the levels the particular number of $k$ that
 has the minimal number of hits for most of the reads we can proceed to use
-this information.
+this information. We will focus on the pairs of the level-$k$-mer length
+where the number of squiggles with at least one read is around $175$.
+We now take the entire reference of the sapIng dataset and $200$ reads from this
+reference. We will want to know, what is the mean and median number of hits of
+these squiggles in the entire reference and what is the number of the hits between
+the squiggle and its simulated counterpart.
+
+\begin{table}
+% v tabulke sa popis zvykne davat nad tabulku
+\caption[TODO]{The number of hits in the whole reference vs hits in the simulated
+squiggle corresponding to the real squiggle}
+%id tabulky
+\label{tab:hitsRefvsSimul}
+\begin{center}
+\begin{tabular}{|l|l|c|c|c|c|}
+\hline
+levels & $k$-mer & \specialcell{mean hits\\in ref} & \specialcell{median hits\\in ref} & \specialcell{mean hits\\in simulated} & \specialcell{median hits\\in simulated} \\
+\hline
+4 & 22 & 223446.62 & 193751.0 & 16.28 & 12.0 \\
+\hline
+4 & 23 & 153540.78 & 132338.0 & 13.1 & 8.0 \\
+\hline
+5 & 21 & 401133.12 & 363887.5 & 23.32 & 19.5 \\
+\hline
+5 & 22 & 275380.16 & 241922.5 & 18.26 & 14.5 \\
+\hline
+5 & 23 & 192186.58 & 158792.5 & 14.54 & 9.0 \\
+\hline
+7 & 20 & 271556.42 & 265182.0 & 17.06 & 14.5 \\
+\hline
+7 & 21 & 175926.02 & 169163.0 & 12.88 & 10.5 \\
+\hline
+9 & 18 & 213360.74 & 191186.0 & 12.54 & 10.5 \\
+\hline
+9 & 19 & 127401.82 & 107961.5 & 8.58 & 7.0 \\
+\hline
+9 & 20 & 76321.34 & 58724.0 & 5.96 & 5.0 \\
+\hline
+11 & 16 & 243431.82 & 231441.5 & 11.16 & 8.5 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
