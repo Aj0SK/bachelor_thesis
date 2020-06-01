@@ -460,31 +460,29 @@ what is the overall similarity of the level strings. We found, that the distribu
 of lengths of the successive gaps in the alignments (gap lengths) particularly highlights
 the difference between positive and negative squiggles.
 
-We split the gaps into the two groups according
-to their length. We will create group with the gaps shorter than 6 and the other with
-gaps longer than 9. We will count the individual number of gaps in these two groups.
+We split the gaps into two groups, those with gap length shorter than 5 (short gaps) and those
+longer than 9 (long gaps). For each alignment, we count the number of gaps in these two groups.
 
-In the Figure \ref{obr:res_1} we present our findings for positive
-and negative squiggles. We present the ratio of the number of the gaps of given length divided
-by the length of the level string of the respective squiggles. For better visualization,
-we show the gaps per 100 level string characters for gaps shorter than 6 and gaps
-per $1\,000$ level string characters for longer gaps. We can see that the number of gaps
-shorter than six favors a lower number of levels and gradually increases with the number
-of levels. The number of longer gaps behaves in the completely opposite way. As the number
+\ref{obr:res_1} shows the ratio between the number of the gaps of given length divided
+by the length of the level string for both positive and negative squiggles. For better visualization,
+we show number of short gaps per 100 level string characters and number of long gaps
+per $1\,000$ level string characters. We can see that the number of short gaps
+favors a lower number of levels and gradually increases with the number
+of levels. The number of long gaps behaves in the opposite way. As the number
 of levels is increasing, the number of gaps in the negative reads rises faster that the number
-of the gaps in the positive reads. We think
-that the longer gaps are better indicator of the bad alignment as it is common for
-the good alignment that there is small gap because of the noise in the underlying signal
-or our discretization method shortcomings. The bigger gaps are most of the time sign of the two
+of the gaps in the positive reads. The longer gaps are better indicator of the alignment of a bad squiggle as it is common for
+both positive and negative alignments that there are small gaps because due to the noise in the underlying signal.
+Most of the time, the bigger gaps are a sign of the two
 unrelated level strings aligned or very uncommon unsimilarity between positive read
-and its reference. In the Figure \ref{obr:res_1_nonorm} we present results for the unsmoothed
-squiggles. We can see that for unsmoothed squiggles, the count of the longer gaps
-is significantly bigger.
+and its reference. Figure \ref{obr:res_1_nonorm} present results for the unsmoothed
+squiggles. We can see that for unsmoothed squiggles, there are more larger gaps even
+in the case of the positive squiggles and the difference between positive and negative
+squiggles are much less pronounced.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.7\textwidth, height=0.4\textheight]{images/res_1}}
-\caption[TODO]{We can see the number of gaps smaller than 6 and bigger than 9 per 100 and $1\,000$ characters of smoothed level
-string respectively. Both of these number are stated for positive as well as negative squiggles}
+\caption[TODO]{(top): The number of short gaps per 100 level string characters of smoothed signal.\\
+(bottom): The number of long gaps per $1\,000$ level string characters of for smoothed signal.}
 \label{obr:res_1}
 \end{figure}
 

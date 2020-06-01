@@ -3,9 +3,9 @@
 \label{kap:methAdjust} % id kapitoly pre prikaz ref
 
 In this chapter, we use the results from the previous chapter and try to use our
-discretization algorithm and findings to reach our goal of selective sequencing.
-We will focus on finding the real squiggle in our reference. Now, we can use our
-discretization method to help us with this task.
+discretization algorithm and previous findings to reach our goal of building the
+data structure or algorithm that can find the query squiggle in the simulated
+reference squiggle. Now, we can use our discretization method to help us with this task.
 
 \section{Index idea}
 
@@ -172,7 +172,14 @@ where the number of squiggles with at least one read is around $175$.
 We now take the entire reference of the sapIng dataset and $200$ reads from this
 reference. We will want to know, what is the mean and median number of hits of
 these squiggles in the entire reference and what is the number of the hits between
-the squiggle and its simulated counterpart.
+the squiggle and its simulated counterpart. We need to push the number of $k$-mers
+for the particular number of levels as high as possible such that the large percentage
+of reads still share at least some $k$-mers with their simulated squiggle but the
+overal number of hits in the whole reference is smallest possible. What happens
+if we do not push the $k$-mer length enough is that we receive a lot of false hits in
+the entire reference. If we push too much, we will lose even the good hits and the
+results will be some random hits in the entire reference that represent very similar
+signal but not our target signal.
 
 \begin{table}
 % v tabulke sa popis zvykne davat nad tabulku
@@ -218,3 +225,6 @@ levels & $k$-mer & \specialcell{mean hits\\in ref} & \specialcell{median hits\\i
 \end{tabular}
 \end{center}
 \end{table}
+
+Now we see that the number of hits in the whole reference is really high. We can introduce smaller hashtables
+or sets, just like in the first experiment. This can help us unfilter bad hits as the number
