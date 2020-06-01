@@ -26,7 +26,7 @@ amortized time complexity $O(1)$. When we have this hash table ready after the
 preprocessing, we can start with the actual squiggle processing. For every squiggle, we will
 build the level string. Then, we will cut it into the overlapping
 subsequences of the same length $k$ and see how many of them can be found in our
-prepared hashtable. We call all the subsequences of length $k$ from our query squiggle that are
+prepared hash table. We call all the subsequences of length $k$ from our query squiggle that are
 present in the prepared hash table \textit{hits}. Our initial assumption is that the number
 of hits will be considerably higher for the squiggle that belongs to the reference.
 
@@ -43,11 +43,11 @@ based on the number of hits that squiggle shares with our reference, if the read
 or not. We will build the index in the slightly different way than we described in \ref{section:indexIdea}.
 At first, we will simulate the signal from the whole contig creating one, very long simulated contig squiggle.
 Then we use the sliding window of size $5\,000$ with the window step equal to $3\,000$.
-For this every small window, we will normalize the signal that is contained in it, smooth
+For every of this small windows, we will normalize the signal that is contained in it, smooth
 it using the techniques we described and then create the level string from this signal.
 We will cut this smaller level string into overlapping $k$-mers that we insert into the
-hashtable. We will be working with the $2\,000$ readouts from our query squiggle. If this
-query squiggle matches somewhere in our contig, it will be cover by one of our windows.
+hash table. We will be working with the $2\,000$ readouts from the query squiggles. If this
+query squiggle matches somewhere simulated signal, it will be covered by one of our windows.
 
 As a reference contig we will take one of the contigs of the \textit{sapIng} reference.
 Besides this, we will have two sets of reads, one containing reads from the \textit{sapIng}
@@ -71,7 +71,8 @@ reference level string. We suspect that these $k$-mers are not that informative
 because they are very common and they carry more information about the specific
 properties of the level string rather than information about the underlying signal.
 Figure \ref{obr:kmerCoverage} shows what part of the reference is covered by the $k$-mers
-up to a certain frequency.
+up to a certain frequency. We can see that a lot of $k$-mers are in our reference
+level string more than $2\,000$ times.
 
 \begin{figure}
 \centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/kmerCoverage}}
@@ -84,10 +85,6 @@ TODO: Graf pre rozne cut-offy.
 
 \section{Aligning the squiggle level string}
 \label{section:alignMinimap}
-
-Results from the Chapter \ref{kap:proposedMethod} and Section \ref{section:alignMinimap}
-encouraged us that it is possible to build the reasonable index over the reference
-DNA sequence.
 
 After failing to tackle this way harder problem, we will look at an easier task. We would want to see how
 our discretization suits this usage and how similar is level string of the whole squiggle
@@ -198,7 +195,6 @@ results will be some random hits in the entire reference that represent very sim
 signal but not our target signal.
 
 \begin{table}
-% v tabulke sa popis zvykne davat nad tabulku
 \caption[TODO]{The number of hits in the whole reference vs hits in the simulated
 squiggle corresponding to the real squiggle}
 %id tabulky
