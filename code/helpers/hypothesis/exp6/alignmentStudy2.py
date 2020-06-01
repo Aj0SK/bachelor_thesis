@@ -349,7 +349,7 @@ for i in range(len(plotLevels)):
     if i%dim2 == 0:
         axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases')
     if i//dim2 == dim1-1:
-        axs[i//dim2, i%dim2].set_xlabel('Individual hit ratios')
+        axs[i//dim2, i%dim2].set_xlabel('Individual ratios of hits')
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)

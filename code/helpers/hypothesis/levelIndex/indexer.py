@@ -20,7 +20,7 @@ level = 4
 
 workingContig = "contig3"
 
-readSignalBeg, readSignalEnd = 10000, 20000
+readSignalBeg, readSignalEnd = 10000, 12000
 
 import sys
 import math
@@ -119,8 +119,6 @@ mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 
 ################################################################################
 
-# sample = posReadsPaths[7]
-
 globalNorms = {}
 
 globalNorms = {
@@ -184,7 +182,7 @@ for sample in posReadsPaths[:400]:
 
         refSignal = stringToSignal(refSeq, mod, repeatSignal)
         refSignal = smoothSignal(refSignal, smoothParam)
-        # refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
+        #refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
         refShift, refScale = globalNorms[hit.ctg][0], globalNorms[hit.ctg][1]
         refString = computeString(
             refSignal, 0, len(refSignal), refShift, refScale, level, overflow=overflow,
@@ -210,7 +208,7 @@ for sample in posReadsPaths[:400]:
         print(f"I found it in {found}")
 
         refString = refString[
-            int(len(refString) * ((readSignalBeg - 2000) / readSignalLen)) : int(len(refString) * ((readSignalEnd + 2000) / readSignalLen))
+            int(len(refString) * ((readSignalBeg - 1000) / readSignalLen)) : int(len(refString) * ((readSignalEnd + 1000) / readSignalLen))
         ]
 
         refHash = {}
@@ -230,34 +228,36 @@ for sample in posReadsPaths[:400]:
                 countHits2 += min(1, refHash.get(w, 0))
                 hits2.append(w)
 
-        wind = 6000
+        wind = 5000
         contigLen = len(storeContig[workingContig])
         windLen = contigLen/wind
         aproxPos = int(found/windLen)
         x = []
         d = wind * [0]
-        #d_help = [[] for _ in range(wind)]
-       
+        d_help = [[] for _ in range(wind)]
+
         for i in range(len(readString) - kmerLen + 1):
             w = readString[i : i + kmerLen]
             hits = hashTables[workingContig].get(w, [])
             for j in range(len(hits)):
                 d[int(hits[j] / windLen)] += 1
-                #d_help[wind * hits[j] / contigLen].append((hits[j], i))
+                d_help[wind * hits[j] // contigLen].append((hits[j], i))
                 x.append((hits[j], i))
-        #print(f"Pomocne je {str(d)}")
 
         overlap = sum([1 for w in hits1 if w in hits2])
         bigger = sum([1 for i in d if i >= countHits2])
         
-        '''succ = 0
+        succ = 0
         for i in range(wind-1):
             pom = d_help[i] + d_help[i+1]
             out = helperF(pom, 4)
             if len(out) != 0:
-                succ += 1'''
+                succ += 1
         
-        #print(f"Dalej preslo {succ}")
+        print(f"Dalej preslo {succ}")
+        
+        for i in succ:
+            if abs(succ-)
         
         print(f"Len of window is {contigLen//wind}")
         print(f"But readstring is {len(readString)}")
