@@ -2,6 +2,21 @@
 \addcontentsline{toc}{chapter}{Conclusion} % rucne pridanie do obsahu
 \markboth{Conclusion}{Conclusion} % vyriesenie hlaviciek
 
-%\label{kap:conclusionAndFuture} % id kapitoly pre prikaz ref
+\label{kap:conclusionAndFuture}
 
-TODO: Conclusion of our work.
+The goal of this work was to build the reliable index that will satisfy the needs
+of the selective sequencing. We wanted to build this index on top of the discretizing
+algorithm that would help us to work with the raw squiggles more easily and also
+very fast.
+
+In the Second Chapter we come up with a discretizing algorithm that have been able
+to build representation that reliably matches the underlying raw squiggle. We proved
+many good properties of this representation in the Results section.
+
+We have been unable to build the reliable yet fast enough index but we obtained
+some hints on how the problems that arised could be tackled in the future.
+Most notably, we have been able to tweak Minimap2 algorithm and use it to align our discretized form of the
+signal to the correct position in the reference. This leads us to the conclusion that
+it is possible to use this discretizing algorithm for furher progress in this area.
+
+

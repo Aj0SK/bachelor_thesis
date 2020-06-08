@@ -2,58 +2,55 @@
 
 \label{kap:methAdjust}
 
-In this chapter, we use the results and findings from the previous chapter. We will
-use our discretization algorithm to build the index data structure that can
-find the query squiggle in the simulated reference squiggle.
+In this chapter, we use the results and findings from the previous chapter to
+build the index data structure that can find the query squiggle in the simulated
+reference squiggle.
 
-\section{Index idea}
+\section{Building a Squiggle Index}
 \label{section:indexIdea}
 
-As we mentioned in Section \ref{section:selectiveSequencing}, before selective sequencing
-we are usually only provided the reference DNA sequence.
-When we obtain the reference DNA sequence, we transform it to signal using our simulation
-process from Section \ref{section:simulateSquiggle}. We choose the number of the windows - $w$ -
-as a parameter for our discretization algorithm and create the reference level string.
-Then, when the real signal from the squiggle arrives, we will perform the same process
-that we performed with the simulated reference signal. Now, we have one reference level string and
-one query level string which we want to find in it. Note that this can be better formulated as an
-algorithmic problem. However, as we see in the Section \ref{section:results}, there is a minimal probability that the level string
+As mentioned in Section \ref{section:selectiveSequencing}, as an input to the selective
+sequencing we are usually only provided the reference DNA sequence.
+The reference DNA sequence is transformed to a simulated signal using the
+process introduced in Section \ref{section:simulateSquiggle}. We choose the number of the windows $w$
+as a parameter of our discretization algorithm and create the reference level string.
+Then, when the real signal from the squiggle arrives, we perform the same process
+on the real signal. Now, we have one reference level string and
+one query level string which we want to find in the reference.
+As we see in Section \ref{section:results}, there is only a small probability that the level string
 of the longer squiggle will match perfectly to some area in the reference level string.
 Instead of looking for the exact match in the reference, we will cut the reference
 level string into overlapping subsequences of length $k$ and put them into a hash table.
 Hash table is a data structure that allows insertion and search of an element in
-amortized time complexity $O(1)$. When we have this hash table ready after the
-preprocessing, we can start with the actual squiggle processing. For every squiggle, we will
-build the level string. Then, we will cut it into the overlapping
-subsequences of the same length $k$ and see how many of them can be found in our
-prepared hash table. We call all the subsequences of length $k$ from our query squiggle that are
+amortized time complexity $O(1)$. This hash table will now serve as a reference index.
+To process a squiggle, we build its level string and cut it into the overlapping
+subsequences of the same length $k$. As the next step, we compute how many of these subsequences can be found in the index.
+We call all the subsequences of length $k$ from our query squiggle that are
 present in the prepared hash table \textit{hits}. Our initial assumption is that the number
 of hits will be considerably higher for the squiggle that belongs to the reference.
 
-The important thing is that we need to only use the shortest possible part of the squiggle
-and also use only the readouts from the beginning of the squiggle.
-
-\section{Building the Index}
-
-We now choose one \textit{contig} from the reference sequence. The contig is a
-standalone DNA sequence, most of the time representing the single chromosome
-of the organism. It is smaller than the whole reference which consists of multiple contigs.
-We will build the index over the simulated signal from this reference. We will predict,
-based on the number of hits that squiggle shares with our reference, if the read is from the reference contig
-or not. We will build the index in the slightly different way than we described in \ref{section:indexIdea}.
+To evaluate this idea experimentally we have chosen one \textit{contig} (contig3) from the
+\textit{sapIng} reference sequence.
+Contig is a standalone DNA sequence, most of the time representing a single chromosome
+of the organism. It is smaller than the whole reference which consists typically of multiple contigs.
+We will build the index over the signal simulated from this reference sequence. We will predict,
+based on the number of hits in our index if the read is from the reference contig
+or not. We build the index in the slightly different way than we described previously.
 At first, we will simulate the signal from the whole contig creating one, very long simulated contig squiggle.
 Then we use the sliding window of size $5\,000$ with the window step equal to $3\,000$.
 For every of this small windows, we will normalize the signal that is contained in it, smooth
 it using the techniques we described and then create the level string from this signal.
 We will cut this smaller level string into overlapping $k$-mers that we insert into the
 hash table. We will be working with the $2\,000$ readouts from the query squiggles. If this
-query squiggle matches somewhere simulated signal, it will be covered by one of our windows.
+query squiggle matches simulated signal somewhere, it will be covered by one of our windows.
 
-As a reference contig we will take one of the contigs of the \textit{sapIng} reference.
-Besides this, we will have two sets of reads, one containing reads from the \textit{sapIng}
+Beside the reference we have two sets of reads, one containing reads from the sapIng
 dataset and the other one containing reads from the \textit{sapFun} dataset. Both of these datasets
 are described in Section \ref{section:data}. We call the reads from the first set the
 positive reads and the other negative reads. We use 190 reads from the both datasets.
+From the whole sapIng dataset, we only choose the reads that aligned to the contig3
+and also have at least 95\% of their length aligned. We also make sure
+that the reads from the sapFun dataset have 0 alignments of at least 90\% of their length. 
 We are interested in finding if our index can work as a good predictor. It will be
 deciding if the squiggle is from the reference based only on the number of hits.
 Figure \ref{obr:roc_index} shows what is the ROC curve of our index as a classificator.
@@ -65,12 +62,12 @@ are based on the number of hits of the respective squiggle}
 \label{obr:roc_index}
 \end{figure}
 
-We see that our index is not performing good. After looking at our index, we can
-see that some of the $k$-mers have very big number of occurences in the indexed
+We see that our index is not performing very well. After looking at our index, we can
+identify one of the problems. We see that some of the $k$-mers have very big number of occurences in the indexed
 reference level string. We suspect that these $k$-mers are not that informative
 because they are very common and they carry more information about the specific
 properties of the level string rather than information about the underlying signal.
-Figure \ref{obr:kmerCoverage} shows what part of the reference is covered by the $k$-mers
+Figure \ref{obr:kmerCoverage} shows what part of our reference is covered by the $k$-mers
 up to a certain frequency. We can see that a lot of $k$-mers are in our reference
 level string more than $2\,000$ times.
 
@@ -81,14 +78,30 @@ denoted on the $x$-axis.}
 \label{obr:kmerCoverage}
 \end{figure}
 
-TODO: Graf pre rozne cut-offy.
+We will use the data from the Figure \ref{obr:kmerCoverage} to try to remove the
+most frequent $k$-mers. We will remove that part of the most frequent $k$-mers such that
+at least 50\% of our reference is still covered by the remaining reads. We also
+call this process \textit{cut-off}.
+
+\begin{figure}
+\centerline{\includegraphics[width=1.0\textwidth, height=0.3\textheight]{images/cut_off_50}}
+\caption[TODO]{ROC curve describing how good predictor our index is after the 50\% cut-off. We can see the information
+for the numerous combinations of levels and kmer lengths.}
+\label{obr:cut_off_50}
+\end{figure}
+
+We see in Figure \ref{obr:cut_off_50} that this did not helped at all. This can be because with the most frequent
+$k$-mers we also removed a lot of so called fake hits. This could be hits that amounted to the big
+percentage of the previous hits so the overall number of the hits in our reference decreased
+because of this fact.
 
 \section{Aligning the squiggle level string}
 \label{section:alignMinimap}
 
-After failing to tackle this way harder problem, we will look at an easier task. We would want to see how
+After failing to build the index straightly, we will look at an easier experiment
+that can hint us if we are going in the good direction. We would want to see how
 our discretization suits this usage and how similar is level string of the whole squiggle
-comparing it to the reference level string. For this purpose, we will try to
+comparing it to the whole reference level string. For this purpose, we will try to
 find our query level string in the reference level string.
 
 We already know that it does not make sense to look for the exact match of the query string in the reference
@@ -118,25 +131,26 @@ tested squiggles, all of them were correctly aligned to the correct contig and a
 correct position. This was a very promising result, so we decided to optimize a
 Minimap2 algorithm with adjusting some hyperparameters that this algorithm allows us
 to change to speed it up. For this solution, to be usable, we need to take only
-a shorter part of squiggle and from the start of it. With signal from the $5\,000$th
+a shorter part from the start of the squiggle. With signal from the $5\,000$th
 readout to the $10\,000$th we have been able to find only the 31 out of 100 squiggles
 in around 1 minute.
 
 \section{Alignment Algorithms Inspiration}
+\label{section:alignmentAlgorithms}
 
 The second approach that we tried is similar to how the alignment algorithms like
-Minimap2 work. The first approach of these algorithms is to find the pairs of the shorter
+Minimap2 work. The first step of these algorithms is to find the pairs of the shorter
 exactly matching sequences. These are then used as the kernels of the alignment. We want
 to use kernels as the starting points, to see where are the places that could lead to the
 successful matching of the query level strings.
 
 In order to try this approach we need to know what is the ideal length of this short
-sequence. We need to find the maximum length of the $k$ for the particular level
-such that level string from most of the squiggles will have at least one $k$-mer
+sequence. We need to find the maximum length of the $k$-mer for the particular level
+such that the level strings of most of the squiggles will have at least one $k$-mer
 of this length common with their corresponding simulated reference level string.
-So we run the experiment on the data used in the previous experiments in Section
-\ref{section:results}. Now, instead of working with the signal of the length
-$5\,000$ we will work with the smaller number of $2\,000$ readouts so we
+As an experiment, we will take 200 random reads from the sapIng dataset.
+We run the experiment on the data used in the previous experiments in Section
+\ref{section:results}. Now, we will again work with the smaller number of $2\,000$ readouts so we
 simulate the conditions during the real DNA sequencing. In the table \ref{tab:sharedKmers}
 we can see the number of the squiggles with at least one shared $k$-mer with their reference
 level string. We bring the values for the multiple levels. Based on this table,
@@ -146,9 +160,9 @@ squiggles that we will be able to find and the length of the $k$-mer which deter
 the number of hits in the index we have to investigate.
 
 \begin{table}
-% v tabulke sa popis zvykne davat nad tabulku
-\caption[TODO]{The number of squiggles with the at least 1 one shared $k$-mer with their
-reference for particular number of levels}
+\caption[TODO]{The number of squiggles with at least one shared $k$-mer with their
+corresponding reference for particular number of levels. The total number of tested
+reads is 200}
 %id tabulky
 \label{tab:sharedKmers}
 \begin{center}
@@ -180,12 +194,14 @@ level number & \multicolumn{10}{|c|}{$k$-mer lengths} \\
 
 Now, when we have for all the levels the particular number of $k$ that
 has the minimal number of hits for most of the reads we can proceed to use
-this information. We will focus on the pairs of the level-$k$-mer length
-where the number of squiggles with at least one read is around $175$.
+this information. We will focus on finding the pairs of level number - $k$-mer length
+such that the number of squiggles with at least one hit is around $175$. This
+will not eliminate a lot of reads and it will give us an edge over the fake hits in the
+big reference sequence as we favor the biggest $k$-mer length possible.
 We now take the entire reference of the sapIng dataset and $200$ reads from this
 reference. We will want to know, what is the mean and median number of hits of
 these squiggles in the entire reference and what is the number of the hits between
-the squiggle and its simulated counterpart. We need to push the number of $k$-mers
+the squiggle and its corresponding simulated reference signal. We need to push the number of $k$-mers
 for the particular number of levels as high as possible such that the large percentage
 of reads still share at least some $k$-mers with their simulated squiggle but the
 overal number of hits in the whole reference is smallest possible. What happens
@@ -197,7 +213,6 @@ signal but not our target signal.
 \begin{table}
 \caption[TODO]{The number of hits in the whole reference vs hits in the simulated
 squiggle corresponding to the real squiggle}
-%id tabulky
 \label{tab:hitsRefvsSimul}
 \begin{center}
 \begin{tabular}{|l|l|c|c|c|c|}
@@ -238,5 +253,7 @@ levels & $k$-mer & \specialcell{mean hits\\in ref} & \specialcell{median hits\\i
 \end{center}
 \end{table}
 
-Now we see that the number of hits in the whole reference is really high. We can introduce smaller hashtables
-or sets, just like in the first experiment. This can help us unfilter bad hits as the number
+We can see in Table \ref{tab:hitsRefvsSimul} that the number of hits in the whole reference is still really high.
+What we can do is that we cut the reference into the smaller sequences and track the number
+of hits in these individual sequences. We can focus on the sequences with the high number
+of hits and then do there some post-processing to remove as many hits as possible.
