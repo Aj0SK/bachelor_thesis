@@ -9,13 +9,15 @@ readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 refFilePath = "../../../data/sapIngB1.fa"
-alignedSquiggles = "../prepareData/alignedSquiggles_1000.txt"
 
 smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 200
+readNum = 10
+
+signalFrom = 10000
+signalTo = signalFrom + workingLen
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -23,7 +25,6 @@ levels = list(range(4, 15, 1))
 plotLevels = [4, 5, 7, 9, 11, 13]  # range(4, 10)
 plotKmerLen = [4, 7, 13, 17, 21, 28]  # range(4, 40, 10)
 
-import os
 import sys
 import math
 import random
@@ -42,13 +43,14 @@ from signalHelper import (
     stringToSignal,
     getSignalFromRead,
     getReadsInFolder,
+    getSeqfromRead,
+    seqSignalCor,
     stringAllignment,
     overlappingKmers,
     computeNorm,
     computeString,
     smoothSignal,
     countDashes,
-    getAlignedIndex
 )
 
 
@@ -69,10 +71,11 @@ def plotAOC(src):
 
 ################################################################################
 
-posReadsPaths = getReadsInFolder(readsPosFilePath, minSize=0)
-negReadsPaths = getReadsInFolder(readsNegFilePath, minSize=0)
+referenceIdx = mp.Aligner(refFilePath)
+assert referenceIdx, "failed to load/build reference index"
 
-index = getAlignedIndex(alignedSquiggles)
+posReads = getReadsInFolder(readsPosFilePath, minSize=0)
+negReads = getReadsInFolder(readsNegFilePath, minSize=0)
 
 ref = Fasta(refFilePath)
 
@@ -89,56 +92,68 @@ alignLenRead = [0 for _ in levels]
 alignLenFake = [0 for _ in levels]
 readCounter = 0
 
-for posRead in posReadsPaths:
+
+for posRead in posReads:
     if readCounter == readNum:
         break
-
-    readName = os.path.basename(posRead)
-    
-    if readName not in index:
+    try:
+        readFastq, readEvents = getSeqfromRead(posRead)
+    except:
         continue
-    
-    print(f"Working on {posRead}")
-    
-    fromSignal, toSignal = index[readName][4], index[readName][5]
-    fromRef, toRef = index[readName][2], index[readName][3]
-    strand = index[readName][1]
-    ctg = index[readName][0]
+    readSeq = seqSignalCor(signalFrom, signalTo, readEvents)
 
-    if (toSignal - fromSignal) < workingLen:
+    hits = [
+        aln
+        for aln in referenceIdx.map(readSeq)
+        if aln.q_en - aln.q_st > 0.95 * len(readSeq)
+    ]
+    if len(hits) != 1:
+        # print("Too many or too few hits, skipping read.")
         continue
+    hit = hits[0]
 
-    #print(f"Signal alligned from {fromSignal} to {toSignal}")
     print("Working on", posRead)
     print(f"So far done {readCounter} reads")
     readCounter += 1
 
-    if strand == 1:
-        refSeq = str(Fasta(refFilePath)[ctg][fromRef:toRef])
+    if hit.strand == 1:
+        refSeq = str(Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
+        fakeSeq = str(-Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
     else:
-        refSeq = str(-Fasta(refFilePath)[ctg][fromRef:toRef])
+        refSeq = str(-Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
+        fakeSeq = str(Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
 
-    refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
     readSignal = np.array(getSignalFromRead(posRead), dtype=float)
-    readSignal = readSignal[fromSignal:toSignal]
+    refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
+    # fakeSignal = np.array(stringToSignal(fakeSeq, mod, repeatSignal = repeatSignal),
+    #                float)
     fakeSignal = []
     fakeIndex = -1
-    while len(fakeSignal) <= toSignal:
-        fakeIndex = random.randint(0, len(negReadsPaths) - 1)
-        fakeSignal = np.array(getSignalFromRead(negReadsPaths[fakeIndex]), dtype=float)
-    fakeSignal = fakeSignal[fromSignal:toSignal]
+    while len(fakeSignal) <= signalTo:
+        fakeIndex = random.randint(0, len(negReads) - 1)
+        fakeSignal = np.array(getSignalFromRead(negReads[fakeIndex]), dtype=float)
 
-    readSignal = readSignal[:workingLen]
-    refSignal = refSignal[:workingLen]
-    fakeSignal = fakeSignal[:workingLen]
+    if len(readSignal) < workingLen:
+        continue
+    
+    fakeSignal = fakeSignal[signalFrom:signalTo]
+    readSignal = readSignal[signalFrom:signalTo]
+    refSignal = refSignal[:signalTo-signalFrom]
 
-    readSignal = smoothSignal(readSignal, smoothParam)
-    refSignal = smoothSignal(refSignal, smoothParam)
-    fakeSignal = smoothSignal(fakeSignal, smoothParam)
+    #readSignalSm = smoothSignal(readSignal, 5)
+    #refSignalSm = smoothSignal(refSignal, 5)
+    #fakeSignalSm = smoothSignal(fakeSignal, 5)
+    #readShiftSm, readScaleSm = computeNorm(readSignalSm, 0, len(readSignalSm))
+    #refShiftSm, refScaleSm = computeNorm(refSignalSm, 0, len(refSignalSm))
+    #fakeShiftSm, fakeScaleSm = computeNorm(fakeSignalSm, 0, len(fakeSignalSm))
+    
+    readSignal = smoothSignal(readSignal, 5)
+    refSignal = smoothSignal(refSignal, 5)
+    fakeSignal = smoothSignal(fakeSignal, 5)
     readShift, readScale = computeNorm(readSignal, 0, len(readSignal))
     refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
     fakeShift, fakeScale = computeNorm(fakeSignal, 0, len(fakeSignal))
-
+    
     readStrings, refStrings, fakeStrings = {}, {}, {}
 
     for l in levels:

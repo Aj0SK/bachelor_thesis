@@ -9,15 +9,13 @@ readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 refFilePath = "../../../data/sapIngB1.fa"
+alignedSquiggles = "../prepareData/alignedSquiggles_1000.txt"
 
 smoothParam = 5
 repeatSignal = 10
 workingLen = 5000
 
-readNum = 10
-
-signalFrom = 10000
-signalTo = signalFrom + workingLen
+readNum = 200
 
 kmerLen = list(range(4, 36, 1))
 levels = list(range(4, 15, 1))
@@ -25,6 +23,7 @@ levels = list(range(4, 15, 1))
 plotLevels = [4, 5, 7, 9, 11, 13]  # range(4, 10)
 plotKmerLen = [4, 7, 13, 17, 21, 28]  # range(4, 40, 10)
 
+import os
 import sys
 import math
 import random
@@ -43,14 +42,13 @@ from signalHelper import (
     stringToSignal,
     getSignalFromRead,
     getReadsInFolder,
-    getSeqfromRead,
-    seqSignalCor,
     stringAllignment,
     overlappingKmers,
     computeNorm,
     computeString,
     smoothSignal,
     countDashes,
+    getAlignedIndex
 )
 
 
@@ -71,11 +69,10 @@ def plotAOC(src):
 
 ################################################################################
 
-referenceIdx = mp.Aligner(refFilePath)
-assert referenceIdx, "failed to load/build reference index"
+posReadsPaths = getReadsInFolder(readsPosFilePath, minSize=0)
+negReadsPaths = getReadsInFolder(readsNegFilePath, minSize=0)
 
-posReads = getReadsInFolder(readsPosFilePath, minSize=0)
-negReads = getReadsInFolder(readsNegFilePath, minSize=0)
+index = getAlignedIndex(alignedSquiggles)
 
 ref = Fasta(refFilePath)
 
@@ -92,68 +89,56 @@ alignLenRead = [0 for _ in levels]
 alignLenFake = [0 for _ in levels]
 readCounter = 0
 
-
-for posRead in posReads:
+for posRead in posReadsPaths:
     if readCounter == readNum:
         break
-    try:
-        readFastq, readEvents = getSeqfromRead(posRead)
-    except:
-        continue
-    readSeq = seqSignalCor(signalFrom, signalTo, readEvents)
 
-    hits = [
-        aln
-        for aln in referenceIdx.map(readSeq)
-        if aln.q_en - aln.q_st > 0.95 * len(readSeq)
-    ]
-    if len(hits) != 1:
-        # print("Too many or too few hits, skipping read.")
+    readName = os.path.basename(posRead)
+    
+    if readName not in index:
         continue
-    hit = hits[0]
+    
+    print(f"Working on {posRead}")
+    
+    fromSignal, toSignal = index[readName][4], index[readName][5]
+    fromRef, toRef = index[readName][2], index[readName][3]
+    strand = index[readName][1]
+    ctg = index[readName][0]
 
+    if (toSignal - fromSignal) < workingLen:
+        continue
+
+    #print(f"Signal alligned from {fromSignal} to {toSignal}")
     print("Working on", posRead)
     print(f"So far done {readCounter} reads")
     readCounter += 1
 
-    if hit.strand == 1:
-        refSeq = str(Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
-        fakeSeq = str(-Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
+    if strand == 1:
+        refSeq = str(Fasta(refFilePath)[ctg][fromRef:toRef])
     else:
-        refSeq = str(-Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
-        fakeSeq = str(Fasta(refFilePath)[hit.ctg][hit.r_st : hit.r_en])
+        refSeq = str(-Fasta(refFilePath)[ctg][fromRef:toRef])
 
-    readSignal = np.array(getSignalFromRead(posRead), dtype=float)
     refSignal = np.array(stringToSignal(refSeq, mod, repeatSignal=repeatSignal), float)
-    # fakeSignal = np.array(stringToSignal(fakeSeq, mod, repeatSignal = repeatSignal),
-    #                float)
+    readSignal = np.array(getSignalFromRead(posRead), dtype=float)
+    readSignal = readSignal[fromSignal:toSignal]
     fakeSignal = []
     fakeIndex = -1
-    while len(fakeSignal) <= signalTo:
-        fakeIndex = random.randint(0, len(negReads) - 1)
-        fakeSignal = np.array(getSignalFromRead(negReads[fakeIndex]), dtype=float)
+    while len(fakeSignal) <= toSignal:
+        fakeIndex = random.randint(0, len(negReadsPaths) - 1)
+        fakeSignal = np.array(getSignalFromRead(negReadsPaths[fakeIndex]), dtype=float)
+    fakeSignal = fakeSignal[fromSignal:toSignal]
 
-    if len(readSignal) < workingLen:
-        continue
-    
-    fakeSignal = fakeSignal[signalFrom:signalTo]
-    readSignal = readSignal[signalFrom:signalTo]
-    refSignal = refSignal[:signalTo-signalFrom]
+    readSignal = readSignal[:workingLen]
+    refSignal = refSignal[:workingLen]
+    fakeSignal = fakeSignal[:workingLen]
 
-    #readSignalSm = smoothSignal(readSignal, 5)
-    #refSignalSm = smoothSignal(refSignal, 5)
-    #fakeSignalSm = smoothSignal(fakeSignal, 5)
-    #readShiftSm, readScaleSm = computeNorm(readSignalSm, 0, len(readSignalSm))
-    #refShiftSm, refScaleSm = computeNorm(refSignalSm, 0, len(refSignalSm))
-    #fakeShiftSm, fakeScaleSm = computeNorm(fakeSignalSm, 0, len(fakeSignalSm))
-    
-    readSignal = smoothSignal(readSignal, 5)
-    refSignal = smoothSignal(refSignal, 5)
-    fakeSignal = smoothSignal(fakeSignal, 5)
+    #readSignal = smoothSignal(readSignal, smoothParam)
+    #refSignal = smoothSignal(refSignal, smoothParam)
+    #fakeSignal = smoothSignal(fakeSignal, smoothParam)
     readShift, readScale = computeNorm(readSignal, 0, len(readSignal))
     refShift, refScale = computeNorm(refSignal, 0, len(refSignal))
     fakeShift, fakeScale = computeNorm(fakeSignal, 0, len(fakeSignal))
-    
+
     readStrings, refStrings, fakeStrings = {}, {}, {}
 
     for l in levels:
@@ -250,13 +235,21 @@ axs[0].imshow(a.T[:2])
 axs[0].set_xticks(np.arange(len(plotLevels)))
 axs[0].set_xticklabels(plotLevels)
 axs[0].set_yticks(np.arange(2))
-axs[0].set_yticklabels(["<= 5 pos", "<= 5 neg"])
+axs[0].set_yticklabels(["positive squiggles", "negative squiggles"])
+axs[0].set_title("Small gaps")
 
 axs[1].imshow(a.T[2:])
 axs[1].set_xticks(np.arange(len(plotLevels)))
 axs[1].set_xticklabels(plotLevels)
 axs[1].set_yticks(np.arange(2))
-axs[1].set_yticklabels(["<= 10 pos", "<= 10 neg"])
+axs[1].set_yticklabels(["positive squiggles", "negative squiggles"])
+axs[1].set_title("Large gaps")
+
+plt.setp(axs[0].get_yticklabels(), rotation=90, ha="center",
+         rotation_mode="anchor")
+
+plt.setp(axs[1].get_yticklabels(), rotation=90, ha="center",
+         rotation_mode="anchor")
 
 for i in range(len(plotLevels)):
     for j in range(2):
@@ -266,9 +259,9 @@ for i in range(len(plotLevels)):
         text = axs[1].text(i, j-2, str(a[i, j])[:7],
                        ha="center", va="center", color="w")
 
-axs[0].set_ylabel("Gap len")
+#axs[0].set_ylabel("Gap lenth; squiggle class")
 axs[0].set_xlabel("Level number")
-axs[1].set_ylabel("Gap len")
+#axs[1].set_ylabel("Gap length; squiggle class")
 axs[1].set_xlabel("Level number")
 fig.tight_layout()
 plt.show()
@@ -325,13 +318,21 @@ for i in range(len(plotLevels)):
         axs[i//dim2, i%dim2].plot(X, y, label=str(plotKmerLen[k]), linewidth=2)
     # axs[i].legend(loc="lower right")
     Y = np.array(Y)
-    axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"{plotLevels[i]} levels")
     axs[i//dim2, i%dim2].set_aspect('equal', adjustable='box')
+    if i%dim2 == 0:
+        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of testcases (TP)')
+    if i//dim2 == dim1-1:
+        axs[i//dim2, i%dim2].set_xlabel('FP')
+
 #axs[dim1-1, dim2-1].legend(loc="lower right")
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)
-fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+leg = fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+
+for line in leg.get_lines():
+    line.set_linewidth(4.0)
 
 plt.show()
 
@@ -352,10 +353,17 @@ for i in range(len(plotLevels)):
         Y.append([sum(y[:k]) / len(data) for k in range(len(y))])
         axs[i//dim2, i%dim2].plot(list(X), Y[-1], label=str(plotKmerLen[j]), linewidth=2)
     Y = np.array(Y)
-    axs[i//dim2, i%dim2].set_title(f"Level {plotLevels[i]}")
+    axs[i//dim2, i%dim2].set_title(f"{plotLevels[i]} levels")
+    if i%dim2 == 0:
+        axs[i//dim2, i%dim2].set_ylabel('Cummulative ratio of test cases')
+    if i//dim2 == dim1-1:
+        axs[i//dim2, i%dim2].set_xlabel('Individual ratio of hits')
 
 handles, labels = axs[dim1-1, dim2-1].get_legend_handles_labels()
 fig.subplots_adjust(bottom=0.1, wspace=0.1)
-fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+leg = fig.legend(handles, labels, loc='lower center', ncol=dim1*dim2)
+
+for line in leg.get_lines():
+    line.set_linewidth(4.0)
 
 plt.show()

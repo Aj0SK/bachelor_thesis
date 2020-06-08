@@ -18,15 +18,15 @@ readsPosFilePath = "../../../data/pos-basecalled"
 readsNegFilePath = "../../../data/neg-basecalled"
 kmerModelFilePath = "../../../data/kmer_model.hdf5"
 
-maxTests = 500
+maxTests = 50
 
-levels = 9
+levels = 9 #int(sys.argv[1])
 repeatSignal = 10
 
-kmerLen = 21
+kmerLen = 21 #int(sys.argv[2])
 
-signalFrom = 5000#int(sys.argv[3])
-signalTo = 20000#int(sys.argv[4])
+signalFrom = 5000 #int(sys.argv[3])
+signalTo = 20000 #int(sys.argv[4])
 
 mod = KmerModel.load_from_hdf5(kmerModelFilePath)
 posReads = getReadsInFolder(readsPosFilePath, minSize = 0)
@@ -45,7 +45,9 @@ rat = []
 referenceIdx = mp.Aligner(refFile)
 assert referenceIdx, "failed to load/build reference index"
 
-for readFile in posReads[:min(len(posReads), maxTests)]:
+for readFile in posReads:
+    if successfulReads == maxTests:
+        break
     print(readFile)
     ### read read
     try:
@@ -123,11 +125,11 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     print("fakesm-1:",fakeString2Sm)
     '''
     
-    goodHits = overlappingKmers(readString2Sm,refString2Sm,kmerLen)
+    goodHits = overlappingKmers(readString2Sm, refString2Sm, kmerLen)
     totalG += goodHits
     print("GoodHits:", goodHits, end="\n")
     
-    badHits = overlappingKmers(readString2Sm,fakeString2Sm,kmerLen)
+    badHits = overlappingKmers(readString2Sm, fakeString2Sm, kmerLen)
     totalF += badHits
     print("BadHits", badHits, end="\n")
     
@@ -136,6 +138,7 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     
     print(totalG)
     print(totalF)
+
     if goodHits<badHits:
         badClas += 1
     
@@ -147,8 +150,6 @@ for readFile in posReads[:min(len(posReads), maxTests)]:
     if totalF != 0:
         print(totalG/totalF)
     print("Bad classified reads to total reads: {0}/{1}".format(badClas, successfulReads))
-
-print("Skipped {0} out of {1}".format(maxTests-successfulReads, maxTests))
 
 rat = np.array(rat)
 fig, axs = plt.subplots()
