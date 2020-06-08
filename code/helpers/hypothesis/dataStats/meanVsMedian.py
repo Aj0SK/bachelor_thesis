@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt
 referenceIdx = mp.Aligner(refFilePath)
 assert referenceIdx, "failed to load/build reference index"
 
-posReads = getReadsInFolder(readsPosFilePath, minSize = 0)
-negReads = getReadsInFolder(readsNegFilePath, minSize = 0)
+posReads = getReadsInFolder(readsPosFilePath, minSize=0)
+negReads = getReadsInFolder(readsNegFilePath, minSize=0)
 
 ################################################################################
 
@@ -39,19 +39,19 @@ for readFile in posReads:
         readSignal = getSignalFromRead(readFile)
     except:
         continue
-    
+
     mean = np.mean(readSignal)
     median = np.median(readSignal)
     stdev = np.std(readSignal)
-    
+
     totalCount += 1
-    
-    #print(f"Mean is {mean}")
-    #print(f"Median is {median}")
-    print(f"Stdeviation is {stdev}")
-    
-    suma += abs(mean-median)
-    
-    print(f"Diff is {mean-median}")
+
+    # print(f"Mean is {mean}")
+    # print(f"Median is {median}")
+    #print(f"Stdeviation is {stdev}")
+
+    suma += abs(mean - median)
+
+    #print(f"Diff is {mean-median}")
 
 print(f"Average diff is {suma/totalCount}")

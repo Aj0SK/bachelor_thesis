@@ -48,7 +48,7 @@ from signalHelper import (
     computeString,
     smoothSignal,
     countDashes,
-    getAlignedIndex
+    getAlignedIndex,
 )
 
 
@@ -95,12 +95,12 @@ for posRead in posReadsPaths:
         break
 
     readName = os.path.basename(posRead)
-    
+
     if readName not in index:
         continue
-    
+
     print(f"Working on {posRead}")
-    
+
     fromSignal, toSignal = index[readName][4], index[readName][5]
     fromRef, toRef = index[readName][2], index[readName][3]
     strand = index[readName][1]
@@ -109,7 +109,7 @@ for posRead in posReadsPaths:
     if (toSignal - fromSignal) < workingLen:
         continue
 
-    #print(f"Signal alligned from {fromSignal} to {toSignal}")
+    # print(f"Signal alligned from {fromSignal} to {toSignal}")
     print("Working on", posRead)
     print(f"So far done {readCounter} reads")
     readCounter += 1
@@ -156,37 +156,39 @@ for posRead in posReadsPaths:
     for l in levels:
         a, b = stringAllignment(refStrings[l], readStrings[l])
         c, d = stringAllignment(refStrings[l], fakeStrings[l])
-        
-        #alignLenRead[levels.index(l)] += len(a)
-        #alignLenFake[levels.index(l)] += len(c) 
-        
+
+        # alignLenRead[levels.index(l)] += len(a)
+        # alignLenFake[levels.index(l)] += len(c)
+
         alignLenRead[levels.index(l)] += len(readStrings[l])
-        alignLenFake[levels.index(l)] += len(fakeStrings[l]) 
-        
-        #a = a[:300]
-        #b = b[:300]
-        #c = c[:300]
-        #d = d[:300]
-        
+        alignLenFake[levels.index(l)] += len(fakeStrings[l])
+
+        # a = a[:300]
+        # b = b[:300]
+        # c = c[:300]
+        # d = d[:300]
+
         dashes1 = [countDashes(a, i) + countDashes(b, i) for i in range(1, 21)]
         dashes2 = [countDashes(c, i) + countDashes(d, i) for i in range(1, 21)]
-        
+
         goodDash[levels.index(l)].append(dashes1)
         badDash[levels.index(l)].append(dashes2)
-        
-        #print(dashes1)
-        #print(dashes2)
-        
-        print(f"Level {levels[levels.index(l)]}: ", end = "")
+
+        # print(dashes1)
+        # print(dashes2)
+
+        print(f"Level {levels[levels.index(l)]}: ", end="")
         for k in kmerLen:
-            counter = 0
+            counter = overlappingKmers(readStrings[l], refStrings[l], k)
+            counter = min(1, counter)
+            """counter = 0
             for i in range(len(a) - k + 1):
                 w1, w2 = a[i : i + k], b[i : i + k]
                 if ("-" not in w1) and ("-" not in w2):
                     counter += 1
-                    break
+                    break"""
             longestCommonK[levels.index(l)][kmerLen.index(k)] += counter
-            print(f"{longestCommonK[levels.index(l)][kmerLen.index(k)]}", end = " ")
+            print(f"{longestCommonK[levels.index(l)][kmerLen.index(k)]}", end=" ")
         print(f"# {readCounter}")
 
 
@@ -197,16 +199,14 @@ for l in levels:
             last_all = i
 
     print("\hline")
-    print(f"{levels[levels.index(l)]}", end = " ")
-    #print(f"kmerLen", end = " ")
-    
-    for i in range(last_all, last_all+10):
-        print(f"& {kmerLen[i]}", end = " ")
+    print(f"{levels[levels.index(l)]}", end=" ")
+    # print(f"kmerLen", end = " ")
+
+    for i in range(last_all, last_all + 10):
+        print(f"& {kmerLen[i]}", end=" ")
     print(f"\\\\")
-    #print(f"{levels[levels.index(l)]}", end = " ")
-     
-    for i in range(last_all, last_all+10):
-        print(f"& {longestCommonK[levels.index(l)][i]}", end = " ")
+    # print(f"{levels[levels.index(l)]}", end = " ")
+
+    for i in range(last_all, last_all + 10):
+        print(f"& {longestCommonK[levels.index(l)][i]}", end=" ")
     print(f"\\\\")
-        
-        

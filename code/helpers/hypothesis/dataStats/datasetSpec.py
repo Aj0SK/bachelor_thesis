@@ -1,4 +1,4 @@
-readsFilePath = "../../../data/neg-basecalled"
+readsFilePath = "../../../data/pos-basecalled"
 
 maxReads = 1000
 
@@ -16,17 +16,17 @@ signalLengths, seqLengths = [], []
 for read in reads:
     if maxReads == 0:
         break
-    
+
     try:
         signal = getSignalFromRead(read)
         seq, _ = getSeqfromRead(read)
     except:
         continue
-    
+
     maxReads -= 1
     signalLengths.append(len(signal))
     seqLengths.append(len(seq))
-    
+
 
 meanSignal = np.mean(signalLengths)
 medianSignal = np.median(signalLengths)
@@ -39,7 +39,3 @@ print(f"Mean signal len is {meanSignal}")
 print(f"Median signal len is {medianSignal}")
 print(f"Mean sequence len is {meanSeq}")
 print(f"Median sequence len is {medianSeq}")
-
-
-
-    
